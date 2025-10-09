@@ -4,6 +4,8 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
 @RestController
-@RequestMapping("/api/parrains")
-public class ParrainControllers {
+@RequestMapping("/api/admins")
+public class AdminControllers {
+    //injection de dépences
+
 }
