@@ -3,26 +3,19 @@ package com.example.repartir_backend.entities;
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.Id;
-import jakarta.persistence.OneToMany;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
-
-import java.util.List;
 
 @Entity
 @AllArgsConstructor
 @NoArgsConstructor
 @Getter
 @Setter
-public class Parrain {
+public class Domaine {
     @Id
     private int id;
     @Column(nullable = false)
-    private String prenom;
-    @Column(nullable = false)
-    private String profession;
-
-
+    private String libelle;
 }
