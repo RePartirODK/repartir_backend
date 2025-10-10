@@ -15,18 +15,4 @@ import lombok.Setter;
 public class Utilisateur {
     @Id
     private int id;
-    @Column(nullable = false)
-    private String nom;
-    @Column(nullable = false)
-    private String telephone;
-    @Column(nullable = false)
-    private String email;
-    @Column(nullable = false)
-    private String password;
-    @Column(nullable = false)
-    private String urlPhoto;
-    @Column(nullable = false)
-    private boolean isActive;
-    @Enumerated(EnumType.STRING)
-    private Role role;
 }
