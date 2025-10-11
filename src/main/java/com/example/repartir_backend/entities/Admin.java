@@ -17,7 +17,9 @@ public class Admin {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private int id;
+    @Column
     private String prenom;
+    @Column
     private String nom;
     @Column(nullable = false)
     private String motDePasse;
