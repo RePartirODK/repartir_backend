@@ -17,6 +17,7 @@ import java.util.List;
 @Setter
 public class OffreEmploi {
     @Id
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
     private int id;
     @Column(nullable = false)
     private String titre;

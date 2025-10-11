@@ -20,6 +20,7 @@ import java.util.List;
 @Setter
 public class Formation {
     @Id
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
     private int id;
     @Column(nullable = false)
     private String description;

@@ -7,6 +7,9 @@ import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
 
+import java.util.ArrayList;
+import java.util.List;
+
 @Entity
 @AllArgsConstructor
 @NoArgsConstructor
@@ -14,5 +17,24 @@ import lombok.Setter;
 @Setter
 public class Utilisateur {
     @Id
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
     private int id;
+    @Column(nullable = false)
+    private String nom;
+    @Column(nullable = false)
+    private String motDePasse;
+    @Column(nullable = false, unique = true)
+    private String telephone;
+
+    private String urlPhoto;
+    @Column(nullable = false)
+    private Role role;
+    @Column(nullable = false, unique = true)
+    private String email;
+    @Column(nullable = false)
+    private boolean estActive;
+
+    @OneToMany(mappedBy = "utilisateur")
+    private List<UserDomaine> userDomaineList = new ArrayList<>();
+
 }

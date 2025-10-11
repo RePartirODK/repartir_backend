@@ -15,6 +15,7 @@ import java.time.LocalDateTime;
 @Setter
 public class Paiement {
     @Id
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
     private int id;
     @Column(nullable = false)
     private Double montant;
@@ -25,10 +26,10 @@ public class Paiement {
     private LocalDateTime date;
 
     @ManyToOne
-    @JoinColumn(name = "id_jeune", nullable = false)
+    @JoinColumn(name = "id_jeune")
     private Jeune jeune;
     @ManyToOne
-    @JoinColumn(name = "id_parrainage", nullable = false)
+    @JoinColumn(name = "id_parrainage")
     private Parrainage parrainage;
     @ManyToOne
     @JoinColumn(name = "id_inscriptionFormation", nullable = false)

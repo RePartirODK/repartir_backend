@@ -6,6 +6,7 @@ import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
 
+import java.util.ArrayList;
 import java.util.List;
 
 @Entity
@@ -31,5 +32,11 @@ public class Mentor {
 
     //relation entre mentor et mentoring
     @OneToMany(mappedBy = "mentor")
-    private List<Mentoring> mentorings;
+    private List<Mentoring> mentorings = new ArrayList<>();
+
+    //relation entre mentor et message
+    @OneToMany(mappedBy = "mentor")
+    private List<Message> messages = new ArrayList<>();
+
+
 }

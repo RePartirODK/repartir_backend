@@ -16,6 +16,7 @@ import java.util.List;
 @Setter
 public class Entreprise {
     @Id
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
     private int id;
     @Column(nullable = false)
     private String adresse;

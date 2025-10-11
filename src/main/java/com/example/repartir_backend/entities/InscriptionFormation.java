@@ -8,6 +8,7 @@ import lombok.NoArgsConstructor;
 import lombok.Setter;
 
 import java.time.LocalDate;
+import java.util.ArrayList;
 import java.util.List;
 
 @Entity
@@ -17,6 +18,7 @@ import java.util.List;
 @Setter
 public class InscriptionFormation {
     @Id
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
     private int id;
     private LocalDate date;
     @Enumerated(EnumType.STRING)
@@ -27,7 +29,7 @@ public class InscriptionFormation {
     private Jeune jeune;
 
     @OneToMany(mappedBy = "inscriptionFormation")
-    private List<Paiement> paiements;
+    private List<Paiement> paiements = new ArrayList<>();
     @ManyToOne
     @JoinColumn(name = "id_formation")
     private Formation formation;

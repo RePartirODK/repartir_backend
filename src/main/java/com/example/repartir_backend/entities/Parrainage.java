@@ -15,6 +15,7 @@ import java.util.List;
 @Setter
 public class Parrainage {
     @Id
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
     private int id;
 
     @ManyToOne

@@ -16,6 +16,7 @@ import java.time.LocalDateTime;
 @Setter
 public class CandidatureOffre {
     @Id
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
     private int id;
     @Column(nullable = false)
     private LocalDateTime date_candidature;

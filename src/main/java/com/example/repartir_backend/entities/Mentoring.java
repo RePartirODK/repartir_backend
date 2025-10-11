@@ -17,6 +17,7 @@ import java.time.LocalDateTime;
 @Setter
 public class Mentoring {
     @Id
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
     private int id;
     @Column(nullable = false)
     private String objectif;
