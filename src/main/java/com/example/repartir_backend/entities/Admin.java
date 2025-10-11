@@ -1,6 +1,7 @@
 package com.example.repartir_backend.entities;
 
 
+import com.example.repartir_backend.enumerations.Role;
 import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
@@ -16,10 +17,13 @@ public class Admin {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private int id;
-    @Column(nullable = false)
     private String prenom;
-
-    @OneToOne
-    @JoinColumn(name = "id_utilisateur", nullable = false)
-    private Utilisateur utilisateur;
+    private String nom;
+    @Column(nullable = false)
+    private String motDePasse;
+    @Column(nullable = false)
+    private String email;
+    @Column(nullable = false)
+    @Enumerated(EnumType.STRING)
+    private Role role;
 }
