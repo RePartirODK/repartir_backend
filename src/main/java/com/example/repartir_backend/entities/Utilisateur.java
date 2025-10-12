@@ -1,5 +1,6 @@
 package com.example.repartir_backend.entities;
 
+import com.example.repartir_backend.enumerations.Etat;
 import com.example.repartir_backend.enumerations.Role;
 import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
@@ -33,6 +34,10 @@ public class Utilisateur {
     private String email;
     @Column(nullable = false)
     private boolean estActive;
+
+    @Enumerated(EnumType.STRING)
+    @Column(nullable = false)
+    private Etat etat;
 
     @OneToMany(mappedBy = "utilisateur")
     private List<UserDomaine> userDomaineList = new ArrayList<>();
