@@ -45,13 +45,33 @@ public class SecurityConfig {
                 //configuration des authorisation des endpoints
                 .authorizeHttpRequests(
                         auth -> auth.requestMatchers(
-                                "/api/auth/login", "/api/auth/register"
+                                "/api/auth/login", "/api/auth/register", "/api/auth/refresh"
                         ).permitAll()
                                 .requestMatchers("/api/admins/**").hasRole("ADMIN")
                                 .requestMatchers("/api/parrains/**").hasAnyRole("PARRAIN"
                                 ,"ADMIN")
                                 .requestMatchers("/api/mentors/**").hasAnyRole("MENTOR",
                                         "ADMIN")
+                                .requestMatchers("/api/centres/**").hasAnyRole("CENTRE", "ADMIN")
+                                .requestMatchers("/api/entreprises/**").hasAnyRole("ENTREPRISE",
+                                        "ADMIN")
+                                .requestMatchers("/api/inscription/**").hasAnyRole("CENTRE", "PARRAIN",
+                                        "JEUNE", "ADMIN")
+                                .requestMatchers("/api/jeunes/**").hasAnyRole("JEUNE", "PARRAIN",
+                                        "ENTREPRISE", "CENTRE", "ADMIN")
+                                .requestMatchers("/api/mentoring/**").hasAnyRole("MENTOR", "JEUNE",
+                                        "ADMIN")
+                                .requestMatchers("/api/messages/**").hasAnyRole( "MENTOR",
+                                        "JEUNE","ADMIN")
+                                .requestMatchers("/api/offres/**").hasAnyRole("ENTREPRISE","JEUNE",
+                                        "ADMIN")
+                                .requestMatchers("/api/paiements/**").hasAnyRole("ENTREPRISE",
+                                        "PARRAIN", "JEUNE", "ADMIN")
+                                .requestMatchers("/api/parrainage/**")
+                                .hasAnyRole("PARRAIN", "JEUNE", "CENTRE", "ADMIN")
+                                .requestMatchers("/api/userdomaines/**")
+                                .hasAnyRole("ADMIN", "MENTOR", "CENTRE","ENTREPRISE",
+                                        "PARRAIN", "JEUNE")
                                 .anyRequest()
                                 .authenticated()
 

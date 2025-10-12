@@ -1,7 +1,9 @@
 package com.example.repartir_backend.controllers;
 
+import com.example.repartir_backend.dto.RefreshRequest;
 import com.example.repartir_backend.dto.RequestUtilisateur;
 import com.example.repartir_backend.security.JwtServices;
+import com.example.repartir_backend.services.AuthService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -14,33 +16,37 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
+import java.util.Map;
+
 @RestController
 @RequestMapping("/api/auth")
 @RequiredArgsConstructor
 public class AuthentificationControllers {
-    private final AuthenticationManager authenticationManager;
-    private final JwtServices jwtServices;
+    private final AuthService authService;
+
+    /**
+     * Authentification (Login)
+     * Reçoit email + mot de passe, renvoie access_token + refresh_token
+     */
     @PostMapping("/login")
-    public ResponseEntity<?> Login(@RequestBody RequestUtilisateur credential) {
-        Authentication auth = authenticationManager.authenticate(
-                new UsernamePasswordAuthenticationToken(credential.getEmail()
-                        , credential.getMotDePasse())
+    public ResponseEntity<?> login(@RequestBody RequestUtilisateur credentials) {
+        Map<String, Object> tokens = authService.authenticate(
+                credentials.getEmail(),
+                credentials.getMotDePasse()
         );
-        if(auth.isAuthenticated()){
-            UserDetails userDetails = (UserDetails) auth.getPrincipal();
-            //generer le token
-            String token = jwtServices.genererToken(credential.getEmail());
-            return new ResponseEntity<>(
-                    new JwtResponse(token,userDetails.getUsername(),userDetails.getAuthorities()),
-                    HttpStatus.OK
-            );
-        }
-        else {
-            return new ResponseEntity<>(
-                    "Mot de passe ou email incorrecte",
-                    HttpStatus.NOT_FOUND
-            );
-        }
+        return ResponseEntity.ok(tokens);
     }
+
+    /**
+     * Rafraîchir le token d’accès (access_token)
+     * Reçoit un refresh_token, renvoie un nouvel access_token
+     */
+    @PostMapping("/refresh")
+    public ResponseEntity<?> refresh(@RequestBody RefreshRequest request) {
+        Map<String, Object> tokens = authService.refreshAccessToken(request.getRefreshToken());
+        return ResponseEntity.ok(tokens);
+    }
+
+
     public static record JwtResponse(String token, String email, Object roles) {}
 }
