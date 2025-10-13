@@ -2,6 +2,7 @@ package com.example.repartir_backend.controllers;
 
 import com.example.repartir_backend.dto.RefreshRequest;
 import com.example.repartir_backend.dto.RequestUtilisateur;
+import com.example.repartir_backend.entities.Utilisateur;
 import com.example.repartir_backend.security.JwtServices;
 import com.example.repartir_backend.services.AuthService;
 import lombok.RequiredArgsConstructor;
@@ -46,6 +47,7 @@ public class AuthentificationControllers {
         Map<String, Object> tokens = authService.refreshAccessToken(request.getRefreshToken());
         return ResponseEntity.ok(tokens);
     }
+
 
 
     public static record JwtResponse(String token, String email, Object roles) {}
