@@ -2,8 +2,10 @@ package com.example.repartir_backend.services;
 
 import com.example.repartir_backend.dto.RegisterUtilisateur;
 import com.example.repartir_backend.entities.*;
+import com.example.repartir_backend.enumerations.Role;
 import com.example.repartir_backend.repositories.*;
 import jakarta.persistence.EntityExistsException;
+import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -20,9 +22,9 @@ public class UtilisateurServices {
     private final CentreFormationRepository centreFormationRepository;
     private final JeuneRepository jeuneRepository;
     private final EntrepriseRepository entrepriseRepository;
-    private final PasswordEncoder encoder;
+    private final PasswordEncoder passwordEncoder;
 
-
+    @Transactional
     public Utilisateur register(RegisterUtilisateur utilisateur) {
         //verifier si un utilisateur avec l'email existe déjà
         Utilisateur utilisateur1 = utilisateurRepository.findByEmail(utilisateur.getEmail()).orElse(null);
@@ -36,17 +38,23 @@ public class UtilisateurServices {
         newUtilisateur.setRole(utilisateur.getRole());
         newUtilisateur.setTelephone(utilisateur.getTelephone());
         newUtilisateur.setEmail(utilisateur.getEmail());
-        newUtilisateur.setMotDePasse(encoder.encode(utilisateur.getMotDePasse()));
+        newUtilisateur.setMotDePasse(passwordEncoder.encode(utilisateur.getMotDePasse()));
+        newUtilisateur.setEstActive(
+                utilisateur.getRole() == Role.JEUNE ||
+                        utilisateur.getRole() == Role.MENTOR ||
+                        utilisateur.getRole() == Role.PARRAIN
+        );
+        utilisateurRepository.save(newUtilisateur);
         if(utilisateur.getUrlPhoto() != null)
         {
             newUtilisateur.setUrlPhoto(utilisateur.getUrlPhoto());
         }
-        utilisateurRepository.save(newUtilisateur);
+
         switch(utilisateur.getRole())
         {
             case JEUNE -> {
                 Jeune jeune = new Jeune();
-                newUtilisateur.setEstActive(true);
+                //newUtilisateur.setEstActive(true);
                 jeune.setUtilisateur(newUtilisateur);
                 jeune.setGenre(utilisateur.getGenre());
                 jeune.setAge(utilisateur.getAge());
@@ -58,7 +66,7 @@ public class UtilisateurServices {
             }
             case MENTOR -> {
                 Mentor mentor = new Mentor();
-                newUtilisateur.setEstActive(true);
+                //newUtilisateur.setEstActive(true);
                 mentor.setUtilisateur(newUtilisateur);
                 mentor.setPrenom(utilisateur.getPrenom());
                 mentor.setProfession(utilisateur.getProfession());
@@ -85,9 +93,8 @@ public class UtilisateurServices {
             }
             case PARRAIN -> {
                 Parrain parrain = new Parrain();
-                //parrainparrain.setUtilisateur(newUtilisateur); // à ajouter !
-
-                newUtilisateur.setEstActive(true);
+                parrain.setUtilisateur(newUtilisateur);
+                //newUtilisateur.setEstActive(true);
                 parrain.setProfession(utilisateur.getProfession());
                 parrain.setPrenom(utilisateur.getPrenom());
                 parrainRepository.save(parrain);

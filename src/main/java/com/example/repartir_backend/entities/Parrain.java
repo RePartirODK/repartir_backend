@@ -21,4 +21,7 @@ public class Parrain {
     private String prenom;
     @Column(nullable = false)
     private String profession;
+    @OneToOne
+    @JoinColumn(name = "id_utilisateur")
+    private Utilisateur utilisateur;
 }
