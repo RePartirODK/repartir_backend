@@ -40,6 +40,7 @@ public class SecurityConfig {
     public SecurityFilterChain securityFilterChain(HttpSecurity httpSecurity,
                                                    CorsConfigurationSource corsConfigurationSource) throws Exception{
         httpSecurity
+                .cors(cors -> cors.configurationSource(corsConfigurationSource))
                 //desactiver le csrf, pas besoin car jwt est sans etat
                 .csrf(AbstractHttpConfigurer::disable)
                 //configuration des authorisation des endpoints
@@ -47,7 +48,7 @@ public class SecurityConfig {
                         auth -> auth.requestMatchers(
                                 "/api/auth/login", "/api/auth/register", "/api/auth/refresh"
                         ).permitAll()
-                                .requestMatchers("/api/admins/**").hasRole("ADMIN")
+                                .requestMatchers("/administrateurs/**").hasRole("ADMIN")
                                 .requestMatchers("/api/parrains/**").hasAnyRole("PARRAIN"
                                 ,"ADMIN")
                                 .requestMatchers("/api/mentors/**").hasAnyRole("MENTOR",
