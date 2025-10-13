@@ -1,0 +1,79 @@
+package com.example.repartir_backend.services;
+
+import com.example.repartir_backend.entities.RefreshToken;
+import com.example.repartir_backend.repositories.AdminRepository;
+import com.example.repartir_backend.repositories.RefreshTokenRepository;
+import com.example.repartir_backend.repositories.UtilisateurRepository;
+import lombok.RequiredArgsConstructor;
+import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
+import org.springframework.stereotype.Service;
+import java.util.UUID;
+import java.time.Instant;
+import java.time.temporal.ChronoUnit;
+import java.util.Optional;
+@Service
+@RequiredArgsConstructor
+public class RefreshTokenService {
+    private final RefreshTokenRepository refreshTokenRepository;
+    private final UtilisateurRepository utilisateurRepository;
+    private final AdminRepository adminRepository;
+
+
+    public RefreshToken createRefreshToken(String email) {
+        RefreshToken refreshToken;
+
+        // Génération du token brut (non haché)
+        String rawToken = UUID.randomUUID().toString();
+
+        // Hachage avec BCrypt
+        BCryptPasswordEncoder encoder = new BCryptPasswordEncoder();
+        String hashedToken = encoder.encode(rawToken);
+
+        var userOpt = utilisateurRepository.findByEmail(email);
+
+        if (userOpt.isPresent()) {
+            var user = userOpt.get();
+
+            // Supprime tout ancien refresh token lié à cet utilisateur
+            refreshTokenRepository.deleteByUtilisateur_Id(user.getId());
+
+            refreshToken = RefreshToken.builder()
+                    .utilisateur(user)
+                    .token(hashedToken) // ✅ on stocke uniquement la version hachée
+                    .dateExpiration(Instant.now().plus(7, ChronoUnit.DAYS))
+                    .build();
+
+            refreshTokenRepository.save(refreshToken);
+        } else {
+            var admin = adminRepository.findByEmail(email)
+                    .orElseThrow(() -> new RuntimeException("Utilisateur non trouvé"));
+
+            refreshTokenRepository.deleteByAdmin_Id(admin.getId());
+
+            refreshToken = RefreshToken.builder()
+                    .admin(admin)
+                    .token(hashedToken)
+                    .dateExpiration(Instant.now().plus(7, ChronoUnit.DAYS))
+                    .build();
+
+            refreshTokenRepository.save(refreshToken);
+        }
+        refreshToken.setToken(rawToken);
+        return refreshToken;
+    }
+
+    public Optional<RefreshToken> findByToken(String token)  {
+        BCryptPasswordEncoder encoder = new BCryptPasswordEncoder();
+        return refreshTokenRepository.findAll().stream()
+                .filter(rt -> encoder.matches(token, rt.getToken()))
+                .findFirst();
+    }
+
+    public RefreshToken verifyExpiration(RefreshToken token) {
+        if (token.getDateExpiration().isBefore(Instant.now())) {
+            refreshTokenRepository.delete(token);
+            throw new RuntimeException("Refresh token expiré. Reconnectez-vous.");
+        }
+        return token;
+    }
+}
