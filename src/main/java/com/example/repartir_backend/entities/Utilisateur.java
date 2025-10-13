@@ -35,9 +35,6 @@ public class Utilisateur {
     @Column(nullable = false)
     private boolean estActive;
 
-    @Enumerated(EnumType.STRING)
-    @Column(nullable = false)
-    private Etat etat;
 
     @OneToMany(mappedBy = "utilisateur")
     private List<UserDomaine> userDomaineList = new ArrayList<>();

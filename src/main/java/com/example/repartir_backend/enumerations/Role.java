@@ -6,5 +6,5 @@ public enum Role {
     JEUNE,
     MENTOR,
     CENTRE,
-    ETREPRISE,
+    ENTREPRISE,
 }

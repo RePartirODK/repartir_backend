@@ -41,28 +41,19 @@ public class AdminControllers {
      * Récupère la liste des comptes en attente de validation.
      * @return Une liste d'utilisateurs avec le statut "ATTENTE".
      */
-    @GetMapping("/comptes-en-attente")
-    public List<Utilisateur> listerComptesEnAttente(){
-        return adminServices.listerComptesEnAttente();
-    }
+
 
     /**
      * Approuve un compte utilisateur.
      * @param userId L'ID de l'utilisateur à approuver.
      * @return L'utilisateur avec le statut mis à jour.
      */
-    @PutMapping("/approuver-compte/{userId}")
-    public Utilisateur approuverCompte(@PathVariable Integer userId) {
-        return adminServices.approuverCompte(userId);
-    }
+
 
     /**
      * Rejette un compte utilisateur.
      * @param userId L'ID de l'utilisateur à rejeter.
      * @return L'utilisateur avec le statut mis à jour.
      */
-    @PutMapping("/rejeter-compte/{userId}")
-    public Utilisateur rejeterCompte(@PathVariable Integer userId) {
-        return adminServices.rejeterCompte(userId);
-    }
+
 }

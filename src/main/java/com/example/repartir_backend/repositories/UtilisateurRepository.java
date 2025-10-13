@@ -3,7 +3,6 @@ package com.example.repartir_backend.repositories;
 import com.example.repartir_backend.entities.Utilisateur;
 import com.example.repartir_backend.enumerations.Etat;
 import org.springframework.data.jpa.repository.JpaRepository;
-
 import java.util.List;
 import java.util.Optional;
 
@@ -23,5 +22,5 @@ public interface UtilisateurRepository extends JpaRepository<Utilisateur, Intege
      * @param etat L'état du compte (ex: ATTENTE, APPROUVE, REJETE).
      * @return Une liste d'utilisateurs correspondants à l'état.
      */
-    List<Utilisateur> findByEtat(Etat etat);
+   // List<Utilisateur> findByEtat(Etat etat);
 }

@@ -21,6 +21,4 @@ public class Parrain {
     private String prenom;
     @Column(nullable = false)
     private String profession;
-
-
 }
