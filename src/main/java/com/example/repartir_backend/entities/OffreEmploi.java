@@ -8,6 +8,7 @@ import lombok.NoArgsConstructor;
 import lombok.Setter;
 
 import java.util.ArrayList;
+import java.util.Date;
 import java.util.List;
 
 @Entity
@@ -27,6 +28,11 @@ public class OffreEmploi {
     @Column(nullable = false)
     @Enumerated(EnumType.STRING)
     private Contrat type_contrat;
+    @Column(nullable = false)
+    private String lienPostuler;
+    private Date dateDebut;
+    private Date dateFin;
+
     @OneToMany(mappedBy = "offreEmploi")
     private List<CandidatureOffre> candidatureOffreList = new ArrayList<>();
     @ManyToOne
