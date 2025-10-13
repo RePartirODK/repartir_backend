@@ -16,6 +16,7 @@ import java.util.List;
 @Setter
 public class Mentor {
     @Id
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
     private int id;
     @Column(nullable = false)
     private String prenom;

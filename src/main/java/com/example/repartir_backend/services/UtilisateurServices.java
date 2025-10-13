@@ -7,6 +7,7 @@ import jakarta.persistence.EntityExistsException;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.security.crypto.bcrypt.BCrypt;
 
@@ -19,6 +20,7 @@ public class UtilisateurServices {
     private final CentreFormationRepository centreFormationRepository;
     private final JeuneRepository jeuneRepository;
     private final EntrepriseRepository entrepriseRepository;
+    private final PasswordEncoder encoder;
 
 
     public Utilisateur register(RegisterUtilisateur utilisateur) {
@@ -34,7 +36,7 @@ public class UtilisateurServices {
         newUtilisateur.setRole(utilisateur.getRole());
         newUtilisateur.setTelephone(utilisateur.getTelephone());
         newUtilisateur.setEmail(utilisateur.getEmail());
-        newUtilisateur.setMotDePasse(BCrypt.hashpw(utilisateur.getMotDePasse(), BCrypt.gensalt()));
+        newUtilisateur.setMotDePasse(encoder.encode(utilisateur.getMotDePasse()));
         if(utilisateur.getUrlPhoto() != null)
         {
             newUtilisateur.setUrlPhoto(utilisateur.getUrlPhoto());
@@ -83,6 +85,8 @@ public class UtilisateurServices {
             }
             case PARRAIN -> {
                 Parrain parrain = new Parrain();
+                //parrainparrain.setUtilisateur(newUtilisateur); // à ajouter !
+
                 newUtilisateur.setEstActive(true);
                 parrain.setProfession(utilisateur.getProfession());
                 parrain.setPrenom(utilisateur.getPrenom());
