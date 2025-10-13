@@ -49,6 +49,7 @@ public class SecurityConfig {
                                 "/api/auth/login", "/api/auth/register", "/api/auth/refresh"
                         ).permitAll()
                                 .requestMatchers("/administrateurs/**").hasRole("ADMIN")
+                                .requestMatchers("/api/domaines/**").hasRole("ADMIN")
                                 .requestMatchers("/api/parrains/**").hasAnyRole("PARRAIN"
                                 ,"ADMIN")
                                 .requestMatchers("/api/mentors/**").hasAnyRole("MENTOR",
