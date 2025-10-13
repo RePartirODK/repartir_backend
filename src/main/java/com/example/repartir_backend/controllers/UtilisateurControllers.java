@@ -3,6 +3,10 @@ package com.example.repartir_backend.controllers;
 import com.example.repartir_backend.dto.RegisterUtilisateur;
 import com.example.repartir_backend.entities.Utilisateur;
 import com.example.repartir_backend.services.UtilisateurServices;
+import jakarta.persistence.EntityExistsException;
+import jdk.jshell.execution.Util;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.HttpStatusCode;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
@@ -19,9 +23,28 @@ public class UtilisateurControllers {
 
     //endpoint pour s'inscrire
     @PostMapping("/register")
-    public creationCompte(@RequestBody RegisterUtilisateur registerUtilisateur)
+    public ResponseEntity<?> creationCompte(@RequestBody RegisterUtilisateur registerUtilisateur)
     {
-        Utilisateur savedUser = utilisateurServices.register(registerUtilisateur);
-        return ResponseEntity.ok(savedUser);
+        try {
+            Utilisateur utilisateursaved = utilisateurServices.register(registerUtilisateur);
+            return new ResponseEntity<>(
+                    "Compte crée",
+                    HttpStatus.OK
+            );
+        }catch (EntityExistsException e)
+        {
+            return new ResponseEntity<>(
+                    "Email existe déjà" + e.getMessage(),
+                    HttpStatus.FOUND
+
+            );
+        } catch (RuntimeException e) {
+           return new ResponseEntity<>(
+                   "Une erreur s'est produite" + e.getMessage(),
+                   HttpStatus.INTERNAL_SERVER_ERROR
+           );
+        }
+
+
     }
 }

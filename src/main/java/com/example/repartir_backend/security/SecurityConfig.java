@@ -45,9 +45,9 @@ public class SecurityConfig {
                 //configuration des authorisation des endpoints
                 .authorizeHttpRequests(
                         auth -> auth.requestMatchers(
-                                "/api/auth/login", "/api/auth/register", "/api/auth/refresh"
+                                "/api/auth/login", "/api/utilisateurs/register", "/api/auth/refresh"
                         ).permitAll()
-                                .requestMatchers("/api/admins/**").hasRole("ADMIN")
+                                .requestMatchers("/administrateurs/**").hasRole("ADMIN")
                                 .requestMatchers("/api/parrains/**").hasAnyRole("PARRAIN"
                                 ,"ADMIN")
                                 .requestMatchers("/api/mentors/**").hasAnyRole("MENTOR",

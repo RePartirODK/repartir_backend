@@ -51,10 +51,10 @@ public class AdminServices {
     /**
      * Récupère la liste des comptes utilisateurs en attente de validation.
      * @return Une liste d'utilisateurs avec l'état ATTENTE.
-     */
+
     public List<Utilisateur> listerComptesEnAttente() {
         return utilisateurRepository.findByEtat(Etat.ENATTENTE);
-    }
+    }*/
 
     /**
      * Approuve le compte d'un utilisateur.
@@ -65,7 +65,6 @@ public class AdminServices {
         Optional<Utilisateur> optionalUtilisateur = utilisateurRepository.findById(userId);
         if (optionalUtilisateur.isPresent()) {
             Utilisateur utilisateur = optionalUtilisateur.get();
-            utilisateur.setEtat(Etat.ACCEPTER);
             return utilisateurRepository.save(utilisateur);
         }
         return null;
@@ -80,7 +79,6 @@ public class AdminServices {
         Optional<Utilisateur> optionalUtilisateur = utilisateurRepository.findById(userId);
         if (optionalUtilisateur.isPresent()) {
             Utilisateur utilisateur = optionalUtilisateur.get();
-            utilisateur.setEtat(Etat.REFUSER);
             return utilisateurRepository.save(utilisateur);
         }
         return null;

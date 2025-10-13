@@ -4,6 +4,7 @@ import com.example.repartir_backend.entities.RefreshToken;
 import com.example.repartir_backend.repositories.AdminRepository;
 import com.example.repartir_backend.repositories.RefreshTokenRepository;
 import com.example.repartir_backend.repositories.UtilisateurRepository;
+import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.stereotype.Service;
@@ -19,6 +20,9 @@ public class RefreshTokenService {
     private final AdminRepository adminRepository;
 
 
+
+
+    @Transactional
     public RefreshToken createRefreshToken(String email) {
         RefreshToken refreshToken;
 
@@ -35,11 +39,12 @@ public class RefreshTokenService {
             var user = userOpt.get();
 
             // Supprime tout ancien refresh token lié à cet utilisateur
+            System.out.println("ici");
             refreshTokenRepository.deleteByUtilisateur_Id(user.getId());
-
+            refreshTokenRepository.flush();
             refreshToken = RefreshToken.builder()
                     .utilisateur(user)
-                    .token(hashedToken) // ✅ on stocke uniquement la version hachée
+                    .token(hashedToken) //on stocke uniquement la version hachée
                     .dateExpiration(Instant.now().plus(7, ChronoUnit.DAYS))
                     .build();
 
@@ -49,7 +54,8 @@ public class RefreshTokenService {
                     .orElseThrow(() -> new RuntimeException("Utilisateur non trouvé"));
 
             refreshTokenRepository.deleteByAdmin_Id(admin.getId());
-
+            refreshTokenRepository.flush();
+            System.out.println("Suppression effectué avec succès");
             refreshToken = RefreshToken.builder()
                     .admin(admin)
                     .token(hashedToken)
