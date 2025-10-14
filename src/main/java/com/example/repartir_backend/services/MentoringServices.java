@@ -36,7 +36,7 @@ public class MentoringServices {
         mentoring.setDate_debut(LocalDateTime.now());
         mentoring.setDescription(requestMentoringre.getDescription());
         mentoring.setObjectif(requestMentoringre.getObjectif());
-        mentoring.setStatut(Etat.ENATTENTE);
+        mentoring.setStatut(Etat.EN_ATTENTE);
         mentoring.setNoteJeune(0);
         mentoring.setNoteMentor(0);
 
