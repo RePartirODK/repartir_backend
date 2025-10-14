@@ -39,6 +39,7 @@ public class UtilisateurServices {
         newUtilisateur.setRole(utilisateur.getRole());
         newUtilisateur.setTelephone(utilisateur.getTelephone());
         newUtilisateur.setEmail(utilisateur.getEmail());
+        newUtilisateur.setEtat(Etat.EN_ATTENTE);
         newUtilisateur.setMotDePasse(passwordEncoder.encode(utilisateur.getMotDePasse()));
         newUtilisateur.setEstActive(
                 utilisateur.getRole() == Role.JEUNE ||

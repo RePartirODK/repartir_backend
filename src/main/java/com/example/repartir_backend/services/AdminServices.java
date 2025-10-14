@@ -31,6 +31,12 @@ public class AdminServices {
      * @return L'entité Admin sauvegardée.
      */
     public Admin creerAdmin(AdminDto adminDto){
+        // Vérifier si un admin avec cet email existe déjà
+        Optional<Admin> existingAdmin = adminRepository.findByEmail(adminDto.email());
+        if (existingAdmin.isPresent()) {
+            throw new RuntimeException("Un administrateur avec cet email existe déjà.");
+        }
+
         Admin admin = new Admin();
         admin.setNom(adminDto.nom());
         admin.setPrenom(adminDto.prenom());
