@@ -1,5 +1,6 @@
 package com.example.repartir_backend.entities;
 
+import com.example.repartir_backend.dto.ResponseCentre;
 import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
@@ -27,4 +28,20 @@ public class CentreFormation {
     private Utilisateur utilisateur;
     @OneToMany(mappedBy = "centreFormation")
     private List<Formation> formations = new ArrayList<>();
+
+    public ResponseCentre toResponse(){
+        return new ResponseCentre(
+                this.id,
+                this.utilisateur.getNom(),
+                this.adresse,
+                this.utilisateur.getTelephone(),
+                this.utilisateur.getEmail(),
+                this.utilisateur.getUrlPhoto() != null
+                        ? this.utilisateur.getUrlPhoto()
+                        : null,
+                this.utilisateur.getRole(),
+                this.utilisateur.isEstActive(),
+                this.agrement
+        );
+    }
 }

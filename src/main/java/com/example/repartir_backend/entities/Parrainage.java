@@ -1,5 +1,6 @@
 package com.example.repartir_backend.entities;
 
+import com.example.repartir_backend.dto.ResponseParrainage;
 import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
@@ -30,4 +31,13 @@ public class Parrainage {
     @ManyToOne
     @JoinColumn(name = "id_formation", nullable = false)
     private Formation formation;
+
+    public ResponseParrainage toResponse(){
+        return new ResponseParrainage(
+                this.id,
+                this.jeune.getId(),
+                this.parrain.getId(),
+                this.formation.getId()
+        );
+    }
 }

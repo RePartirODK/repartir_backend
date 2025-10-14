@@ -86,8 +86,17 @@ public class SecurityConfig {
                                 .requestMatchers("/api/userdomaines/**")
                                 .hasAnyRole("ADMIN", "MENTOR", "CENTRE","ENTREPRISE",
                                         "PARRAIN", "JEUNE")
+                                .requestMatchers("/api/formations/**").hasAnyRole("ADMIN", "MENTOR",
+                                        "PARRAIN", "CENTRE","JEUNE")
+                                .requestMatchers("/api/updatepassword/**")
+                                .hasAnyRole("ADMIN", "MENTOR", "CENTRE","ENTREPRISE",
+                                        "PARRAIN", "JEUNE")
                                 .anyRequest()
                                 .authenticated()
+
+
+
+
 
                 )
                 //.exceptionHandling(ex -> ex.authenticationEntryPoint(unauthorizedHandler))
@@ -115,8 +124,9 @@ public class SecurityConfig {
      */
     @Bean
     public AuthenticationProvider authentificationProvider() {
-        DaoAuthenticationProvider provider = new DaoAuthenticationProvider();
-        provider.setUserDetailsService(userDetailsService);
+        DaoAuthenticationProvider provider = new DaoAuthenticationProvider(
+                userDetailsService
+        );
         provider.setPasswordEncoder(passwordEncoder());
         return provider;
     }
@@ -135,7 +145,7 @@ public class SecurityConfig {
     @Bean
     public CorsConfigurationSource corsConfigurationSource(){
         CorsConfiguration corsConfiguration = new CorsConfiguration();
-        corsConfiguration.setAllowedMethods(List.of("POST", "GET", "PUT", "DELETE"));
+        corsConfiguration.setAllowedMethods(List.of("POST", "GET", "PUT", "DELETE", "PATCH"));
         corsConfiguration.addAllowedHeader("*");
         corsConfiguration.setAllowedOrigins(List.of("http://localhost:8083", "http://localhost:4200"));
         corsConfiguration.setAllowCredentials(true);
