@@ -22,15 +22,18 @@ public class UserDetailsImplService implements UserDetailsService {
 
     @Override
     public UserDetails loadUserByUsername(String email) throws UsernameNotFoundException {
-        Admin admin = adminRepo.findByEmail(email).orElseThrow(
-                () -> new UsernameNotFoundException("Mot de passe ou email incorrecte : " + email)
-        );
-        if (admin != null) return new UserDetailsImpl(admin);
+        // D'abord chercher dans AdminRepository
+        Admin admin = adminRepo.findByEmail(email).orElse(null);
+        if (admin != null) {
+            return new UserDetailsImpl(admin);
+        }
 
-        Utilisateur user = utilisateurRepo.findByEmail(email).orElseThrow(
-                () -> new UsernameNotFoundException("Mot de passe ou email incorrecte : " + email)
-        );
-        return new UserDetailsImpl(user);
+        // Sinon chercher dans UtilisateurRepository
+        Utilisateur utilisateur = utilisateurRepo.findByEmail(email)
+                .orElseThrow(() -> new UsernameNotFoundException("Mot de passe ou email incorrect : " + email));
+
+        return new UserDetailsImpl(utilisateur);
     }
+
 
 }
