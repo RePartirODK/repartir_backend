@@ -7,11 +7,8 @@ import com.example.repartir_backend.repositories.*;
 import jakarta.persistence.EntityExistsException;
 import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
-import org.springframework.http.HttpStatus;
-import org.springframework.http.ResponseEntity;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
-import org.springframework.security.crypto.bcrypt.BCrypt;
 
 @Service
 @RequiredArgsConstructor
@@ -100,7 +97,6 @@ public class UtilisateurServices {
                 parrainRepository.save(parrain);
             }
         }
-
         return newUtilisateur;
     }
 }

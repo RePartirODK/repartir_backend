@@ -1,5 +1,8 @@
 package com.example.repartir_backend.entities;
 
+import com.example.repartir_backend.dto.RequestFormation;
+import com.example.repartir_backend.dto.ResponseCentre;
+import com.example.repartir_backend.dto.ResponseFormation;
 import com.example.repartir_backend.enumerations.Etat;
 import com.example.repartir_backend.enumerations.Format;
 import jakarta.persistence.*;
@@ -34,7 +37,7 @@ public class Formation {
     private Etat statut;
     private Double cout;
     @Column(nullable = false)
-    private int nbre_place;
+    private Integer nbre_place;
     @Column(nullable = false)
     private Format format;
     @Column(nullable = false)
@@ -49,4 +52,41 @@ public class Formation {
     @ManyToOne
     @JoinColumn(name = "id_centreformation", nullable = false)
     private CentreFormation centreFormation;
+
+    public ResponseFormation toResponse(){
+        return new ResponseFormation(
+        this.id,
+        this.titre,
+        this.description,
+        this.date_debut,
+        this.date_fin,
+        this.statut,
+        this.cout,
+        this.nbre_place,
+       this.format,
+        this.duree,
+        this.urlFormation,
+        this.urlCertificat,
+        this.centreFormation.getId()
+        );
+    }
+
+    public Formation toFormation(RequestFormation requestFormation) {
+        Formation formation = new Formation();
+
+        formation.setTitre(requestFormation.getTitre());
+        formation.setDescription(requestFormation.getDescription());
+        formation.setDate_debut(requestFormation.getDate_debut());
+        formation.setDate_fin(requestFormation.getDate_fin());
+        formation.setStatut(requestFormation.getStatut());
+        formation.setCout(requestFormation.getCout());
+        formation.setNbre_place(requestFormation.getNbrePlace());
+        formation.setFormat(requestFormation.getFormat());
+        formation.setDuree(requestFormation.getDuree());
+        formation.setUrlFormation(requestFormation.getUrlFormation()!=null?
+                requestFormation.getUrlFormation():null);
+        formation.setUrlCertificat(requestFormation.getUrlCertificat());
+
+        return formation;
+    }
 }

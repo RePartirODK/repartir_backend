@@ -72,8 +72,17 @@ public class SecurityConfig {
                                 .requestMatchers("/api/userdomaines/**")
                                 .hasAnyRole("ADMIN", "MENTOR", "CENTRE","ENTREPRISE",
                                         "PARRAIN", "JEUNE")
+                                .requestMatchers("/api/formations/**").hasAnyRole("ADMIN", "MENTOR",
+                                        "PARRAIN", "CENTRE","JEUNE")
+                                .requestMatchers("/api/updatepassword/**")
+                                .hasAnyRole("ADMIN", "MENTOR", "CENTRE","ENTREPRISE",
+                                        "PARRAIN", "JEUNE")
                                 .anyRequest()
                                 .authenticated()
+
+
+
+
 
                 )
                 //.exceptionHandling(ex -> ex.authenticationEntryPoint(unauthorizedHandler))
