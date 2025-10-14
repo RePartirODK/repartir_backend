@@ -1,6 +1,7 @@
 package com.example.repartir_backend.entities;
 
 import com.example.repartir_backend.enumerations.Contrat;
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
@@ -33,9 +34,9 @@ public class OffreEmploi {
     private Date dateDebut;
     private Date dateFin;
 
+    @ManyToOne
+    @JoinColumn(name = "id_entreprise")
+    private Entreprise entreprise;
     @OneToMany(mappedBy = "offreEmploi")
     private List<CandidatureOffre> candidatureOffreList = new ArrayList<>();
-    @ManyToOne
-    @JoinColumn(name = "id_offreEmploi")
-    private Entreprise entreprise;
 }

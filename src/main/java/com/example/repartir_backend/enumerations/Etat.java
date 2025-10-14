@@ -6,5 +6,5 @@ package com.example.repartir_backend.enumerations;
 public enum Etat {
     EN_ATTENTE, // Le compte attend la validation d'un administrateur.
     VALIDE,     // Le compte a été validé et est actif.
-    REFUSE      // Le compte a été refusé par un administrateur.
+    ENATTENTE, REFUSE      // Le compte a été refusé par un administrateur.
 }

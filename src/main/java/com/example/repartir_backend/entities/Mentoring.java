@@ -1,5 +1,6 @@
 package com.example.repartir_backend.entities;
 
+import com.example.repartir_backend.dto.ResponseMentoring;
 import com.example.repartir_backend.enumerations.Etat;
 import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
@@ -26,8 +27,8 @@ public class Mentoring {
     private LocalDateTime date_debut;
     @Column(nullable = false)
     private String description;
-    private int note_jeune;
-    private int note_mentor;
+    private int noteJeune;
+    private int noteMentor;
 
     //relation
     @ManyToOne
@@ -36,4 +37,18 @@ public class Mentoring {
     @ManyToOne
     @JoinColumn(name = "id_mentor", nullable = false)
     private Mentor mentor;
+
+    public ResponseMentoring toResponse(){
+        return new ResponseMentoring(
+                this.jeune.getUtilisateur().getNom(),
+                this.jeune.getPrenom(),
+                this.mentor.getUtilisateur().getNom(),
+                this.mentor.getPrenom(),
+        this.date_debut,
+        this.getObjectif(),
+        this.getDescription(),
+        this.getNoteJeune(),
+        this.getNoteMentor());
+    }
+
 }

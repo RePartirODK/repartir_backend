@@ -25,23 +25,23 @@ public class UserDetailsImplService implements UserDetailsService {
 
     @Override
     public UserDetails loadUserByUsername(String email) throws UsernameNotFoundException {
-        // Essayer de trouver un admin d'abord
-        Optional<Admin> adminOptional = adminRepo.findByEmail(email);
-        if (adminOptional.isPresent()) {
-            Admin admin = adminOptional.get();
+        // D'abord chercher dans AdminRepository
+        Admin admin = adminRepo.findByEmail(email).orElse(null);
+        if (admin != null) {
             return new UserDetailsImpl(admin);
         }
-
-        // Sinon, chercher un utilisateur normal
-        Utilisateur user = utilisateurRepo.findByEmail(email)
-                .orElseThrow(() -> new UsernameNotFoundException("Aucun utilisateur trouvé avec l'email : " + email));
-
+// Sinon chercher dans UtilisateurRepository
+        Utilisateur utilisateur = utilisateurRepo.findByEmail(email)
+                .orElseThrow(() -> new UsernameNotFoundException("Mot de passe ou email incorrect : " + email));
         // Vérifier si le compte de l'utilisateur est validé (pour Entreprise et Centre)
-        if (user.getEtat() != Etat.VALIDE) {
+        if (utilisateur.getEtat() != Etat.VALIDE) {
             throw new UsernameNotFoundException("Le compte de l'utilisateur n'est pas actif ou est en attente de validation.");
         }
 
-        return new UserDetailsImpl(user);
+
+
+        return new UserDetailsImpl(utilisateur);
     }
+
 
 }

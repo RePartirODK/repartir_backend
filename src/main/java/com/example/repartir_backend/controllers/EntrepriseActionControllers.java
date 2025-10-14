@@ -1,6 +1,7 @@
 package com.example.repartir_backend.controllers;
 
 import com.example.repartir_backend.dto.OffreEmploiDto;
+import com.example.repartir_backend.dto.OffreEmploiResponseDto;
 import com.example.repartir_backend.entities.OffreEmploi;
 import com.example.repartir_backend.services.OffreEmploiService;
 import lombok.RequiredArgsConstructor;
@@ -27,9 +28,9 @@ public class EntrepriseActionControllers {
      * @return Une réponse HTTP avec l'offre créée.
      */
     @PostMapping("/offres/creer")
-    public ResponseEntity<OffreEmploi> creerOffre(@RequestBody OffreEmploiDto offreDto) {
+    public ResponseEntity<OffreEmploiResponseDto> creerOffre(@RequestBody OffreEmploiDto offreDto) {
         OffreEmploi nouvelleOffre = offreEmploiService.creerOffre(offreDto);
-        return ResponseEntity.ok(nouvelleOffre);
+        return ResponseEntity.ok(OffreEmploiResponseDto.fromEntity(nouvelleOffre));
     }
 
     /**
@@ -37,8 +38,8 @@ public class EntrepriseActionControllers {
      * @return Une réponse HTTP avec la liste des offres.
      */
     @GetMapping("/offres")
-    public ResponseEntity<List<OffreEmploi>> listerMesOffres() {
+    public ResponseEntity<List<OffreEmploiResponseDto>> listerMesOffres() {
         List<OffreEmploi> offres = offreEmploiService.listerOffresParEntreprise();
-        return ResponseEntity.ok(offres);
+        return ResponseEntity.ok(OffreEmploiResponseDto.fromEntities(offres));
     }
 }
