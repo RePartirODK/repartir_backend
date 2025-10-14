@@ -5,6 +5,7 @@ import com.example.repartir_backend.enumerations.Role;
 import com.example.repartir_backend.repositories.AdminRepository;
 import jakarta.annotation.PostConstruct;
 import lombok.RequiredArgsConstructor;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Component;
 
@@ -21,6 +22,12 @@ public class AdminInitializer {
 
     private final PasswordEncoder passwordEncoder;
 
+    @Value("${default.admin.email}")
+    private String adminEmail;
+
+    @Value("${default.admin.password}")
+    private String adminPassword;
+
     /**
      * Cette méthode est exécutée après l'injection des dépendances.
      * Elle vérifie si un administrateur avec l'email "booba@gmail.com" existe.
@@ -28,12 +35,12 @@ public class AdminInitializer {
      */
     @PostConstruct
     public void initAdmin() {
-        Optional<Admin> adminOptional = adminRepository.findByEmail("booba@gmail.com");
+        Optional<Admin> adminOptional = adminRepository.findByEmail(adminEmail);
 
         if (adminOptional.isEmpty()) {
             Admin admin = new Admin();
-            admin.setEmail("booba@gmail.com");
-            admin.setMotDePasse(passwordEncoder.encode("booba12"));
+            admin.setEmail(adminEmail);
+            admin.setMotDePasse(passwordEncoder.encode(adminPassword));
             admin.setNom("Booba");
             admin.setPrenom("Booba");
             admin.setRole(Role.ADMIN);

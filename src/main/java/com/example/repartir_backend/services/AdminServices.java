@@ -1,6 +1,7 @@
 package com.example.repartir_backend.services;
 
 import com.example.repartir_backend.dto.AdminDto;
+import com.example.repartir_backend.dto.UtilisateurResponseDto;
 import com.example.repartir_backend.entities.Admin;
 import com.example.repartir_backend.entities.Utilisateur;
 import com.example.repartir_backend.enumerations.Etat;
@@ -30,6 +31,12 @@ public class AdminServices {
      * @return L'entité Admin sauvegardée.
      */
     public Admin creerAdmin(AdminDto adminDto){
+        // Vérifier si un admin avec cet email existe déjà
+        Optional<Admin> existingAdmin = adminRepository.findByEmail(adminDto.email());
+        if (existingAdmin.isPresent()) {
+            throw new RuntimeException("Un administrateur avec cet email existe déjà.");
+        }
+
         Admin admin = new Admin();
         admin.setNom(adminDto.nom());
         admin.setPrenom(adminDto.prenom());
@@ -50,37 +57,50 @@ public class AdminServices {
 
     /**
      * Récupère la liste des comptes utilisateurs en attente de validation.
-     * @return Une liste d'utilisateurs avec l'état ATTENTE.
-
+     * @return Une liste d'utilisateurs avec l'état EN_ATTENTE.
+     */
     public List<Utilisateur> listerComptesEnAttente() {
-        return utilisateurRepository.findByEtat(Etat.ENATTENTE);
-    }*/
+        return utilisateurRepository.findByEtat(Etat.EN_ATTENTE);
+    }
 
     /**
      * Approuve le compte d'un utilisateur.
      * @param userId L'identifiant de l'utilisateur.
-     * @return L'utilisateur avec l'état mis à jour à APPROUVE, ou null si l'utilisateur n'est pas trouvé.
+     * @return Le DTO de l'utilisateur avec l'état mis à jour à VALIDE.
      */
-    public Utilisateur approuverCompte(Integer userId) {
-        Optional<Utilisateur> optionalUtilisateur = utilisateurRepository.findById(userId);
-        if (optionalUtilisateur.isPresent()) {
-            Utilisateur utilisateur = optionalUtilisateur.get();
-            return utilisateurRepository.save(utilisateur);
-        }
-        return null;
+    public UtilisateurResponseDto approuverCompte(Integer userId) {
+        Utilisateur utilisateur = utilisateurRepository.findById(userId)
+                .orElseThrow(() -> new RuntimeException("Utilisateur non trouvé"));
+        utilisateur.setEtat(Etat.VALIDE);
+        utilisateur.setEstActive(true);
+        Utilisateur utilisateurSauvegarde = utilisateurRepository.save(utilisateur);
+        return mapToUtilisateurResponseDto(utilisateurSauvegarde);
     }
 
     /**
      * Rejette le compte d'un utilisateur.
      * @param userId L'identifiant de l'utilisateur.
-     * @return L'utilisateur avec l'état mis à jour à REJETE, ou null si l'utilisateur n'est pas trouvé.
+     * @return Le DTO de l'utilisateur avec l'état mis à jour à REFUSE.
      */
-    public Utilisateur rejeterCompte(Integer userId) {
-        Optional<Utilisateur> optionalUtilisateur = utilisateurRepository.findById(userId);
-        if (optionalUtilisateur.isPresent()) {
-            Utilisateur utilisateur = optionalUtilisateur.get();
-            return utilisateurRepository.save(utilisateur);
-        }
-        return null;
+    public UtilisateurResponseDto rejeterCompte(Integer userId) {
+        Utilisateur utilisateur = utilisateurRepository.findById(userId)
+                .orElseThrow(() -> new RuntimeException("Utilisateur non trouvé"));
+        utilisateur.setEtat(Etat.REFUSE);
+        utilisateur.setEstActive(false);
+        Utilisateur utilisateurSauvegarde = utilisateurRepository.save(utilisateur);
+        return mapToUtilisateurResponseDto(utilisateurSauvegarde);
+    }
+
+    // Méthode privée pour mapper l'entité Utilisateur vers le DTO de réponse
+    private UtilisateurResponseDto mapToUtilisateurResponseDto(Utilisateur utilisateur) {
+        return new UtilisateurResponseDto(
+                utilisateur.getId(),
+                utilisateur.getNom(),
+                utilisateur.getEmail(),
+                utilisateur.getTelephone(),
+                utilisateur.getRole(),
+                utilisateur.getEtat(),
+                utilisateur.isEstActive()
+        );
     }
 }
