@@ -5,11 +5,13 @@ import com.example.repartir_backend.repositories.AdminRepository;
 import com.example.repartir_backend.repositories.UtilisateurRepository;
 import com.example.repartir_backend.security.JwtServices;
 import lombok.RequiredArgsConstructor;
+import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.BadCredentialsException;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.userdetails.UserDetails;
+import org.springframework.security.core.userdetails.UserDetailsService;
 import org.springframework.stereotype.Service;
 
 import java.util.HashMap;
@@ -24,44 +26,46 @@ public class AuthService {
     private final RefreshTokenService refreshTokenService;
     private final UtilisateurRepository utilisateurRepository;
     private final AdminRepository adminRepository;
+    private final UserDetailsService userDetailsService;
 
     /**
      * Authentifie l'utilisateur et génère les tokens
      */
     public Map<String, Object> authenticate(String email, String password) {
         try {
-            // Vérifie les identifiants via Spring Security
+            // Authentifie l’utilisateur via Spring Security
             Authentication authentication = authenticationManager.authenticate(
                     new UsernamePasswordAuthenticationToken(email, password)
             );
 
-            if (authentication.isAuthenticated()) {
-
-                // Récupère les infos de l’utilisateur
-                UserDetails userDetails = (UserDetails) authentication.getPrincipal();
-
-                // Génère un access token
-                String accessToken = jwtService.genererToken(email);
-
-                // Crée un refresh token et le sauvegarde
-                RefreshToken refreshToken = refreshTokenService.createRefreshToken(email);
-
-                // Prépare la réponse JSON
-                Map<String, Object> response = new HashMap<>();
-                response.put("access_token", accessToken);
-                response.put("refresh_token", refreshToken.getToken());
-                response.put("email", userDetails.getUsername());
-                response.put("role", userDetails.getAuthorities());
-
-
-                return response;
-            } else {
+            if (!authentication.isAuthenticated()) {
                 throw new RuntimeException("Authentification échouée : utilisateur non reconnu.");
             }
 
-        } catch(BadCredentialsException e1)
-        {
-            throw new RuntimeException("Email ou mot de passe incorrecte");
+            // Récupère les infos de l’utilisateur
+            UserDetails userDetails = (UserDetails) authentication.getPrincipal();
+
+            // Génère un access token
+            String accessToken = jwtService.genererToken(userDetails);
+
+            // Crée un refresh token (gestion interne des doublons dans le service)
+            RefreshToken refreshToken = refreshTokenService.createRefreshToken(email);
+
+            // Réponse JSON propre
+            Map<String, Object> response = new HashMap<>();
+            response.put("access_token", accessToken);
+            response.put("refresh_token", refreshToken.getToken());
+            response.put("email", userDetails.getUsername());
+            response.put("role", userDetails.getAuthorities());
+
+            return response;
+
+        } catch (BadCredentialsException e) {
+            throw new RuntimeException("Email ou mot de passe incorrect.");
+        } catch (DataIntegrityViolationException e) {
+            throw new RuntimeException("Erreur interne : le refresh token existe déjà.");
+        } catch (Exception e) {
+            throw new RuntimeException("Erreur inattendue : " + e.getMessage());
         }
     }
 
@@ -82,8 +86,11 @@ public class AuthService {
             throw new RuntimeException("Aucun utilisateur associé au refresh token.");
         }
 
+        // Charger les détails de l'utilisateur pour inclure le rôle dans le nouveau token
+        UserDetails userDetails = userDetailsService.loadUserByUsername(email);
+
         // Génère un nouveau access JWT
-        String newAccessToken = jwtService.genererToken(email);
+        String newAccessToken = jwtService.genererToken(userDetails);
 
         Map<String, Object> response = new HashMap<>();
         response.put("access_token", newAccessToken);

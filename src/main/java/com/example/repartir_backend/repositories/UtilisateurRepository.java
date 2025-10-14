@@ -17,11 +17,5 @@ public interface UtilisateurRepository extends JpaRepository<Utilisateur, Intege
      * @return Un Optional contenant l'utilisateur s'il est trouvé.
      */
     Optional<Utilisateur> findByEmail(String email);
-
-    /**
-     * Recherche une liste d'utilisateurs par leur état de compte.
-     * @param etat L'état du compte (ex: ATTENTE, APPROUVE, REJETE).
-     * @return Une liste d'utilisateurs correspondants à l'état.
-     */
     List<Utilisateur> findByEtat(Etat etat);
 }

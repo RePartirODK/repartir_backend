@@ -1,10 +1,13 @@
 package com.example.repartir_backend.controllers;
 
 import com.example.repartir_backend.dto.AdminDto;
+import com.example.repartir_backend.dto.UtilisateurResponseDto;
 import com.example.repartir_backend.entities.Admin;
 import com.example.repartir_backend.entities.Utilisateur;
 import com.example.repartir_backend.services.AdminServices;
 import lombok.RequiredArgsConstructor;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
@@ -42,7 +45,7 @@ public class AdminControllers {
      * @return Une liste d'utilisateurs avec le statut "ATTENTE".
      */
     @GetMapping("/comptes-en-attente")
-    public List<Utilisateur> listerComptesEnAttente(){
+    public List<Utilisateur> listerComptesEnAttente() {
         return adminServices.listerComptesEnAttente();
     }
 
@@ -51,9 +54,14 @@ public class AdminControllers {
      * @param userId L'ID de l'utilisateur à approuver.
      * @return L'utilisateur avec le statut mis à jour.
      */
-    @PutMapping("/approuver-compte/{userId}")
-    public Utilisateur approuverCompte(@PathVariable Integer userId) {
-        return adminServices.approuverCompte(userId);
+    @PutMapping("/valider-compte/{userId}")
+    public ResponseEntity<?> validerCompte(@PathVariable Integer userId) {
+        try {
+            UtilisateurResponseDto utilisateurDto = adminServices.approuverCompte(userId);
+            return ResponseEntity.ok(utilisateurDto);
+        } catch (RuntimeException e) {
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(e.getMessage());
+        }
     }
 
     /**
@@ -61,8 +69,13 @@ public class AdminControllers {
      * @param userId L'ID de l'utilisateur à rejeter.
      * @return L'utilisateur avec le statut mis à jour.
      */
-    @PutMapping("/rejeter-compte/{userId}")
-    public Utilisateur rejeterCompte(@PathVariable Integer userId) {
-        return adminServices.rejeterCompte(userId);
+    @PutMapping("/refuser-compte/{userId}")
+    public ResponseEntity<?> refuserCompte(@PathVariable Integer userId) {
+        try {
+            UtilisateurResponseDto utilisateurDto = adminServices.rejeterCompte(userId);
+            return ResponseEntity.ok(utilisateurDto);
+        } catch (RuntimeException e) {
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(e.getMessage());
+        }
     }
 }

@@ -2,6 +2,7 @@ package com.example.repartir_backend.entities;
 
 import com.example.repartir_backend.enumerations.Etat;
 import com.example.repartir_backend.enumerations.Role;
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
@@ -32,14 +33,14 @@ public class Utilisateur {
     private Role role;
     @Column(nullable = false, unique = true)
     private String email;
+    @Enumerated(EnumType.STRING)
+    private Etat etat;
     @Column(nullable = false)
     private boolean estActive;
 
-    @Enumerated(EnumType.STRING)
-    @Column(nullable = false)
-    private Etat etat;
 
     @OneToMany(mappedBy = "utilisateur")
+    @JsonIgnore
     private List<UserDomaine> userDomaineList = new ArrayList<>();
 
 }
