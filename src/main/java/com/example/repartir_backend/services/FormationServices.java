@@ -25,7 +25,7 @@ public class FormationServices {
                 .orElseThrow(() -> new EntityNotFoundException("Centre de formation introuvable"));
         Formation formation = new Formation().toFormation(requestFormation);
         formation.setCentreFormation(centre);
-        formation.setStatut(Etat.ENATTENTE); // par défaut
+        formation.setStatut(Etat.EN_ATTENTE); // par défaut
         return formationRepository.save(formation);
     }
     //mettre à jour une formation
