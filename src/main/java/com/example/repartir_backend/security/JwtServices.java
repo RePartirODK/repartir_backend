@@ -21,10 +21,20 @@ public class JwtServices {
 
     @Value("${jwt.secret}")
     private String secret="5367566859703373367639792F423F452848284D6251655468576D5A7134743F";
-    public String genererToken(String email){
+
+    /**
+     * Génère un token JWT pour un utilisateur.
+     * Le rôle de l'utilisateur est inclus dans les claims du token.
+     * @param userDetails Les détails de l'utilisateur à partir desquels générer le token.
+     * @return Le token JWT sous forme de chaîne.
+     */
+    public String genererToken(UserDetails userDetails){
         Map<String, Object> claims = new HashMap<>();
-        return createToken(claims, email);
+        // Ajout du rôle dans les claims
+        claims.put("role", userDetails.getAuthorities());
+        return createToken(claims, userDetails.getUsername());
     }
+
     //méthode pour générer un access token
     private String createToken(Map<String, Object> claims, String email) {
         return Jwts.builder()

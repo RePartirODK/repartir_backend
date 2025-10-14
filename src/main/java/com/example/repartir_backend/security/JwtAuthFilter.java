@@ -1,5 +1,8 @@
 package com.example.repartir_backend.security;
 
+import io.jsonwebtoken.ExpiredJwtException;
+import io.jsonwebtoken.MalformedJwtException;
+import io.jsonwebtoken.security.SignatureException;
 import jakarta.servlet.FilterChain;
 import jakarta.servlet.ServletException;
 import jakarta.servlet.http.HttpServletRequest;
@@ -28,31 +31,43 @@ public class JwtAuthFilter extends OncePerRequestFilter {
     protected void doFilterInternal(HttpServletRequest request,
                                     HttpServletResponse response,
                                     FilterChain filterChain) throws ServletException, IOException {
-        //le header de la request
-        String authHeader = request.getHeader("Authorization");
-        String token = null;
-        String utilisateurEmail = null;
-        if(authHeader!=null && authHeader.startsWith("Bearer ")){
-            token = authHeader.substring(7);
-            utilisateurEmail = jwtServices.extractUsername(token);
+        final String authHeader = request.getHeader("Authorization");
+        final String jwt;
+        final String utilisateurEmail;
+
+        // Si le header est absent ou mal formé, on passe au filtre suivant.
+        if (authHeader == null || !authHeader.startsWith("Bearer ")) {
+            filterChain.doFilter(request, response);
+            return;
         }
 
-        if(utilisateurEmail!=null && SecurityContextHolder.getContext()
-                .getAuthentication()==null){
-            UserDetails userDetails = userDetailsService
-                    .loadUserByUsername(utilisateurEmail);
-            if(jwtServices.valideToken(token, userDetails)){
-                UsernamePasswordAuthenticationToken authenticationToken = new
-                        UsernamePasswordAuthenticationToken(
-                                userDetails, null, userDetails.getAuthorities()
-                );
-                authenticationToken.setDetails(new
-                        WebAuthenticationDetailsSource().buildDetails(request)
-                );
-                SecurityContextHolder.getContext().setAuthentication(authenticationToken);
+        jwt = authHeader.substring(7);
+
+        try {
+            utilisateurEmail = jwtServices.extractUsername(jwt);
+
+            // Si on a un email et que l'utilisateur n'est pas déjà authentifié
+            if (utilisateurEmail != null && SecurityContextHolder.getContext().getAuthentication() == null) {
+                UserDetails userDetails = this.userDetailsService.loadUserByUsername(utilisateurEmail);
+
+                // Si le token est valide, on authentifie l'utilisateur
+                if (jwtServices.valideToken(jwt, userDetails)) {
+                    UsernamePasswordAuthenticationToken authToken = new UsernamePasswordAuthenticationToken(
+                            userDetails,
+                            null,
+                            userDetails.getAuthorities()
+                    );
+                    authToken.setDetails(new WebAuthenticationDetailsSource().buildDetails(request));
+                    SecurityContextHolder.getContext().setAuthentication(authToken);
+                }
             }
-
+        } catch (ExpiredJwtException | MalformedJwtException | SignatureException e) {
+            // En cas d'erreur de validation du token (expiré, malformé, etc.),
+            // on ignore simplement et on continue la chaîne de filtres.
+            // L'utilisateur ne sera pas authentifié, et la sécurité des endpoints
+            // décidera s'il peut continuer.
         }
+
         filterChain.doFilter(request, response);
     }
 }

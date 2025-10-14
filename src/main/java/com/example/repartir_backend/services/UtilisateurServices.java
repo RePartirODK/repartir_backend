@@ -2,6 +2,7 @@ package com.example.repartir_backend.services;
 
 import com.example.repartir_backend.dto.RegisterUtilisateur;
 import com.example.repartir_backend.entities.*;
+import com.example.repartir_backend.enumerations.Etat;
 import com.example.repartir_backend.enumerations.Role;
 import com.example.repartir_backend.repositories.*;
 import jakarta.persistence.EntityExistsException;
@@ -35,6 +36,11 @@ public class UtilisateurServices {
         newUtilisateur.setRole(utilisateur.getRole());
         newUtilisateur.setTelephone(utilisateur.getTelephone());
         newUtilisateur.setEmail(utilisateur.getEmail());
+        if (utilisateur.getRole() == Role.JEUNE || utilisateur.getRole() == Role.MENTOR || utilisateur.getRole() == Role.PARRAIN) {
+            newUtilisateur.setEtat(Etat.VALIDE);
+        } else {
+            newUtilisateur.setEtat(Etat.EN_ATTENTE);
+        }
         newUtilisateur.setMotDePasse(passwordEncoder.encode(utilisateur.getMotDePasse()));
         newUtilisateur.setEstActive(
                 utilisateur.getRole() == Role.JEUNE ||
