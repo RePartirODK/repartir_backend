@@ -73,4 +73,28 @@ public class OffreEmploiService {
         // Utiliser le repository pour trouver les offres par ID d'entreprise
         return offreEmploiRepository.findByEntrepriseId(entreprise.getId());
     }
+
+    public void supprimerOffre(int offreId) {
+        // Récupérer l'entreprise authentifiée
+        Object principal = SecurityContextHolder.getContext().getAuthentication().getPrincipal();
+        String username;
+
+        if (principal instanceof UserDetails) {
+            username = ((UserDetails) principal).getUsername();
+        } else {
+            username = principal.toString();
+        }
+        Entreprise entreprise = entrepriseRepository.findByUtilisateurEmail(username)
+                .orElseThrow(() -> new AccessDeniedException("L'utilisateur authentifié n'est pas une entreprise valide."));
+
+        // Vérifier que l'offre existe et appartient à l'entreprise
+        OffreEmploi offre = offreEmploiRepository.findById(offreId)
+                .orElseThrow(() -> new RuntimeException("Offre non trouvée."));
+
+        if (offre.getEntreprise().getId() != entreprise.getId()) {
+            throw new AccessDeniedException("Vous n'êtes pas autorisé à supprimer cette offre.");
+        }
+
+        offreEmploiRepository.delete(offre);
+    }
 }
