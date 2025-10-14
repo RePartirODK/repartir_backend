@@ -39,7 +39,11 @@ public class UtilisateurServices {
         newUtilisateur.setRole(utilisateur.getRole());
         newUtilisateur.setTelephone(utilisateur.getTelephone());
         newUtilisateur.setEmail(utilisateur.getEmail());
-        newUtilisateur.setEtat(Etat.EN_ATTENTE);
+        if (utilisateur.getRole() == Role.JEUNE || utilisateur.getRole() == Role.MENTOR || utilisateur.getRole() == Role.PARRAIN) {
+            newUtilisateur.setEtat(Etat.VALIDE);
+        } else {
+            newUtilisateur.setEtat(Etat.EN_ATTENTE);
+        }
         newUtilisateur.setMotDePasse(passwordEncoder.encode(utilisateur.getMotDePasse()));
         newUtilisateur.setEstActive(
                 utilisateur.getRole() == Role.JEUNE ||
