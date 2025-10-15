@@ -11,6 +11,7 @@ import java.util.Optional;
  * Dépôt pour l'accès aux données de l'entité Utilisateur.
  */
 public interface UtilisateurRepository extends JpaRepository<Utilisateur, Integer> {
+
     /**
      * Recherche un utilisateur par son adresse e-mail.
      * @param email L'email de l'utilisateur.

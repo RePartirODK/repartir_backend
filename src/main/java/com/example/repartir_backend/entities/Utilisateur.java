@@ -8,6 +8,7 @@ import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
+import org.hibernate.type.TrueFalseConverter;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -30,12 +31,14 @@ public class Utilisateur {
 
     private String urlPhoto;
     @Column(nullable = false)
+    @Enumerated(EnumType.STRING)
     private Role role;
     @Column(nullable = false, unique = true)
     private String email;
     @Enumerated(EnumType.STRING)
     private Etat etat;
     @Column(nullable = false)
+    @Convert(converter = TrueFalseConverter.class)
     private boolean estActive;
 
 

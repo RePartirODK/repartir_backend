@@ -56,7 +56,8 @@ public class SecurityConfig {
                 //configuration des authorisation des endpoints
                 .authorizeHttpRequests(
                         auth -> auth.requestMatchers(
-                                "/api/auth/login", "/api/utilisateurs/register", "/api/auth/refresh"
+                                "/api/auth/login", "/api/utilisateurs/register", "/api/auth/refresh",
+                                "/api/password/**"
                         ).permitAll()
                                 // Correction du chemin pour les administrateurs et ajout de règles spécifiques
                                 .requestMatchers("/administrateurs/**").hasRole("ADMIN")
@@ -88,9 +89,13 @@ public class SecurityConfig {
                                         "PARRAIN", "JEUNE")
                                 .requestMatchers("/api/formations/**").hasAnyRole("ADMIN", "MENTOR",
                                         "PARRAIN", "CENTRE","JEUNE")
-                                .requestMatchers("/api/updatepassword/**")
+                                .requestMatchers("/api/updatepassword/**",
+                                        "/api/logout")
                                 .hasAnyRole("ADMIN", "MENTOR", "CENTRE","ENTREPRISE",
                                         "PARRAIN", "JEUNE")
+                                .requestMatchers("/api/utilisateurs/supprimer").hasAnyRole(
+                                        "MENTOR","PARRAIN","CENTRE","JEUNE","ENTREPRISE"
+                                )
                                 .anyRequest()
                                 .authenticated()
 

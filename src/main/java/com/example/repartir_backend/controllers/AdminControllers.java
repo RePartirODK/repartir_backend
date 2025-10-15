@@ -5,11 +5,13 @@ import com.example.repartir_backend.dto.UtilisateurResponseDto;
 import com.example.repartir_backend.entities.Admin;
 import com.example.repartir_backend.entities.Utilisateur;
 import com.example.repartir_backend.services.AdminServices;
+import jakarta.mail.MessagingException;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
+import java.io.IOException;
 import java.util.List;
 
 /**
@@ -59,7 +61,7 @@ public class AdminControllers {
         try {
             UtilisateurResponseDto utilisateurDto = adminServices.approuverCompte(userId);
             return ResponseEntity.ok(utilisateurDto);
-        } catch (RuntimeException e) {
+        } catch (RuntimeException | MessagingException | IOException e) {
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(e.getMessage());
         }
     }
@@ -74,7 +76,7 @@ public class AdminControllers {
         try {
             UtilisateurResponseDto utilisateurDto = adminServices.rejeterCompte(userId);
             return ResponseEntity.ok(utilisateurDto);
-        } catch (RuntimeException e) {
+        } catch (RuntimeException | MessagingException | IOException e) {
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(e.getMessage());
         }
     }
