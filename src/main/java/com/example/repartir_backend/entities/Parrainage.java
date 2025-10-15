@@ -23,7 +23,7 @@ public class Parrainage {
     @JoinColumn(name = "id_jeune", nullable = false)
     private Jeune jeune;
     @ManyToOne
-    @JoinColumn(name = "id_parrain", nullable = false)
+    @JoinColumn(name = "id_parrain")
     private Parrain parrain;
 
     @OneToMany(mappedBy = "parrainage")

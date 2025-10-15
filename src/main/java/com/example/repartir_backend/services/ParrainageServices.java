@@ -1,5 +1,6 @@
 package com.example.repartir_backend.services;
 
+import com.example.repartir_backend.dto.ParrainageDto;
 import com.example.repartir_backend.dto.ResponseParrainage;
 import com.example.repartir_backend.entities.*;
 import com.example.repartir_backend.repositories.*;
@@ -19,6 +20,7 @@ public class ParrainageServices {
     private final JeuneRepository jeuneRepository;
     private final PaiementRepository paiementRepository;
     private final ParrainageRepository parrainageRepository;
+    private final InscriptionFormationRepository inscriptionFormationRepository;
 
     @Transactional
     public ResponseParrainage creerParrainage(int idJeune, int idParrain, int idFormation) {
@@ -95,6 +97,12 @@ public class ParrainageServices {
         Parrainage parrainage = parrainageRepository.findById(idParrainage)
                 .orElseThrow(() -> new EntityNotFoundException("Parrainage introuvable avec ID : " + idParrainage));
         return paiementRepository.findAllByParrainage_Id(parrainage.getId());
+    }
+
+    public List<ParrainageDto> listerDemandes() {
+        return ParrainageDto.fromEntities(
+            inscriptionFormationRepository.findByDemandeParrainageTrueAndParrainIsNull()
+        );
     }
 
 }

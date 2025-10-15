@@ -7,17 +7,22 @@ import com.example.repartir_backend.entities.Formation;
 import com.example.repartir_backend.enumerations.Etat;
 import com.example.repartir_backend.repositories.CentreFormationRepository;
 import com.example.repartir_backend.repositories.FormationRepository;
+import com.example.repartir_backend.repositories.UtilisateurRepository;
+import com.example.repartir_backend.entities.Utilisateur;
 import jakarta.persistence.EntityNotFoundException;
 import lombok.RequiredArgsConstructor;
+import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
+import java.util.stream.Collectors;
 
 @Service
 @RequiredArgsConstructor
 public class FormationServices {
     private final FormationRepository formationRepository;
     private final CentreFormationRepository centreFormationRepository;
+    private final UtilisateurRepository utilisateurRepository;
 
     //creation d'une formation
     public Formation createFormation(RequestFormation requestFormation, int centreId) {
@@ -95,9 +100,20 @@ public class FormationServices {
 
     //recuperer les formations d'un centre
     public List<ResponseFormation> getFormationsByCentre(int centreId) {
-        return formationRepository.findByCentreFormationId(centreId).stream().map(
-                Formation::toResponse
-        ).toList();
+        return formationRepository.findByCentreFormationId(centreId).stream()
+                .map(Formation::toResponse).collect(Collectors.toList());
+    }
+
+    public List<ResponseFormation> getMesFormations() {
+        String email = SecurityContextHolder.getContext().getAuthentication().getName();
+        Utilisateur utilisateur = utilisateurRepository.findByEmail(email)
+                .orElseThrow(() -> new EntityNotFoundException("Utilisateur non trouvé."));
+
+        CentreFormation centre = centreFormationRepository.findByUtilisateur(utilisateur)
+                .orElseThrow(() -> new EntityNotFoundException("Centre de formation non trouvé."));
+
+        return formationRepository.findByCentreFormationId(centre.getId()).stream()
+                .map(Formation::toResponse).collect(Collectors.toList());
     }
 
     public ResponseFormation getFormationById(int id) {

@@ -1,11 +1,14 @@
 package com.example.repartir_backend.controllers;
 
 import com.example.repartir_backend.dto.ResponseCentre;
+import com.example.repartir_backend.dto.ResponseFormation;
 import com.example.repartir_backend.entities.CentreFormation;
 import com.example.repartir_backend.entities.Formation;
 import com.example.repartir_backend.services.CentreFormationServices;
+import com.example.repartir_backend.services.FormationServices;
 import jakarta.persistence.EntityNotFoundException;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
@@ -14,25 +17,30 @@ import java.util.List;
 @RequestMapping("/api/centres")
 public class CentreFormationControllers {
 
-    CentreFormationServices centreFormationServices;
-    public CentreFormationControllers(CentreFormationServices centreFormationServices)
-    {
+    private final CentreFormationServices centreFormationServices;
+    private final FormationServices formationServices;
+
+    public CentreFormationControllers(CentreFormationServices centreFormationServices, FormationServices formationServices) {
         this.centreFormationServices = centreFormationServices;
+        this.formationServices = formationServices;
     }
 
-    //recuperer tous les centres
+    @GetMapping("/mes-formations")
+    @PreAuthorize("hasRole('CENTRE')")
+    public ResponseEntity<List<ResponseFormation>> listerMesFormations() {
+        return ResponseEntity.ok(formationServices.getMesFormations());
+    }
+
     @GetMapping
     public ResponseEntity<List<ResponseCentre>> getAllCentres() {
         return ResponseEntity.ok(centreFormationServices.getAllCentres());
     }
 
-    //recuperer les centres actifs
     @GetMapping("/actifs")
     public ResponseEntity<List<ResponseCentre>> getCentresActifs() {
         return ResponseEntity.ok(centreFormationServices.getCentresActifs());
     }
 
-    //recuperer un centre par id
     @GetMapping("/{id}")
     public ResponseEntity<?> getCentreById(@PathVariable int id) {
         try {
@@ -42,7 +50,6 @@ public class CentreFormationControllers {
         }
     }
 
-    //recuperer un centre par son email
     @GetMapping("/email/{email}")
     public ResponseEntity<?> getCentreByEmail(@PathVariable String email) {
         try {
@@ -52,7 +59,6 @@ public class CentreFormationControllers {
         }
     }
 
-    //Modifier un centre
     @PutMapping("/{id}")
     public ResponseEntity<?> updateCentre(
             @PathVariable int id,
@@ -64,7 +70,6 @@ public class CentreFormationControllers {
         }
     }
 
-    //activer un centre
     @PutMapping("/{id}/activer")
     public ResponseEntity<?> activerCentre(@PathVariable int id) {
         try {
@@ -73,7 +78,7 @@ public class CentreFormationControllers {
             return ResponseEntity.status(404).body(e.getMessage());
         }
     }
-    //desactiver un centre
+
     @PutMapping("/{id}/desactiver")
     public ResponseEntity<?> desactiverCentre(@PathVariable int id) {
         try {
@@ -83,7 +88,6 @@ public class CentreFormationControllers {
         }
     }
 
-    //supprimer un centre
     @DeleteMapping("/{id}")
     public ResponseEntity<?> deleteCentre(@PathVariable int id) {
         try {
@@ -94,7 +98,6 @@ public class CentreFormationControllers {
         }
     }
 
-    // Récupérer toutes les formations d’un centre
     @GetMapping("/{id}/formations")
     public ResponseEntity<?> getFormationsByCentre(@PathVariable int id) {
         try {
@@ -104,6 +107,4 @@ public class CentreFormationControllers {
             return ResponseEntity.status(404).body(e.getMessage());
         }
     }
-
-
 }
