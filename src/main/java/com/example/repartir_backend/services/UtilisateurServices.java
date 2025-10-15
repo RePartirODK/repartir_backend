@@ -4,6 +4,7 @@ import com.example.repartir_backend.dto.RegisterUtilisateur;
 import com.example.repartir_backend.entities.*;
 import com.example.repartir_backend.enumerations.Etat;
 import com.example.repartir_backend.enumerations.Role;
+import com.example.repartir_backend.enumerations.TypeFichier;
 import com.example.repartir_backend.repositories.*;
 import jakarta.mail.MessagingException;
 import jakarta.persistence.EntityExistsException;
@@ -12,6 +13,7 @@ import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
+import org.springframework.web.multipart.MultipartFile;
 
 import java.io.IOException;
 import java.util.Optional;
@@ -28,6 +30,7 @@ public class UtilisateurServices {
     private final RefreshTokenRepository refreshTokenRepository;
     private final PasswordEncoder passwordEncoder;
     private final MailSendServices mailSendServices;
+    private final UploadService uploadService;
 
     @Transactional
     public Utilisateur register(RegisterUtilisateur utilisateur) throws MessagingException, IOException {
@@ -177,5 +180,24 @@ public class UtilisateurServices {
         utilisateurRepository.save(utilisateur);
     }
 
+
+    //service pour upload photo de profil
+    public String uploadPhotoProfil(MultipartFile file,String email){
+
+        //on recherche l'utilisateur
+        Utilisateur utilisateur = utilisateurRepository.findByEmail(email).orElseThrow(
+                ()-> new EntityNotFoundException("Email incorrecte")
+        );
+        String fileName = "user_" + utilisateur.getId();
+        //appel de la methode
+        String urlPhoto = uploadService.uploadFile(file, fileName, TypeFichier.PHOTO);
+        utilisateur.setUrlPhoto(urlPhoto);
+
+        //enregistrer l'utilisateur modifier
+        utilisateurRepository.save(utilisateur);
+        return urlPhoto;
+
+
+    }
 
 }

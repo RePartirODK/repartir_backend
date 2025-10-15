@@ -63,7 +63,7 @@ public class SecurityConfig {
                                 .requestMatchers("/administrateurs/**").hasRole("ADMIN")
                                 .requestMatchers("/api/domaines/**").hasRole("ADMIN")
                                 .requestMatchers("/api/entreprise/**").hasRole("ENTREPRISE")
-                                   .requestMatchers("/api/parrains/**").hasAnyRole("PARRAIN"
+                                .requestMatchers("/api/parrains/**").hasAnyRole("PARRAIN"
                                 ,"ADMIN")
                                 .requestMatchers("/api/mentors/**").hasAnyRole("MENTOR",
                                         "ADMIN")
@@ -90,7 +90,8 @@ public class SecurityConfig {
                                 .requestMatchers("/api/formations/**").hasAnyRole("ADMIN", "MENTOR",
                                         "PARRAIN", "CENTRE","JEUNE")
                                 .requestMatchers("/api/updatepassword/**",
-                                        "/api/logout")
+                                        "/api/logout",
+                                        "/api/utilisateurs/photoprofil")
                                 .hasAnyRole("ADMIN", "MENTOR", "CENTRE","ENTREPRISE",
                                         "PARRAIN", "JEUNE")
                                 .requestMatchers("/api/utilisateurs/supprimer").hasAnyRole(

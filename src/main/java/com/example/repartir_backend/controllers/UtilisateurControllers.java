@@ -7,11 +7,10 @@ import com.example.repartir_backend.services.UtilisateurServices;
 import jakarta.mail.MessagingException;
 import jakarta.persistence.EntityExistsException;
 import jakarta.persistence.EntityNotFoundException;
-import jdk.jshell.execution.Util;
 import org.springframework.http.HttpStatus;
-import org.springframework.http.HttpStatusCode;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.web.multipart.MultipartFile;
 
 import java.io.IOException;
 
@@ -30,7 +29,7 @@ public class UtilisateurControllers {
         try {
             Utilisateur utilisateursaved = utilisateurServices.register(registerUtilisateur);
             return new ResponseEntity<>(
-                    "Compte crée",
+                    utilisateursaved,
                     HttpStatus.OK
             );
         }catch (EntityExistsException e)
@@ -68,6 +67,26 @@ public class UtilisateurControllers {
         {
             return ResponseEntity.status(HttpStatus.NOT_FOUND).body(e.getMessage());
         }
+
+    }
+
+    //modifier photo de profil
+    @PostMapping("/photoprofil")
+    public ResponseEntity<?> uploadPhoto(
+            @RequestParam("file") MultipartFile file,
+            @RequestParam("email") String email)
+    {
+        try{
+            String savedFileName = utilisateurServices.uploadPhotoProfil(file, email);
+            return ResponseEntity.ok(savedFileName); // Le front reçoit le nom généré
+        }catch (EntityNotFoundException e)
+        {
+            return ResponseEntity.status(HttpStatus.NOT_FOUND).body(e.getMessage());
+        }catch (Exception e)
+        {
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(e.getMessage());
+        }
+
 
     }
 }
