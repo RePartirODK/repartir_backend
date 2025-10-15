@@ -13,6 +13,7 @@ import org.springframework.security.access.AccessDeniedException;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
 import java.util.Objects;
@@ -101,6 +102,7 @@ public class OffreEmploiService {
         offreEmploiRepository.delete(offre);
     }
 
+    @Transactional(readOnly = true)
     public List<OffreEmploiResponseDto> listerToutesLesOffres() {
         List<OffreEmploi> offres = offreEmploiRepository.findAll();
         return OffreEmploiResponseDto.fromEntities(offres);

@@ -19,14 +19,8 @@ public class InscriptionFormationControllers {
 
     @PostMapping("/demander-parrainage/{formationId}")
     @PreAuthorize("hasRole('JEUNE')")
-    public ResponseEntity<?> demanderParrainagePourFormation(@PathVariable int formationId) {
-        try {
-            InscriptionFormation inscription = inscriptionFormationServices.demanderParrainage(formationId);
-            return ResponseEntity.ok(inscription);
-        } catch (EntityNotFoundException e) {
-            return ResponseEntity.status(404).body(e.getMessage());
-        } catch (IllegalStateException e) {
-            return ResponseEntity.status(409).body(e.getMessage()); // 409 Conflict
-        }
+    public ResponseEntity<InscriptionFormation> demanderParrainagePourFormation(@PathVariable int formationId) {
+        InscriptionFormation inscription = inscriptionFormationServices.demanderParrainage(formationId);
+        return ResponseEntity.ok(inscription);
     }
 }

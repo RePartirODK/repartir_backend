@@ -1,10 +1,12 @@
 package com.example.repartir_backend.services;
 
 
+import com.example.repartir_backend.dto.MentorResponseDto;
 import com.example.repartir_backend.entities.Mentor;
 import com.example.repartir_backend.repositories.MentorRepository;
 import jakarta.persistence.EntityNotFoundException;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
 
@@ -16,8 +18,10 @@ public class MentorServices {
     }
 
     //lister tous les mentor
-    public List<Mentor> getAllMentors() {
-        return mentorRepository.findAll();
+    @Transactional(readOnly = true)
+    public List<MentorResponseDto> getAllMentors() {
+        List<Mentor> mentors = mentorRepository.findAll();
+        return MentorResponseDto.fromEntities(mentors);
     }
 
     //recuper un mentor

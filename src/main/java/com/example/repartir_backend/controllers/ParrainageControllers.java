@@ -1,22 +1,15 @@
 package com.example.repartir_backend.controllers;
-import com.example.repartir_backend.dto.ResponseParrainage;
-import com.example.repartir_backend.entities.Paiement;
-import com.example.repartir_backend.services.ParrainageServices;
-import jakarta.persistence.EntityExistsException;
-import jakarta.persistence.EntityNotFoundException;
-import lombok.RequiredArgsConstructor;
-import org.springframework.http.HttpStatus;
-import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.*;
-
-import java.util.List;
 
 import com.example.repartir_backend.dto.ParrainageDto;
 import com.example.repartir_backend.services.ParrainageServices;
+import lombok.RequiredArgsConstructor;
+import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
+
+import java.util.List;
 
 @RestController
 @RequestMapping("/api/parrainage")

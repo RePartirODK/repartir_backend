@@ -64,7 +64,7 @@ public class SecurityConfig {
                                 .requestMatchers("/api/entreprise/**").hasRole("ENTREPRISE")
                                    .requestMatchers("/api/parrains/**").hasAnyRole("PARRAIN"
                                 ,"ADMIN")
-                                .requestMatchers("/api/mentors/**").hasAnyRole("MENTOR",
+                                .requestMatchers("/api/mentors/**").hasAnyRole("MENTOR", "JEUNE",
                                         "ADMIN")
                                 .requestMatchers("/api/centres/**").hasAnyRole("CENTRE", "ADMIN")
                                 .requestMatchers("/api/entreprises/**").hasAnyRole("ENTREPRISE",
@@ -92,7 +92,7 @@ public class SecurityConfig {
                                 // Les CENTRES ne peuvent plus voir toutes les formations via cet endpoint.
                                 // Ils utiliseront leur endpoint dédié.
                                 .requestMatchers("/api/formations/**").hasAnyRole("ADMIN", "MENTOR",
-                                        "PARRAIN", "JEUNE")
+                                        "PARRAIN", "JEUNE", "CENTRE")
                                 .requestMatchers("/api/updatepassword/**")
                                 .hasAnyRole("ADMIN", "MENTOR", "CENTRE","ENTREPRISE",
                                         "PARRAIN", "JEUNE")
