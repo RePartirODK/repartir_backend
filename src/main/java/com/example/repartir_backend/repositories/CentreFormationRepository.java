@@ -5,4 +5,6 @@ import java.util.Optional;
 
 public interface CentreFormationRepository extends JpaRepository<CentreFormation, Integer> {
     Optional<CentreFormation> findByUtilisateur_Id(int id);
+
+    void deleteByUtilisateurId(int id);
 }

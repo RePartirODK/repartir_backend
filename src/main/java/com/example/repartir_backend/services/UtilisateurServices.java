@@ -5,11 +5,16 @@ import com.example.repartir_backend.entities.*;
 import com.example.repartir_backend.enumerations.Etat;
 import com.example.repartir_backend.enumerations.Role;
 import com.example.repartir_backend.repositories.*;
+import jakarta.mail.MessagingException;
 import jakarta.persistence.EntityExistsException;
+import jakarta.persistence.EntityNotFoundException;
 import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
+
+import java.io.IOException;
+import java.util.Optional;
 
 @Service
 @RequiredArgsConstructor
@@ -20,16 +25,17 @@ public class UtilisateurServices {
     private final CentreFormationRepository centreFormationRepository;
     private final JeuneRepository jeuneRepository;
     private final EntrepriseRepository entrepriseRepository;
+    private final RefreshTokenRepository refreshTokenRepository;
     private final PasswordEncoder passwordEncoder;
+    private final MailSendServices mailSendServices;
 
     @Transactional
-    public Utilisateur register(RegisterUtilisateur utilisateur) {
+    public Utilisateur register(RegisterUtilisateur utilisateur) throws MessagingException, IOException {
         //verifier si un utilisateur avec l'email existe déjà
         Utilisateur utilisateur1 = utilisateurRepository.findByEmail(utilisateur.getEmail()).orElse(null);
         if (utilisateur1 != null) {
             throw new EntityExistsException("Un utilisateur avec cet email existe déjà.");
         }
-
 
         Utilisateur newUtilisateur= new Utilisateur();
         newUtilisateur.setNom(utilisateur.getNom());
@@ -103,6 +109,73 @@ public class UtilisateurServices {
                 parrainRepository.save(parrain);
             }
         }
+        //envoie d'un mail après la création des comptes utilisateurs
+        if (utilisateur.getRole() == Role.JEUNE || utilisateur.getRole() == Role.MENTOR || utilisateur.getRole() == Role.PARRAIN) {
+            String path = "src/main/resources/templates/comptevalider.html";
+            mailSendServices.envoyerEmailBienvenu(
+                    utilisateur.getEmail(),
+                    "Creation de compte",
+                    utilisateur.getNom(),
+                    path
+            );
+        } else {
+            String path = "src/main/resources/templates/encoursdevalidation.html";
+            mailSendServices.envoyerEmailBienvenu(
+                    utilisateur.getEmail(),
+                    "Compte en attente",
+                    utilisateur.getNom(),
+                    path
+            );
+        }
         return newUtilisateur;
     }
+    public void deleteUtilisateur(int id) {
+        Utilisateur utilisateur = utilisateurRepository.findById(id)
+                .orElseThrow(() -> new EntityNotFoundException("Utilisateur introuvable"));
+
+        switch (utilisateur.getRole()) {
+            case CENTRE -> {
+                centreFormationRepository.deleteByUtilisateurId(id);
+            }
+            case ENTREPRISE -> {
+                entrepriseRepository.deleteByUtilisateurId(id);
+            }
+            case JEUNE -> {
+                jeuneRepository.deleteByUtilisateurId(id);
+            }
+            case MENTOR -> {
+                mentorRepository.deleteByUtilisateurId(id);
+            }
+            case PARRAIN -> {
+                parrainRepository.deleteByUtilisateurId(id);
+            }
+        }
+
+        utilisateurRepository.delete(utilisateur);
+    }
+
+    //cette methode simule l'action de suppression de compte par un utilisateur
+    @Transactional
+    public void supprimerCompte(String email)
+    {
+        //chercher l'utilisateur par son email
+        Utilisateur utilisateur = utilisateurRepository.findByEmail(email).orElseThrow(
+                ()-> new EntityNotFoundException("Email incorrecte")
+        );
+        utilisateur.setEtat(Etat.SUPPRIME);
+        utilisateur.setEstActive(false);
+
+        //modifier l'email du compte supprimer
+        utilisateur.setEmail(utilisateur.getEmail()+"_deleted_" + utilisateur.getId());
+        //modifier le numero de telephone du compte supprimer
+        utilisateur.setTelephone(utilisateur.getTelephone()+"_deleted_"+ utilisateur.getTelephone());
+
+        // Supprimer les refresh tokens associés pour forcer la déconnexion
+        refreshTokenRepository.deleteByUtilisateur_Id(utilisateur.getId());
+
+        //on l'enregistre
+        utilisateurRepository.save(utilisateur);
+    }
+
+
 }

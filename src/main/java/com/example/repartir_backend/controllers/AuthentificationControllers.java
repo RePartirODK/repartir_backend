@@ -3,19 +3,19 @@ package com.example.repartir_backend.controllers;
 import com.example.repartir_backend.dto.RefreshRequest;
 import com.example.repartir_backend.dto.RequestUtilisateur;
 import com.example.repartir_backend.entities.Utilisateur;
+import com.example.repartir_backend.repositories.RefreshTokenRepository;
 import com.example.repartir_backend.security.JwtServices;
 import com.example.repartir_backend.services.AuthService;
+import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.authentication.AuthenticationManager;
+import org.springframework.security.authentication.BadCredentialsException;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.userdetails.UserDetails;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 
 import java.util.Map;
 
@@ -31,12 +31,16 @@ public class AuthentificationControllers {
      */
     @PostMapping("/login")
     public ResponseEntity<?> login(@RequestBody RequestUtilisateur credentials) {
-        Map<String, Object> tokens = authService.authenticate(
-                credentials.getEmail(),
-                credentials.getMotDePasse()
-        );
-        return ResponseEntity.ok(tokens);
-    }
+        try {
+            Map<String, Object> tokens = authService.authenticate(
+                    credentials.getEmail(),
+                    credentials.getMotDePasse()
+            );
+            return ResponseEntity.ok(tokens);
+        } catch(BadCredentialsException e)
+    {
+        return ResponseEntity.status(HttpStatus.FORBIDDEN).body(e.getMessage());
+    }}
 
     /**
      * Rafraîchir le token d’accès (access_token)
@@ -51,4 +55,5 @@ public class AuthentificationControllers {
 
 
     public static record JwtResponse(String token, String email, Object roles) {}
+
 }

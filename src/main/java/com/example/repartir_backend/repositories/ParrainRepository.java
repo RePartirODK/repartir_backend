@@ -7,4 +7,6 @@ import java.util.Optional;
 
 public interface ParrainRepository extends JpaRepository<Parrain, Integer> {
     Optional<Parrain> findByUtilisateur_Id(int id);
+
+    void deleteByUtilisateurId(int id);
 }

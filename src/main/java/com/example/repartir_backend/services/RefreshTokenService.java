@@ -4,10 +4,14 @@ import com.example.repartir_backend.entities.RefreshToken;
 import com.example.repartir_backend.repositories.AdminRepository;
 import com.example.repartir_backend.repositories.RefreshTokenRepository;
 import com.example.repartir_backend.repositories.UtilisateurRepository;
+import jakarta.persistence.EntityNotFoundException;
 import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
+import org.springframework.security.crypto.bcrypt.BCrypt;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.stereotype.Service;
+
+import java.util.List;
 import java.util.UUID;
 import java.time.Instant;
 import java.time.temporal.ChronoUnit;
@@ -18,6 +22,7 @@ public class RefreshTokenService {
     private final RefreshTokenRepository refreshTokenRepository;
     private final UtilisateurRepository utilisateurRepository;
     private final AdminRepository adminRepository;
+    private final BCryptPasswordEncoder encoder;
 
 
 
@@ -82,4 +87,17 @@ public class RefreshTokenService {
         }
         return token;
     }
+    public void deleteToken(String refreshToken){
+        // On récupère tous les refresh tokens
+        List<RefreshToken> allTokens = refreshTokenRepository.findAll();
+
+        // On cherche celui dont le hash correspond
+        RefreshToken tokenToDelete = allTokens.stream()
+                .filter(rt -> encoder.matches(refreshToken, rt.getToken()))
+                .findFirst()
+                .orElseThrow(() -> new EntityNotFoundException("Refresh token non trouvé."));
+
+        refreshTokenRepository.delete(tokenToDelete);
+    }
+
 }
