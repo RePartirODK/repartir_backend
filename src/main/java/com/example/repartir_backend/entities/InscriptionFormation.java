@@ -3,34 +3,33 @@ package com.example.repartir_backend.entities;
 import com.example.repartir_backend.enumerations.Etat;
 import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
-import lombok.Getter;
+import lombok.Data;
 import lombok.NoArgsConstructor;
-import lombok.Setter;
 
-import java.time.LocalDate;
-import java.util.ArrayList;
-import java.util.List;
+import java.util.Date;
 
 @Entity
+@Data
 @AllArgsConstructor
 @NoArgsConstructor
-@Getter
-@Setter
 public class InscriptionFormation {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private int id;
-    private LocalDate date;
-    @Enumerated(EnumType.STRING)
-    private Etat statut;
 
     @ManyToOne
-    @JoinColumn(name = "id_jeune")
+    @JoinColumn(name = "jeune_id", nullable = false)
     private Jeune jeune;
 
-    @OneToMany(mappedBy = "inscriptionFormation")
-    private List<Paiement> paiements = new ArrayList<>();
     @ManyToOne
-    @JoinColumn(name = "id_formation")
+    @JoinColumn(name = "formation_id", nullable = false)
     private Formation formation;
+
+    @ManyToOne
+    @JoinColumn(name = "parrain_id")
+    private Parrain parrain;
+
+    private Date dateInscription;
+
+    private boolean demandeParrainage = false; // Par défaut, pas de demande
 }

@@ -56,8 +56,7 @@ public class SecurityConfig {
                 //configuration des authorisation des endpoints
                 .authorizeHttpRequests(
                         auth -> auth.requestMatchers(
-                                "/api/auth/login", "/api/utilisateurs/register", "/api/auth/refresh",
-                                "/api/password/**"
+                                "/api/auth/login", "/api/utilisateurs/register", "/api/auth/refresh"
                         ).permitAll()
                                 // Correction du chemin pour les administrateurs et ajout de règles spécifiques
                                 .requestMatchers("/administrateurs/**").hasRole("ADMIN")
@@ -65,7 +64,7 @@ public class SecurityConfig {
                                 .requestMatchers("/api/entreprise/**").hasRole("ENTREPRISE")
                                 .requestMatchers("/api/parrains/**").hasAnyRole("PARRAIN"
                                 ,"ADMIN")
-                                .requestMatchers("/api/mentors/**").hasAnyRole("MENTOR",
+                                .requestMatchers("/api/mentors/**").hasAnyRole("MENTOR", "JEUNE",
                                         "ADMIN")
                                 .requestMatchers("/api/centres/**").hasAnyRole("CENTRE", "ADMIN")
                                 .requestMatchers("/api/entreprises/**").hasAnyRole("ENTREPRISE",
@@ -78,6 +77,9 @@ public class SecurityConfig {
                                         "ADMIN")
                                 .requestMatchers("/api/messages/**").hasAnyRole( "MENTOR",
                                         "JEUNE","ADMIN")
+                                // Seuls les JEUNES et les ADMINS peuvent voir toutes les offres.
+                                // Les entreprises utilisent /api/entreprise/offres pour voir les leurs.
+                                .requestMatchers("/api/offres/lister").hasAnyRole("JEUNE", "ADMIN")
                                 .requestMatchers("/api/offres/**").hasAnyRole("ENTREPRISE","JEUNE",
                                         "ADMIN")
                                 .requestMatchers("/api/paiements/**").hasAnyRole("ENTREPRISE",
@@ -87,6 +89,8 @@ public class SecurityConfig {
                                 .requestMatchers("/api/userdomaines/**")
                                 .hasAnyRole("ADMIN", "MENTOR", "CENTRE","ENTREPRISE",
                                         "PARRAIN", "JEUNE")
+                                // Les CENTRES ne peuvent plus voir toutes les formations via cet endpoint.
+                                // Ils utiliseront leur endpoint dédié.
                                 .requestMatchers("/api/formations/**").hasAnyRole("ADMIN", "MENTOR",
                                         "PARRAIN", "CENTRE","JEUNE")
                                 .requestMatchers("/api/updatepassword/**",

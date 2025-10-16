@@ -18,18 +18,13 @@ import java.util.List;
 @RequiredArgsConstructor
 public class FormationControllers {
     private final FormationServices formationServices;
+
     @PostMapping("/centre/{centreId}")
     public ResponseEntity<?> createFormation(
             @PathVariable int centreId,
             @RequestBody RequestFormation requestFormation) {
-        try {
-            Formation createdFormation = formationServices.createFormation(requestFormation, centreId);
-            return ResponseEntity.status(HttpStatus.CREATED).body(createdFormation.toResponse());
-        }catch (EntityNotFoundException e){
-            return ResponseEntity.status(HttpStatus.CONFLICT).body(e.getMessage());
-        }catch (RuntimeException e){
-            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(e.getMessage());
-        }
+        Formation createdFormation = formationServices.createFormation(requestFormation, centreId);
+        return ResponseEntity.status(HttpStatus.CREATED).body(createdFormation.toResponse());
     }
 
     @PutMapping("/{id}")
@@ -45,8 +40,9 @@ public class FormationControllers {
         }catch (RuntimeException e)
         {
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
-                    .body("une erreur interne s'est produite");
+                    .body("Une erreur est survenue" + e.getMessage());
         }
+
     }
 
     @PatchMapping("/{id}/statut")
@@ -55,21 +51,21 @@ public class FormationControllers {
             @RequestParam Etat statut) {
         try {
             Formation updated = formationServices.updateStatut(id, statut);
-            return ResponseEntity.ok(updated);
+            return ResponseEntity.ok(updated.toResponse());
         }catch (EntityNotFoundException e)
         {
             return ResponseEntity.status(HttpStatus.NOT_FOUND).body(e.getMessage());
+        }catch (RuntimeException e)
+        {
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
+                    .body("Une erreur est survenue" + e.getMessage());
         }
     }
 
     @DeleteMapping("/{id}")
-    public ResponseEntity<Void> deleteFormation(@PathVariable int id) {
-        try {
-            formationServices.deleteFormation(id);
-            return ResponseEntity.noContent().build();
-        } catch (EntityNotFoundException e) {
-            return ResponseEntity.notFound().build();
-        }
+    public ResponseEntity<?> deleteFormation(@PathVariable int id) {
+        formationServices.deleteFormation(id);
+        return ResponseEntity.noContent().build();
     }
     @GetMapping
     public ResponseEntity<List<ResponseFormation>> getAllFormations() {
@@ -85,15 +81,9 @@ public class FormationControllers {
     }
 
     @GetMapping("/{id}")
-    public ResponseEntity<?> getFormationById(@PathVariable int id) {
-        try {
-            ResponseFormation formation = formationServices.getFormationById(id);
-            return ResponseEntity.ok(formation);
-        }catch (EntityNotFoundException e)
-        {
-            return ResponseEntity.status(HttpStatus.NOT_FOUND).body(e.getMessage());
-        }
-
+    public ResponseEntity<ResponseFormation> getFormationById(@PathVariable int id) {
+        ResponseFormation formation = formationServices.getFormationById(id);
+        return ResponseEntity.ok(formation);
     }
 
 }

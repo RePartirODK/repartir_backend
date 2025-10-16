@@ -9,7 +9,9 @@ import com.example.repartir_backend.enumerations.Etat;
 import com.example.repartir_backend.repositories.JeuneRepository;
 import com.example.repartir_backend.repositories.MentorRepository;
 import com.example.repartir_backend.repositories.MentoringRepository;
+import jakarta.persistence.EntityNotFoundException;
 import lombok.RequiredArgsConstructor;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.stereotype.Service;
 
 import java.time.LocalDateTime;
@@ -78,5 +80,21 @@ public class MentoringServices {
     }
     public void deleteMentoring(int idMentoring){
         mentoringRepository.deleteById(idMentoring);
+    }
+
+    public Mentoring accepterMentoring(int idMentoring) {
+        return updateStatutMentoring(idMentoring, Etat.VALIDE);
+    }
+
+    public Mentoring refuserMentoring(int idMentoring) {
+        return updateStatutMentoring(idMentoring, Etat.REFUSE);
+    }
+
+    private Mentoring updateStatutMentoring(int idMentoring, Etat nouveauStatut) {
+        Mentoring mentoring = mentoringRepository.findById(idMentoring)
+                .orElseThrow(() -> new EntityNotFoundException("Mentoring non trouvé avec l'ID : " + idMentoring));
+
+        mentoring.setStatut(nouveauStatut);
+        return mentoringRepository.save(mentoring);
     }
 }

@@ -3,6 +3,7 @@ package com.example.repartir_backend.controllers;
 import com.example.repartir_backend.dto.RequestMentoring;
 import com.example.repartir_backend.dto.ResponseMentoring;
 import com.example.repartir_backend.entities.Mentoring;
+import com.example.repartir_backend.enumerations.Etat;
 import com.example.repartir_backend.services.MentoringServices;
 import jakarta.persistence.EntityNotFoundException;
 import lombok.RequiredArgsConstructor;
@@ -10,6 +11,7 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import java.util.List;
+import org.springframework.security.access.prepost.PreAuthorize;
 
 @RestController
 @RequestMapping("/api/mentorings")
@@ -69,5 +71,19 @@ public class MentoringControllers {
     public ResponseEntity<String> deleteMentoring(@PathVariable int idMentoring) {
         mentoringServices.deleteMentoring(idMentoring);
         return ResponseEntity.ok("Mentoring supprimé avec succès.");
+    }
+
+    @PatchMapping("/{idMentoring}/accepter")
+    @PreAuthorize("hasRole('MENTOR')")
+    public ResponseEntity<ResponseMentoring> accepterMentoring(@PathVariable int idMentoring) {
+        Mentoring updatedMentoring = mentoringServices.accepterMentoring(idMentoring);
+        return ResponseEntity.ok(updatedMentoring.toResponse());
+    }
+
+    @PatchMapping("/{idMentoring}/refuser")
+    @PreAuthorize("hasRole('MENTOR')")
+    public ResponseEntity<ResponseMentoring> refuserMentoring(@PathVariable int idMentoring) {
+        Mentoring updatedMentoring = mentoringServices.refuserMentoring(idMentoring);
+        return ResponseEntity.ok(updatedMentoring.toResponse());
     }
 }
