@@ -3,12 +3,15 @@ package com.example.repartir_backend.controllers;
 import com.example.repartir_backend.dto.RequestPaiement;
 import com.example.repartir_backend.services.PaiementServices;
 import com.example.repartir_backend.services.ParrainServices;
+import jakarta.mail.MessagingException;
 import jakarta.persistence.EntityNotFoundException;
 import lombok.RequiredArgsConstructor;
 import org.apache.coyote.Response;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
+
+import java.io.IOException;
 
 @RestController
 @RequestMapping("/api/paiements")
@@ -39,10 +42,12 @@ public class PaiementControllers {
         }catch (EntityNotFoundException e)
         {
             return ResponseEntity.status(HttpStatus.NOT_FOUND).body(e.getMessage());
-        }catch (RuntimeException e)
+        }catch (RuntimeException | MessagingException e)
         {
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
                     .body("Erreur lors de la validation du paiement" + e.getMessage());
+        } catch (IOException e) {
+            throw new RuntimeException(e);
         }
     }
 
@@ -55,10 +60,12 @@ public class PaiementControllers {
         }catch (EntityNotFoundException e)
         {
             return ResponseEntity.status(HttpStatus.NOT_FOUND).body(e.getMessage());
-        }catch (RuntimeException e)
+        }catch (RuntimeException | MessagingException e)
         {
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
                     .body("Erreur lors de la validation du paiement" + e.getMessage());
+        } catch (IOException e) {
+            throw new RuntimeException(e);
         }
     }
 

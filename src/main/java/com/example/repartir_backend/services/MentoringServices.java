@@ -9,11 +9,14 @@ import com.example.repartir_backend.enumerations.Etat;
 import com.example.repartir_backend.repositories.JeuneRepository;
 import com.example.repartir_backend.repositories.MentorRepository;
 import com.example.repartir_backend.repositories.MentoringRepository;
+import jakarta.mail.MessagingException;
 import jakarta.persistence.EntityNotFoundException;
+import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.stereotype.Service;
 
+import java.io.IOException;
 import java.time.LocalDateTime;
 import java.util.List;
 
@@ -23,6 +26,7 @@ public class MentoringServices {
     private final MentoringRepository mentoringRepository;
     private final MentorRepository mentorRepository;
     private final JeuneRepository jeuneRepository;
+    private final MailSendServices mailSendServices;
 
     //creation d'un mentoring
     public ResponseMentoring creationMentoring(int idMentor, int idJeune,
@@ -82,16 +86,46 @@ public class MentoringServices {
         mentoringRepository.deleteById(idMentoring);
     }
 
-    public Mentoring accepterMentoring(int idMentoring) {
-        //envoyé un message d'acceptation de mentoring au deux concerné
-
-        return updateStatutMentoring(idMentoring, Etat.VALIDE);
-
+    @Transactional
+    public Mentoring accepterMentoring(int idMentoring) throws MessagingException, IOException {
+        Mentoring mentoring = updateStatutMentoring(idMentoring, Etat.VALIDE);
+        //envoyé un message d'acceptation de mentoring aux deux concernés
+        String path = "src/main/resources/templates/creationmentoring.html";
+        mailSendServices.envoyerEmailBienvenu(
+                mentoring.getJeune().getUtilisateur().getEmail(),
+                "Mentoring",
+                mentoring.getJeune().getPrenom(),
+                path
+        );
+        //envoyé un message d'acceptation de mentoring aux deux concernés
+        mailSendServices.envoyerEmailBienvenu(
+                mentoring.getMentor().getUtilisateur().getEmail(),
+                "Mentoring",
+                mentoring.getMentor().getPrenom(),
+                path
+        );
+        return mentoring;
     }
 
-    public Mentoring refuserMentoring(int idMentoring) {
+    @Transactional
+    public Mentoring refuserMentoring(int idMentoring) throws MessagingException, IOException {
         //envoyé un message de refus de mentoring
-        return updateStatutMentoring(idMentoring, Etat.REFUSE);
+        Mentoring mentoring = updateStatutMentoring(idMentoring, Etat.REFUSE);
+        //envoyé un message d'acceptation de mentoring aux deux concernés
+        String path = "src/main/resources/templates/refusmentoring.html";
+        mailSendServices.envoyerEmailBienvenu(
+                mentoring.getJeune().getUtilisateur().getEmail(),
+                "Mentoring",
+                mentoring.getJeune().getPrenom(),
+                path
+        );
+        mailSendServices.envoyerEmailBienvenu(
+                mentoring.getMentor().getUtilisateur().getEmail(),
+                "Mentoring",
+                mentoring.getMentor().getPrenom(),
+                path
+        );
+        return mentoring;
     }
 
     private Mentoring updateStatutMentoring(int idMentoring, Etat nouveauStatut) {

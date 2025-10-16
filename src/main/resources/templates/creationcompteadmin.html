@@ -27,13 +27,20 @@
             border-radius: 8px;
             text-decoration: none;
         }
+        span{
+        font-weight: 600;
+        }
     </style>
 </head>
 <body>
 <div class="card">
-    <h2>Bienvenue, {{nom}} 🎉</h2>
-    <p>Merci d'avoir rejoint notre plateforme RePartir.</p>
-    <p style="margin-top: 20px;">L’équipe RePartir 🚀</p>
+    <h2>Bonjour, {{nom}} 🎉</h2>
+    <p>
+        Votre compte administrateur a bien été creé.
+        Email : <span>{{email}}</span>
+        Veuillez contacter un admin pour connaître votre mot de passe !
+    </p>
+    <p style="margin-top: 20px;">L’équipe RePartir</p>
 </div>
 </body>
 </html>

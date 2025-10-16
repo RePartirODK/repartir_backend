@@ -11,11 +11,13 @@ import com.example.repartir_backend.repositories.InscriptionFormationRepository;
 import com.example.repartir_backend.repositories.JeuneRepository;
 import com.example.repartir_backend.repositories.PaiementRepository;
 import com.example.repartir_backend.repositories.ParrainageRepository;
+import jakarta.mail.MessagingException;
 import jakarta.persistence.EntityNotFoundException;
 import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 
+import java.io.IOException;
 import java.time.LocalDateTime;
 import java.util.List;
 
@@ -26,6 +28,7 @@ public class PaiementServices {
     private final InscriptionFormationRepository inscriptionFormationRepository;
     private final ParrainageRepository parrainageRepository;
     private final JeuneRepository jeuneRepository;
+    private final MailSendServices mailSendServices;
     //creer un paiement
     public ResponsePaiement creerPaiement(RequestPaiement paiement){
         //rechercher le Jeune
@@ -56,7 +59,7 @@ public class PaiementServices {
 
     //valider un paiment
     @Transactional
-    public String validerPaiement(int idPaiement) {
+    public String validerPaiement(int idPaiement) throws MessagingException, IOException {
         Paiement paiement = paiementRepository.findById(idPaiement)
                 .orElseThrow(() -> new EntityNotFoundException("Paiement introuvable"));
         paiement.setStatus(Etat.VALIDE);
@@ -73,6 +76,15 @@ public class PaiementServices {
         // Dès que le total des paiements validés >= coût de la formation, on valide l’inscription
         if (totalValide >= coutFormation) {
             inscription.setStatus(Etat.VALIDE);
+            //Dès que l'inscription est validés, envois d'un mail de confirmation d'inscription
+            String path = "src/main/resources/templates/inscriptionreussi.html";
+            mailSendServices.acceptionInscription(
+                    inscription.getJeune().getUtilisateur().getEmail(),
+                    "Inscription acceptée",
+                    inscription.getJeune().getUtilisateur().getNom(),
+                    inscription.getFormation().getTitre(),
+                    path
+            );
             inscriptionFormationRepository.save(inscription);
         }
         return "Paiement validé avec succès. Total validé = " + totalValide + "/" + coutFormation;
@@ -80,13 +92,21 @@ public class PaiementServices {
 
     //refuser un paiement
     @Transactional
-    public String refuserPaiement(int idPaiement) {
+    public String refuserPaiement(int idPaiement) throws MessagingException, IOException {
         Paiement paiement = paiementRepository.findById(idPaiement)
                 .orElseThrow(() -> new EntityNotFoundException("Paiement introuvable"));
         paiement.setStatus(Etat.REFUSE);
         //mettre l'etat de l'inscription à refuser
         InscriptionFormation inscriptionFormation = paiement.getInscriptionFormation();
         inscriptionFormation.setStatus(Etat.REFUSE);
+        String path = "src/main/resources/templates/refusreussi.html";
+        mailSendServices.acceptionInscription(
+                inscriptionFormation.getJeune().getUtilisateur().getEmail(),
+                "Inscription acceptée",
+                inscriptionFormation.getJeune().getUtilisateur().getNom(),
+                inscriptionFormation.getFormation().getTitre(),
+                path
+        );
         inscriptionFormationRepository.save(inscriptionFormation);
         paiementRepository.save(paiement);
         return "Paiement refusé.";

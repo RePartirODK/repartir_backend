@@ -30,7 +30,12 @@ public class AdminControllers {
      */
     @PostMapping("/creer")
     public Admin creerAdmin(@RequestBody AdminDto adminDto){
-        return adminServices.creerAdmin(adminDto);
+        try {
+            return adminServices.creerAdmin(adminDto);
+        } catch (MessagingException | IOException e) {
+            throw new RuntimeException(e);
+        }
+
     }
 
     /**

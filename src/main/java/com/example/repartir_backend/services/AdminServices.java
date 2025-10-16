@@ -30,12 +30,15 @@ public class AdminServices {
     private final MailSendServices mailSendServices;
     private final UtilisateurServices utilisateurServices;
 
+
     /**
      * Crée un nouvel administrateur.
      * @param adminDto Les données pour la création de l'administrateur.
      * @return L'entité Admin sauvegardée.
      */
-    public Admin creerAdmin(AdminDto adminDto){
+    @Transactional
+    public Admin creerAdmin(AdminDto adminDto) throws MessagingException, IOException {
+        String path = "src/main/resources/templates/creationcompteadmin.html";
         // Vérifier si un admin avec cet email existe déjà
         Optional<Admin> existingAdmin = adminRepository.findByEmail(adminDto.email());
         if (existingAdmin.isPresent()) {
@@ -48,8 +51,14 @@ public class AdminServices {
         admin.setEmail(adminDto.email());
         admin.setMotDePasse(passwordEncoder.encode(adminDto.motDePasse()));
         admin.setRole(Role.ADMIN);
-
-        return adminRepository.save(admin);
+        adminRepository.save(admin);
+        //envoie d'un email au nouveau admin
+        //envoi d'un mail de validation de compte
+        mailSendServices.inscriptionAdmin(admin.getEmail(),
+                "Creation de compte admin",
+                admin.getEmail(),
+                path);
+        return admin;
     }
 
     /**

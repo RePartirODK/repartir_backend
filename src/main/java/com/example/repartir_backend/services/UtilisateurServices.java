@@ -153,7 +153,6 @@ public class UtilisateurServices {
                 parrainRepository.deleteByUtilisateurId(id);
             }
         }
-
         utilisateurRepository.delete(utilisateur);
     }
 
