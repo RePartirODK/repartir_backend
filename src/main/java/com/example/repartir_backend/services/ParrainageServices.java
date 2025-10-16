@@ -1,5 +1,6 @@
 package com.example.repartir_backend.services;
 
+import com.example.repartir_backend.dto.ParrainageDto;
 import com.example.repartir_backend.dto.ResponseParrainage;
 import com.example.repartir_backend.entities.*;
 import com.example.repartir_backend.repositories.*;
@@ -15,24 +16,28 @@ import java.util.List;
 @RequiredArgsConstructor
 public class ParrainageServices {
 
-    private final ParrainageRepository parrainageRepository;
+
     private final ParrainRepository parrainRepository;
-    private final JeuneRepository jeuneRepository;
     private final FormationRepository formationRepository;
+    private final JeuneRepository jeuneRepository;
+    private final PaiementRepository paiementRepository;
+    private final ParrainageRepository parrainageRepository;
+    private final InscriptionFormationRepository inscriptionFormationRepository;
 
     @Transactional
     public ResponseParrainage creerParrainage(int idJeune, Integer idParrain, int idFormation) {
         Jeune jeune = jeuneRepository.findById(idJeune)
                 .orElseThrow(() -> new EntityNotFoundException("Jeune introuvable avec ID : " + idJeune));
 
+        Parrain parrain = parrainRepository.findById(idParrain)
+                .orElseThrow(() -> new EntityNotFoundException("Parrain introuvable avec ID : " + idParrain));
+
         Formation formation = formationRepository.findById(idFormation)
                 .orElseThrow(() -> new EntityNotFoundException("Formation introuvable avec ID : " + idFormation));
 
-        Parrain parrain = null;
-        if (idParrain != null) {
-            parrain = parrainRepository.findById(idParrain)
-                    .orElseThrow(() -> new EntityNotFoundException("Parrain introuvable avec ID : " + idParrain));
-        }
+        parrain = null;
+        parrain = parrainRepository.findById(idParrain)
+                .orElseThrow(() -> new EntityNotFoundException("Parrain introuvable avec ID : " + idParrain));
 
         // Vérifier qu'un parrainage identique n'existe pas déjà
         boolean exists = parrainageRepository.existsByJeune_IdAndParrain_IdAndFormation_Id(
@@ -74,7 +79,7 @@ public class ParrainageServices {
                 .orElseThrow(() -> new EntityNotFoundException("Formation introuvable avec ID : " + idFormation));
         return parrainageRepository.findAllByFormation_Id(idFormation);
     }
-    public List<Paiement> getPaiementsByParrainage(int idParrainage) {
+    public List<Paiement> getPaiementsByParrainage1(int idParrainage) {
         Parrainage parrainage = parrainageRepository.findById(idParrainage)
                 .orElseThrow(() -> new EntityNotFoundException("Parrainage introuvable avec l'ID : " + idParrainage));
 
@@ -88,4 +93,20 @@ public class ParrainageServices {
                 .orElseThrow(() -> new EntityNotFoundException("Parrainage introuvable avec ID : " + idParrainage));
         parrainageRepository.delete(parrainage);
     }
+
+    /**
+     * Récupérer les paiements liés à un parrainage
+     */
+    public List<Paiement> getPaiementsByParrainage(int idParrainage) {
+        Parrainage parrainage = parrainageRepository.findById(idParrainage)
+                .orElseThrow(() -> new EntityNotFoundException("Parrainage introuvable avec ID : " + idParrainage));
+        return paiementRepository.findAllByParrainage_Id(parrainage.getId());
+    }
+
+    public List<ParrainageDto> listerDemandes() {
+        return ParrainageDto.fromEntities(
+            inscriptionFormationRepository.findByDemandeParrainageTrueAndParrainIsNull()
+        );
+    }
+
 }

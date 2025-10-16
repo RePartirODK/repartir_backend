@@ -1,12 +1,15 @@
 package com.example.repartir_backend.controllers;
 
 
+import com.example.repartir_backend.dto.MentorResponseDto;
 import com.example.repartir_backend.entities.Mentor;
 import com.example.repartir_backend.services.MentorServices;
 import jakarta.persistence.EntityNotFoundException;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
+
+import java.util.List;
 
 @RestController
 @RequestMapping("/api/mentors")
@@ -17,16 +20,8 @@ public class MentorControllers {
         this.mentorServices = mentorServices;
     }
     @GetMapping
-    public ResponseEntity<?> getAllMentors() {
-        try {
-            return ResponseEntity.ok(mentorServices.getAllMentors());
-        } catch (Exception e) {
-            return new ResponseEntity<>(
-                    "Une erreur est survenue",
-                    HttpStatus.INTERNAL_SERVER_ERROR
-            );
-        }
-
+    public ResponseEntity<List<MentorResponseDto>> getAllMentors() {
+        return ResponseEntity.ok(mentorServices.getAllMentors());
     }
 
     @GetMapping("/{id}")

@@ -43,7 +43,7 @@ public class CentreFormationServices {
     public ResponseCentre getCentreByEmail(String email) {
         Utilisateur utilisateur = utilisateurRepository.findByEmail(email)
                 .orElseThrow(() -> new EntityNotFoundException("Aucun utilisateur avec cet email."));
-        return centreFormationRepository.findByUtilisateur_Id(utilisateur.getId())
+        return centreFormationRepository.findByUtilisateur(utilisateur)
                 .orElseThrow(() -> new EntityNotFoundException("Aucun centre associé à cet utilisateur."))
                 .toResponse();
     }
