@@ -31,6 +31,7 @@ public class UtilisateurServices {
     private final PasswordEncoder passwordEncoder;
     private final MailSendServices mailSendServices;
     private final UploadService uploadService;
+    private final NotificationService notificationService;
 
     @Transactional
     public Utilisateur register(RegisterUtilisateur utilisateur) throws MessagingException, IOException {
@@ -94,6 +95,8 @@ public class UtilisateurServices {
                 centre.setAdresse(utilisateur.getAdresse());
                 centre.setAgrement(utilisateur.getAgrement());
                 centreFormationRepository.save(centre);
+                // Notifier l'administrateur qu'un nouveau centre est en attente de validation.
+                notificationService.notifierAdmin("Un nouveau centre de formation '" + newUtilisateur.getNom() + "' s'est inscrit et est en attente de validation.");
             }
             case ENTREPRISE -> {
                 Entreprise entreprise = new Entreprise();
@@ -102,6 +105,8 @@ public class UtilisateurServices {
                 entreprise.setAdresse(utilisateur.getAdresse());
                 entreprise.setAgrement(utilisateur.getAgrement());
                 entrepriseRepository.save(entreprise);
+                // Notifier l'administrateur qu'une nouvelle entreprise est en attente de validation.
+                notificationService.notifierAdmin("Une nouvelle entreprise '" + newUtilisateur.getNom() + "' s'est inscrite et est en attente de validation.");
             }
             case PARRAIN -> {
                 Parrain parrain = new Parrain();

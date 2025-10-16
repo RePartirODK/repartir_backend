@@ -91,6 +91,8 @@ public class SecurityConfig {
                                 .requestMatchers("/api/updatepassword/**")
                                 .hasAnyRole("ADMIN", "MENTOR", "CENTRE","ENTREPRISE",
                                         "PARRAIN", "JEUNE")
+                                // Autoriser tous les utilisateurs authentifiés à accéder aux endpoints de notifications.
+                                .requestMatchers("/api/notifications/**").authenticated()
                                 .anyRequest()
                                 .authenticated()
 

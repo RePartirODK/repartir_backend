@@ -35,9 +35,9 @@ public class Parrainage {
     public ResponseParrainage toResponse(){
         return new ResponseParrainage(
                 this.id,
-                this.jeune.getId(),
+                this.jeune != null ? this.jeune.getId() : null,
                 this.parrain != null ? this.parrain.getId() : null,
-                this.formation.getId()
+                this.formation != null ? this.formation.getId() : null
         );
     }
 }
