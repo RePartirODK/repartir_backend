@@ -18,8 +18,9 @@ import java.util.List;
 @RequiredArgsConstructor
 public class FormationControllers {
     private final FormationServices formationServices;
+
     @PostMapping("/centre/{centreId}")
-    public ResponseEntity<ResponseFormation> createFormation(
+    public ResponseEntity<?> createFormation(
             @PathVariable int centreId,
             @RequestBody RequestFormation requestFormation) {
         Formation createdFormation = formationServices.createFormation(requestFormation, centreId);
@@ -27,23 +28,42 @@ public class FormationControllers {
     }
 
     @PutMapping("/{id}")
-    public ResponseEntity<ResponseFormation> updateFormation(
+    public ResponseEntity<?> updateFormation(
             @PathVariable int id,
             @RequestBody RequestFormation requestFormation) {
-        ResponseFormation updatedFormation = formationServices.updateFormation(id, requestFormation);
-        return ResponseEntity.ok(updatedFormation);
+        try {
+            ResponseFormation updatedFormation = formationServices.updateFormation(id, requestFormation);
+            return ResponseEntity.ok(updatedFormation);
+        }catch (EntityNotFoundException e)
+        {
+            return ResponseEntity.status(HttpStatus.NOT_FOUND).body(e.getMessage());
+        }catch (RuntimeException e)
+        {
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
+                    .body("Une erreur est survenue" + e.getMessage());
+        }
+
     }
 
     @PatchMapping("/{id}/statut")
-    public ResponseEntity<Formation> updateStatut(
+    public ResponseEntity<?> updateStatut(
             @PathVariable int id,
             @RequestParam Etat statut) {
-        Formation updated = formationServices.updateStatut(id, statut);
-        return ResponseEntity.ok(updated);
+        try {
+            Formation updated = formationServices.updateStatut(id, statut);
+            return ResponseEntity.ok(updated.toResponse());
+        }catch (EntityNotFoundException e)
+        {
+            return ResponseEntity.status(HttpStatus.NOT_FOUND).body(e.getMessage());
+        }catch (RuntimeException e)
+        {
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
+                    .body("Une erreur est survenue" + e.getMessage());
+        }
     }
 
     @DeleteMapping("/{id}")
-    public ResponseEntity<Void> deleteFormation(@PathVariable int id) {
+    public ResponseEntity<?> deleteFormation(@PathVariable int id) {
         formationServices.deleteFormation(id);
         return ResponseEntity.noContent().build();
     }
