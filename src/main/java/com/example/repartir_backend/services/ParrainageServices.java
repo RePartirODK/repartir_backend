@@ -1,5 +1,6 @@
 package com.example.repartir_backend.services;
 
+import com.example.repartir_backend.dto.ParrainageDto;
 import com.example.repartir_backend.dto.ResponseParrainage;
 import com.example.repartir_backend.entities.*;
 import com.example.repartir_backend.repositories.*;
@@ -21,6 +22,7 @@ public class ParrainageServices {
     private final JeuneRepository jeuneRepository;
     private final PaiementRepository paiementRepository;
     private final InscriptionFormationRepository inscriptionFormationRepository;
+    private final ParrainageRepository parrainageRepository;
 
     @Transactional
     public ResponseParrainage creerParrainage(int idJeune, Integer idParrain, int idFormation) {
