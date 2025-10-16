@@ -8,10 +8,13 @@ import com.example.repartir_backend.enumerations.Etat;
 import com.example.repartir_backend.enumerations.Role;
 import com.example.repartir_backend.repositories.AdminRepository;
 import com.example.repartir_backend.repositories.UtilisateurRepository;
+import jakarta.mail.MessagingException;
+import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
+import java.io.IOException;
 import java.util.List;
 import java.util.Optional;
 
@@ -24,6 +27,8 @@ public class AdminServices {
     private final AdminRepository adminRepository;
     private final PasswordEncoder passwordEncoder;
     private final UtilisateurRepository utilisateurRepository;
+    private final MailSendServices mailSendServices;
+    private final UtilisateurServices utilisateurServices;
 
     /**
      * Crée un nouvel administrateur.
@@ -68,12 +73,18 @@ public class AdminServices {
      * @param userId L'identifiant de l'utilisateur.
      * @return Le DTO de l'utilisateur avec l'état mis à jour à VALIDE.
      */
-    public UtilisateurResponseDto approuverCompte(Integer userId) {
+    public UtilisateurResponseDto approuverCompte(Integer userId) throws MessagingException, IOException {
+        String path = "src/main/resources/templates/comptevalider.html";
         Utilisateur utilisateur = utilisateurRepository.findById(userId)
                 .orElseThrow(() -> new RuntimeException("Utilisateur non trouvé"));
         utilisateur.setEtat(Etat.VALIDE);
         utilisateur.setEstActive(true);
         Utilisateur utilisateurSauvegarde = utilisateurRepository.save(utilisateur);
+        //envoi d'un mail de validation de compte
+        mailSendServices.envoyerEmailBienvenu(utilisateur.getEmail(),
+                "Validation de compte",
+                utilisateur.getNom(),
+                path);
         return mapToUtilisateurResponseDto(utilisateurSauvegarde);
     }
 
@@ -82,12 +93,21 @@ public class AdminServices {
      * @param userId L'identifiant de l'utilisateur.
      * @return Le DTO de l'utilisateur avec l'état mis à jour à REFUSE.
      */
-    public UtilisateurResponseDto rejeterCompte(Integer userId) {
+    @Transactional
+    public UtilisateurResponseDto rejeterCompte(Integer userId) throws MessagingException, IOException {
+        String path = "src/main/resources/templates/refusecompte.html";
         Utilisateur utilisateur = utilisateurRepository.findById(userId)
                 .orElseThrow(() -> new RuntimeException("Utilisateur non trouvé"));
         utilisateur.setEtat(Etat.REFUSE);
         utilisateur.setEstActive(false);
+        //envoie de mail à l'utilisateur
+        mailSendServices.envoyerEmailBienvenu(utilisateur.getEmail(),
+                "Refut de creation de compte",
+                utilisateur.getNom(),
+                path);
         Utilisateur utilisateurSauvegarde = utilisateurRepository.save(utilisateur);
+        //supprimer l'utilisateur de la base données
+        utilisateurServices.deleteUtilisateur(utilisateur.getId());
         return mapToUtilisateurResponseDto(utilisateurSauvegarde);
     }
 

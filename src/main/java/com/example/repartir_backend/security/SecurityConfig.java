@@ -62,7 +62,7 @@ public class SecurityConfig {
                                 .requestMatchers("/administrateurs/**").hasRole("ADMIN")
                                 .requestMatchers("/api/domaines/**").hasRole("ADMIN")
                                 .requestMatchers("/api/entreprise/**").hasRole("ENTREPRISE")
-                                   .requestMatchers("/api/parrains/**").hasAnyRole("PARRAIN"
+                                .requestMatchers("/api/parrains/**").hasAnyRole("PARRAIN"
                                 ,"ADMIN")
                                 .requestMatchers("/api/mentors/**").hasAnyRole("MENTOR", "JEUNE",
                                         "ADMIN")
@@ -77,9 +77,6 @@ public class SecurityConfig {
                                         "ADMIN")
                                 .requestMatchers("/api/messages/**").hasAnyRole( "MENTOR",
                                         "JEUNE","ADMIN")
-                                // Seuls les JEUNES et les ADMINS peuvent voir toutes les offres.
-                                // Les entreprises utilisent /api/entreprise/offres pour voir les leurs.
-                                .requestMatchers("/api/offres/lister").hasAnyRole("JEUNE", "ADMIN")
                                 .requestMatchers("/api/offres/**").hasAnyRole("ENTREPRISE","JEUNE",
                                         "ADMIN")
                                 .requestMatchers("/api/paiements/**").hasAnyRole("ENTREPRISE",
@@ -89,10 +86,8 @@ public class SecurityConfig {
                                 .requestMatchers("/api/userdomaines/**")
                                 .hasAnyRole("ADMIN", "MENTOR", "CENTRE","ENTREPRISE",
                                         "PARRAIN", "JEUNE")
-                                // Les CENTRES ne peuvent plus voir toutes les formations via cet endpoint.
-                                // Ils utiliseront leur endpoint dédié.
                                 .requestMatchers("/api/formations/**").hasAnyRole("ADMIN", "MENTOR",
-                                        "PARRAIN", "JEUNE", "CENTRE")
+                                        "PARRAIN", "CENTRE","JEUNE")
                                 .requestMatchers("/api/updatepassword/**")
                                 .hasAnyRole("ADMIN", "MENTOR", "CENTRE","ENTREPRISE",
                                         "PARRAIN", "JEUNE")

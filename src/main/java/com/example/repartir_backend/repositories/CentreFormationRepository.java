@@ -8,8 +8,10 @@ import org.springframework.stereotype.Repository;
 import java.util.List;
 import java.util.Optional;
 
-@Repository
 public interface CentreFormationRepository extends JpaRepository<CentreFormation, Integer> {
+    Optional<CentreFormation> findByUtilisateur_Id(int id);
+
+    void deleteByUtilisateurId(int id);
     @Query("SELECT c FROM CentreFormation c WHERE c.utilisateur.estActive = true")
     List<CentreFormation> findCentresActifs();
 

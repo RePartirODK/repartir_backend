@@ -20,7 +20,7 @@ import java.util.function.Function;
 public class JwtServices {
 
     @Value("${jwt.secret}")
-    private String secret="5367566859703373367639792F423F452848284D6251655468576D5A7134743F";
+    private String secret;
 
     /**
      * Génère un token JWT pour un utilisateur.

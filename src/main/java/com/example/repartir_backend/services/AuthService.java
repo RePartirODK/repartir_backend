@@ -2,8 +2,10 @@ package com.example.repartir_backend.services;
 
 import com.example.repartir_backend.entities.RefreshToken;
 import com.example.repartir_backend.repositories.AdminRepository;
+import com.example.repartir_backend.repositories.RefreshTokenRepository;
 import com.example.repartir_backend.repositories.UtilisateurRepository;
 import com.example.repartir_backend.security.JwtServices;
+import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
 import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.security.authentication.AuthenticationManager;
@@ -27,6 +29,7 @@ public class AuthService {
     private final UtilisateurRepository utilisateurRepository;
     private final AdminRepository adminRepository;
     private final UserDetailsService userDetailsService;
+    private final RefreshTokenRepository refreshTokenRepository;
 
     /**
      * Authentifie l'utilisateur et génère les tokens
@@ -96,5 +99,16 @@ public class AuthService {
         response.put("access_token", newAccessToken);
         response.put("refresh_token", refreshTokenString);
         return response;
+    }
+
+    @Transactional
+    public void logout(String email){
+        utilisateurRepository.findByEmail(email).ifPresent(user -> {
+            refreshTokenRepository.deleteByUtilisateur_Id(user.getId());
+        });
+
+        adminRepository.findByEmail(email).ifPresent(admin -> {
+            refreshTokenRepository.deleteByAdmin_Id(admin.getId());
+        });
     }
 }

@@ -36,7 +36,7 @@ public class Parrainage {
         return new ResponseParrainage(
                 this.id,
                 this.jeune.getId(),
-                this.parrain.getId(),
+                this.parrain != null ? this.parrain.getId() : null,
                 this.formation.getId()
         );
     }

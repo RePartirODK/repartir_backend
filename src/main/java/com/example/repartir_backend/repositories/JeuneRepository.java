@@ -10,4 +10,5 @@ import java.util.Optional;
 @Repository
 public interface JeuneRepository extends JpaRepository<Jeune, Integer> {
     Optional<Jeune> findByUtilisateur(Utilisateur utilisateur);
+    void deleteByUtilisateurId(int id);
 }
