@@ -55,4 +55,20 @@ public class MailSendServices {
 
         envoiMimeMessage(email, reinitialisationDuMotDePasse, template);
     }
+
+    public void acceptionInscription(String to,String sujet
+            ,String nom, String formation
+            , String path) throws IOException, MessagingException {
+        String template = Files.readString(Paths.get(path));
+        template = template.replace("{{nom}}", nom)
+                .replace("{{formation}}", formation);
+        envoiMimeMessage(to,sujet, template);
+    }
+    public void inscriptionAdmin(String to,String sujet
+            ,String email
+            , String path) throws IOException, MessagingException {
+        String template = Files.readString(Paths.get(path));
+        template = template.replace("{{email}}", email);
+        envoiMimeMessage(to,sujet, template);
+    }
 }

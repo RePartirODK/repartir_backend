@@ -47,7 +47,7 @@ public class PassWordForget {
         Utilisateur utilisateur = utilisateurOptional.get();
         //verifier que son compte et valide
         if(utilisateur.getEtat() == Etat.EN_ATTENTE){
-            throw new IllegalAccessError("Votre n'est pas encore validé");
+            throw new IllegalAccessError("Votre compte n'est pas encore validé");
         }
 
         // Générer un code aléatoire à 6 chiffres
@@ -99,7 +99,7 @@ public class PassWordForget {
 
         // Modifier le mot de passe
         Utilisateur utilisateur = utilisateurOptional.get();
-        //verifier s'il son compte a été valider
+        //verifier si son compte a été validé
         if(utilisateur.getEtat() == Etat.EN_ATTENTE)
             throw  new IllegalAccessError("Votre n'est pas encore validé");
         utilisateur.setMotDePasse(passwordEncoder.encode(nouveauPassword));

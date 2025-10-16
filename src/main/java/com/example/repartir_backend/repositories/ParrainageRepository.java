@@ -12,4 +12,6 @@ public interface ParrainageRepository extends JpaRepository<Parrainage, Integer>
     List<Parrainage> findAllByJeune_Id(int idJeune);
     List<Parrainage> findAllByParrain_Id(int idParrain);
     List<Parrainage> findAllByFormation_Id(int idFormation);
+
+    boolean existsByJeune_IdAndParrainIsNullAndFormation_Id(int idJeune, int idFormation);
 }

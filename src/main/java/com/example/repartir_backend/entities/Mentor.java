@@ -35,9 +35,5 @@ public class Mentor {
     @OneToMany(mappedBy = "mentor")
     private List<Mentoring> mentorings = new ArrayList<>();
 
-    //relation entre mentor et message
-    @OneToMany(mappedBy = "mentor")
-    private List<Message> messages = new ArrayList<>();
-
 
 }

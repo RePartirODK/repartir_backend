@@ -5,6 +5,8 @@ import com.example.repartir_backend.dto.ResponseMentoring;
 import com.example.repartir_backend.entities.Mentoring;
 import com.example.repartir_backend.enumerations.Etat;
 import com.example.repartir_backend.services.MentoringServices;
+import io.jsonwebtoken.io.IOException;
+import jakarta.mail.MessagingException;
 import jakarta.persistence.EntityNotFoundException;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
@@ -75,15 +77,28 @@ public class MentoringControllers {
 
     @PatchMapping("/{idMentoring}/accepter")
     @PreAuthorize("hasRole('MENTOR')")
-    public ResponseEntity<ResponseMentoring> accepterMentoring(@PathVariable int idMentoring) {
-        Mentoring updatedMentoring = mentoringServices.accepterMentoring(idMentoring);
-        return ResponseEntity.ok(updatedMentoring.toResponse());
+    public ResponseEntity<?> accepterMentoring(@PathVariable int idMentoring) {
+        try {
+            Mentoring updatedMentoring = mentoringServices.accepterMentoring(idMentoring);
+            return ResponseEntity.ok(updatedMentoring.toResponse());
+        }catch (MessagingException | IOException | java.io.IOException e)
+        {
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
+                    .body("Une erreur interne s'est produit");
+        }
+
     }
 
     @PatchMapping("/{idMentoring}/refuser")
     @PreAuthorize("hasRole('MENTOR')")
-    public ResponseEntity<ResponseMentoring> refuserMentoring(@PathVariable int idMentoring) {
-        Mentoring updatedMentoring = mentoringServices.refuserMentoring(idMentoring);
-        return ResponseEntity.ok(updatedMentoring.toResponse());
+    public ResponseEntity<?> refuserMentoring(@PathVariable int idMentoring)  {
+        try {
+            Mentoring updatedMentoring = mentoringServices.refuserMentoring(idMentoring);
+            return ResponseEntity.ok(updatedMentoring.toResponse());
+        }catch (MessagingException | IOException | java.io.IOException e){
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
+                    .body("Une erreur interne s'est produit");
+        }
+
     }
 }

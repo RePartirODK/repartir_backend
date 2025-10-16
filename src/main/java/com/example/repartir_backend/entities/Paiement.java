@@ -1,5 +1,7 @@
 package com.example.repartir_backend.entities;
 
+import com.example.repartir_backend.dto.ResponsePaiement;
+import com.example.repartir_backend.enumerations.Etat;
 import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
@@ -21,7 +23,10 @@ public class Paiement {
     private Double montant;
     @Column(nullable = false)
     private String reference;
-    //private statut: enum;
+    //statut du paiement
+    @Column
+    private Etat status;
+
     @Column(nullable = false)
     private LocalDateTime date;
 
@@ -34,4 +39,18 @@ public class Paiement {
     @ManyToOne
     @JoinColumn(name = "id_inscriptionFormation", nullable = false)
     private InscriptionFormation inscriptionFormation;
+
+    //convertion en dto
+    public ResponsePaiement toResponse(){
+        return new ResponsePaiement(
+                this.id,
+                this.montant,
+                this.reference,
+                this.date,
+                this.status,
+                this.jeune.getId(),
+                this.parrainage != null ? this.parrainage.getId() : null,
+                this.inscriptionFormation.getId()
+        );
+    }
 }
