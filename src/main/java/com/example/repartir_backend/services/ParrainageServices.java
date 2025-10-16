@@ -15,6 +15,8 @@ import java.util.List;
 @Service
 @RequiredArgsConstructor
 public class ParrainageServices {
+
+
     private final ParrainRepository parrainRepository;
     private final FormationRepository formationRepository;
     private final JeuneRepository jeuneRepository;
@@ -23,7 +25,7 @@ public class ParrainageServices {
     private final InscriptionFormationRepository inscriptionFormationRepository;
 
     @Transactional
-    public ResponseParrainage creerParrainage(int idJeune, int idParrain, int idFormation) {
+    public ResponseParrainage creerParrainage(int idJeune, Integer idParrain, int idFormation) {
         Jeune jeune = jeuneRepository.findById(idJeune)
                 .orElseThrow(() -> new EntityNotFoundException("Jeune introuvable avec ID : " + idJeune));
 
@@ -32,6 +34,10 @@ public class ParrainageServices {
 
         Formation formation = formationRepository.findById(idFormation)
                 .orElseThrow(() -> new EntityNotFoundException("Formation introuvable avec ID : " + idFormation));
+
+        parrain = null;
+        parrain = parrainRepository.findById(idParrain)
+                .orElseThrow(() -> new EntityNotFoundException("Parrain introuvable avec ID : " + idParrain));
 
         // Vérifier qu'un parrainage identique n'existe pas déjà
         boolean exists = parrainageRepository.existsByJeune_IdAndParrain_IdAndFormation_Id(
@@ -42,45 +48,43 @@ public class ParrainageServices {
 
         Parrainage parrainage = new Parrainage();
         parrainage.setJeune(jeune);
-        parrainage.setParrain(parrain);
+        parrainage.setParrain(parrain); // peut être null
         parrainage.setFormation(formation);
 
         return parrainageRepository.save(parrainage).toResponse();
     }
 
-    //recuperer tous les parrainages
     public List<ResponseParrainage> getAllParrainages() {
-        return parrainageRepository.findAll().stream().map(
-                Parrainage::toResponse
-        ).toList();
+        return parrainageRepository.findAll().stream()
+                .map(Parrainage::toResponse)
+                .toList();
     }
 
-    /**
-     * Récupérer les parrainages d'un jeune
-     */
     public List<Parrainage> getParrainagesByJeune(int idJeune) {
         jeuneRepository.findById(idJeune)
                 .orElseThrow(() -> new EntityNotFoundException("Jeune introuvable avec ID : " + idJeune));
         return parrainageRepository.findAllByJeune_Id(idJeune);
     }
-    /**
-     * Récupérer les parrainages d'un jeune
-     */
+
     public List<ResponseParrainage> getParrainagesByParrain(int idParrain) {
         parrainRepository.findById(idParrain)
-                .orElseThrow(() -> new EntityNotFoundException("Jeune introuvable avec ID : " + idParrain));
-        return parrainageRepository.findAllByParrain_Id(idParrain).stream().map(
-                Parrainage::toResponse
-        ).toList();
+                .orElseThrow(() -> new EntityNotFoundException("Parrain introuvable avec ID : " + idParrain));
+        return parrainageRepository.findAllByParrain_Id(idParrain).stream()
+                .map(Parrainage::toResponse)
+                .toList();
     }
 
-    /**
-     * Récupérer les parrainages pour une formation
-     */
     public List<Parrainage> getParrainagesByFormation(int idFormation) {
         formationRepository.findById(idFormation)
                 .orElseThrow(() -> new EntityNotFoundException("Formation introuvable avec ID : " + idFormation));
         return parrainageRepository.findAllByFormation_Id(idFormation);
+    }
+    public List<Paiement> getPaiementsByParrainage1(int idParrainage) {
+        Parrainage parrainage = parrainageRepository.findById(idParrainage)
+                .orElseThrow(() -> new EntityNotFoundException("Parrainage introuvable avec l'ID : " + idParrainage));
+
+        // Retourner directement la liste des paiements
+        return parrainage.getPaiements();
     }
 
     @Transactional
