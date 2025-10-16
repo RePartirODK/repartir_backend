@@ -56,10 +56,5 @@ public class Jeune {
     @OneToMany(mappedBy = "jeune")
     private List<Parrainage> parrainages = new ArrayList<>();
 
-    //relation entre jeune et message
-    @OneToMany(mappedBy = "jeune")
-    private List<Message> messages= new ArrayList<>();
-
-
 
 }

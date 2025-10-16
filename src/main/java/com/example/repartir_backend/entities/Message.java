@@ -20,9 +20,10 @@ public class Message {
     private LocalDateTime date;
 
     @ManyToOne
-    @JoinColumn(name = "id_jeune")
-    private Jeune jeune;
+    @JoinColumn(name = "mentoring_id", nullable = false)
+    private Mentoring mentoring;
+
     @ManyToOne
-    @JoinColumn(name = "id_mentor")
-    private Mentor mentor;
+    @JoinColumn(name = "sender_id", nullable = false)
+    private Utilisateur sender;
 }

@@ -56,8 +56,7 @@ public class SecurityConfig {
                 //configuration des authorisation des endpoints
                 .authorizeHttpRequests(
                         auth -> auth.requestMatchers(
-                                "/api/auth/login", "/api/utilisateurs/register"
-                                        , "/api/auth/refresh",
+                                "/api/auth/login", "/api/utilisateurs/register", "/api/auth/refresh", "/ws/**",
                                 "/api/password/**"
                         ).permitAll()
                                 // Correction du chemin pour les administrateurs et ajout de règles spécifiques

@@ -1,6 +1,5 @@
 package com.example.repartir_backend.services;
 
-import com.example.repartir_backend.dto.ParrainageDto;
 import com.example.repartir_backend.dto.ResponseParrainage;
 import com.example.repartir_backend.entities.*;
 import com.example.repartir_backend.repositories.*;
@@ -21,7 +20,6 @@ public class ParrainageServices {
     private final FormationRepository formationRepository;
     private final JeuneRepository jeuneRepository;
     private final PaiementRepository paiementRepository;
-    private final ParrainageRepository parrainageRepository;
     private final InscriptionFormationRepository inscriptionFormationRepository;
 
     @Transactional
@@ -35,9 +33,9 @@ public class ParrainageServices {
         Parrain parrain = null;
         if (idParrain != null) {
             parrain = parrainRepository.findById(idParrain)
-                    .orElseThrow(() -> new RuntimeException("Parrain introuvable"));
+                    .orElseThrow(() -> new EntityNotFoundException("Parrain introuvable avec ID : " + idParrain));
         }
-        // Vérifier qu'un parrainage identique n'existe pas déjà
+
         // Vérifier qu'un parrainage identique n'existe pas déjà
         boolean exists;
         if (parrain == null) {
@@ -46,7 +44,7 @@ public class ParrainageServices {
             exists = parrainageRepository.existsByJeune_IdAndParrain_IdAndFormation_Id(idJeune, idParrain, idFormation);
         }
         if (exists) {
-            throw new EntityExistsException("Ce parrainage existe déjà pour ce jeune, ce parrain (ou absence de parrain) et cette formation.");
+            throw new EntityExistsException("Ce parrainage existe déjà pour ce jeune, ce parrain et cette formation.");
         }
 
 
@@ -64,6 +62,9 @@ public class ParrainageServices {
                 .toList();
     }
 
+    /**
+     * Récupérer les parrainages d'un jeune
+     */
     public List<Parrainage> getParrainagesByJeune(int idJeune) {
         jeuneRepository.findById(idJeune)
                 .orElseThrow(() -> new EntityNotFoundException("Jeune introuvable avec ID : " + idJeune));
