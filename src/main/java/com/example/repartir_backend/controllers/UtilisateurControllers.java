@@ -75,7 +75,7 @@ public class UtilisateurControllers {
     @PostMapping("/photoprofil")
     public ResponseEntity<?> uploadPhoto(
             @RequestParam("file") MultipartFile file,
-            @RequestBody LogoutRequest request
+            @RequestParam("email") String email
     ) {
         try {
             // Vérifier que le fichier est une image valide
@@ -85,7 +85,7 @@ public class UtilisateurControllers {
             }
 
             // Enregistrer le fichier
-            String savedFileName = utilisateurServices.uploadPhotoProfil(file, request.getEmail());
+            String savedFileName = utilisateurServices.uploadPhotoProfil(file, email);
 
             return ResponseEntity.ok("Photo enregistrée avec succès : " + savedFileName);
 
