@@ -11,9 +11,9 @@ import java.util.List;
 
 public interface PaiementRepository extends JpaRepository<Paiement,Integer> {
     List<Paiement> findAllByParrainage_Id(int id);
-    List<Paiement> findByInscriptionFormationAndStatut(InscriptionFormation inscription, Etat etat);
+    List<Paiement> findByInscriptionFormationAndStatus(InscriptionFormation inscription, Etat etat);
 
-    List<Paiement> findByInscriptionFormation(int inscription);
+    List<Paiement> findByInscriptionFormationId(int inscription);
 
     List<Paiement> findByJeuneId(int idJeune);
 }

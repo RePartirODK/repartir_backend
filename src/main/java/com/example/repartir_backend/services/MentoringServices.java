@@ -83,10 +83,14 @@ public class MentoringServices {
     }
 
     public Mentoring accepterMentoring(int idMentoring) {
+        //envoyé un message d'acceptation de mentoring au deux concerné
+
         return updateStatutMentoring(idMentoring, Etat.VALIDE);
+
     }
 
     public Mentoring refuserMentoring(int idMentoring) {
+        //envoyé un message de refus de mentoring
         return updateStatutMentoring(idMentoring, Etat.REFUSE);
     }
 

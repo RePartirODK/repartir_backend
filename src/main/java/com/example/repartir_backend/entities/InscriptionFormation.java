@@ -29,6 +29,7 @@ public class InscriptionFormation {
     @JoinColumn(name = "parrain_id")
     private Parrain parrain;
 
+    private Etat status;
     private Date dateInscription;
 
     private boolean demandeParrainage = false; // Par défaut, pas de demande

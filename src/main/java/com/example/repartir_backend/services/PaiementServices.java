@@ -64,7 +64,7 @@ public class PaiementServices {
 
         InscriptionFormation inscription = paiement.getInscriptionFormation();
         double totalValide = paiementRepository
-                .findByInscriptionFormationAndStatut(inscription, Etat.VALIDE)
+                .findByInscriptionFormationAndStatus(inscription, Etat.VALIDE)
                 .stream()
                 .mapToDouble(Paiement::getMontant)
                 .sum();
@@ -72,7 +72,7 @@ public class PaiementServices {
         double coutFormation = inscription.getFormation().getCout();
         // Dès que le total des paiements validés >= coût de la formation, on valide l’inscription
         if (totalValide >= coutFormation) {
-            inscription.setStatut(Etat.VALIDE);
+            inscription.setStatus(Etat.VALIDE);
             inscriptionFormationRepository.save(inscription);
         }
         return "Paiement validé avec succès. Total validé = " + totalValide + "/" + coutFormation;
@@ -86,7 +86,7 @@ public class PaiementServices {
         paiement.setStatus(Etat.REFUSE);
         //mettre l'etat de l'inscription à refuser
         InscriptionFormation inscriptionFormation = paiement.getInscriptionFormation();
-        inscriptionFormation.setStatut(Etat.REFUSE);
+        inscriptionFormation.setStatus(Etat.REFUSE);
         inscriptionFormationRepository.save(inscriptionFormation);
         paiementRepository.save(paiement);
         return "Paiement refusé.";
@@ -96,7 +96,7 @@ public class PaiementServices {
     public List<ResponsePaiement> getPaiementsParInscription(int idInscription) {
         InscriptionFormation inscription = inscriptionFormationRepository.findById(idInscription)
                 .orElseThrow(() -> new EntityNotFoundException("Inscription introuvable"));
-        return paiementRepository.findByInscriptionFormation(idInscription).stream()
+        return paiementRepository.findByInscriptionFormationId(idInscription).stream()
                 .map(Paiement::toResponse).toList();
     }
 
