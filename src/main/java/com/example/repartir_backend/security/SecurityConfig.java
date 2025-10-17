@@ -99,14 +99,11 @@ public class SecurityConfig {
                                         "/api/utilisateurs/photoprofil")
                                 .hasAnyRole("ADMIN", "MENTOR", "CENTRE","ENTREPRISE",
                                         "PARRAIN", "JEUNE")
-<<<<<<< HEAD
                                 .requestMatchers("/api/utilisateurs/supprimer").hasAnyRole(
                                         "MENTOR","PARRAIN","CENTRE","JEUNE","ENTREPRISE"
                                 )
-=======
                                 // Autoriser tous les utilisateurs authentifiés à accéder aux endpoints de notifications.
                                 .requestMatchers("/api/notifications/**").authenticated()
->>>>>>> de74755a243d2a408e02c4d1d7d546ddfbf10867
                                 .anyRequest()
                                 .authenticated()
 

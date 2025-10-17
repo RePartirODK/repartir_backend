@@ -41,19 +41,5 @@ public class AdminInitializer implements CommandLineRunner {
         } else {
             System.out.println(">>> L'utilisateur système ADMIN existe déjà.");
         }
-
-        // Étape 2 : Créer l'entité Admin pour la connexion si elle n'existe pas.
-        if (adminRepository.count() == 0) {
-            Admin admin = new Admin();
-            admin.setNom("Admin");
-            admin.setPrenom("Super");
-            admin.setEmail("admin@repartir.com");
-            admin.setMotDePasse(passwordEncoder.encode("admin"));
-            admin.setRole(Role.ADMIN);
-            adminRepository.save(admin);
-            System.out.println(">>> Entité Admin créée pour la connexion.");
-        } else {
-            System.out.println(">>> L'entité Admin pour la connexion existe déjà.");
-        }
     }
 }
