@@ -1,12 +1,13 @@
 package com.example.repartir_backend.controllers;
 
+import com.example.repartir_backend.dto.InscriptionResponseDto;
 import com.example.repartir_backend.entities.InscriptionFormation;
 import com.example.repartir_backend.services.InscriptionFormationServices;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 
-import jakarta.persistence.EntityNotFoundException;
+import java.nio.file.AccessDeniedException;
 
 @RestController
 @RequestMapping("/api/inscriptions")
@@ -17,10 +18,10 @@ public class InscriptionFormationControllers {
         this.inscriptionFormationServices = inscriptionFormationServices;
     }
 
-    @PostMapping("/demander-parrainage/{formationId}")
+    @PostMapping("/s-inscrire/{formationId}")
     @PreAuthorize("hasRole('JEUNE')")
-    public ResponseEntity<InscriptionFormation> demanderParrainagePourFormation(@PathVariable int formationId) {
-        InscriptionFormation inscription = inscriptionFormationServices.demanderParrainage(formationId);
-        return ResponseEntity.ok(inscription);
+    public ResponseEntity<InscriptionResponseDto> sInscrireAFormation(@PathVariable int formationId) {
+        InscriptionResponseDto inscriptionDto = inscriptionFormationServices.sInscrire(formationId);
+        return ResponseEntity.ok(inscriptionDto);
     }
 }
