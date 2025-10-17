@@ -7,9 +7,12 @@ import com.example.repartir_backend.enumerations.Role;
 import com.example.repartir_backend.repositories.AdminRepository;
 import com.example.repartir_backend.repositories.UtilisateurRepository;
 import lombok.RequiredArgsConstructor;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.CommandLineRunner;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Component;
+
+import java.util.List;
 
 @Component
 @RequiredArgsConstructor
@@ -19,6 +22,10 @@ public class AdminInitializer implements CommandLineRunner {
     private final AdminRepository adminRepository;
     private final PasswordEncoder passwordEncoder;
 
+    @Value("${default.admin.email}")
+    private String email;
+    @Value("${default.admin.password}")
+    private String motDePasse;
     @Override
     public void run(String... args) throws Exception {
         // Le système nécessite un admin dans 2 tables pour fonctionner :
@@ -27,19 +34,16 @@ public class AdminInitializer implements CommandLineRunner {
         // Cette méthode assure que les deux sont présents au démarrage.
 
         // Étape 1 : Créer l'Utilisateur ADMIN s'il n'existe pas.
-        if (utilisateurRepository.findByRole(Role.ADMIN).isEmpty()) {
-            Utilisateur adminUser = new Utilisateur();
-            adminUser.setNom("Admin_Systeme");
-            adminUser.setEmail("admin@repartir.com");
-            adminUser.setMotDePasse(passwordEncoder.encode("admin")); // Le mot de passe n'est pas utilisé ici, mais le champ est obligatoire
-            adminUser.setTelephone("0000000000");
+        List<Admin> adminList = adminRepository.findAll();
+        if (adminList.isEmpty()) {
+            Admin adminUser = new Admin();
+            adminUser.setNom("Admin_System");
+            adminUser.setPrenom("Admin_System");
+            adminUser.setEmail(email);
+            adminUser.setMotDePasse(passwordEncoder.encode(motDePasse)); // Le mot de passe n'est pas utilisé ici, mais le champ est obligatoire
             adminUser.setRole(Role.ADMIN);
-            adminUser.setEtat(Etat.VALIDE);
-            adminUser.setEstActive(true);
-            utilisateurRepository.save(adminUser);
-            System.out.println(">>> Utilisateur système ADMIN créé pour les notifications.");
-        } else {
-            System.out.println(">>> L'utilisateur système ADMIN existe déjà.");
+            adminRepository.save(adminUser);
+            System.out.println("Utilisateur système ADMIN créé pour les notifications.");
         }
     }
 }
