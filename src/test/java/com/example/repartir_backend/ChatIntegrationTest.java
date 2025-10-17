@@ -70,7 +70,7 @@ public class ChatIntegrationTest {
         // 1. Générer un token JWT pour un utilisateur de test.
         // NOTE: Assurez-vous que l'utilisateur 'jeune@example.com' existe dans votre base de données de test,
         // et qu'un mentoring avec l'ID 1 existe également.
-        final UserDetails userDetails = userDetailsService.loadUserByUsername("jeune@example.com");
+        final UserDetails userDetails = userDetailsService.loadUserByUsername("celine.durand@email.com");
         final String token = jwtServices.genererToken(userDetails);
 
         // 2. Préparer les headers pour la connexion STOMP. C'est ici que nous passons le token.

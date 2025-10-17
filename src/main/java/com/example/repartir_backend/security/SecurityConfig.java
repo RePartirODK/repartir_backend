@@ -102,6 +102,8 @@ public class SecurityConfig {
                                 .requestMatchers("/api/utilisateurs/supprimer").hasAnyRole(
                                         "MENTOR","PARRAIN","CENTRE","JEUNE","ENTREPRISE"
                                 )
+                                // Autoriser tous les utilisateurs authentifiés à accéder aux endpoints de notifications.
+                                .requestMatchers("/api/notifications/**").authenticated()
                                 .anyRequest()
                                 .authenticated()
 
