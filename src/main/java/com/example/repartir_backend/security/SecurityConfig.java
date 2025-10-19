@@ -2,6 +2,7 @@ package com.example.repartir_backend.security;
 
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.http.HttpStatus;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.AuthenticationProvider;
 import org.springframework.security.authentication.dao.DaoAuthenticationProvider;
@@ -20,6 +21,7 @@ import org.springframework.web.cors.CorsConfiguration;
 import org.springframework.web.cors.CorsConfigurationSource;
 import org.springframework.web.cors.UrlBasedCorsConfigurationSource;
 
+import java.time.LocalDateTime;
 import java.util.List;
 
 /**
@@ -112,7 +114,40 @@ public class SecurityConfig {
 
 
                 )
-                //.exceptionHandling(ex -> ex.authenticationEntryPoint(unauthorizedHandler))
+                .exceptionHandling(ex ->
+                        ex
+                                //utilisateur qui n'est pas authentifié du tout
+                                .authenticationEntryPoint((request, response, authException) -> {
+                                    response.setStatus(HttpStatus.UNAUTHORIZED.value());
+                                    response.setContentType("application/json");
+                                    response.getWriter().write("""
+                        {
+                            "timestamp": "%s",
+                            "status": 401,
+                            "error": "Unauthorized",
+                            "message": "Vous devez être connecté pour accéder à cette ressource.",
+                            "path": "%s"
+                        }
+                        """.formatted(LocalDateTime.now(), request.getRequestURI()));
+                                })
+                                //utilisateur authentifié mais sans l'autorisation requise
+                                .accessDeniedHandler(
+                                        (request, response, accessDeniedException) -> {
+                                            response.setStatus(HttpStatus.FORBIDDEN.value());
+                                            response.setContentType("application/json");
+                                            response.getWriter().write("""
+                        {
+                            "timestamp": "%s",
+                            "status": 403,
+                            "error": "Forbidden",
+                            "message": "Vous n'êtes pas autorisé à effectuer cette action.",
+                            "path": "%s"
+                        }
+                        """.formatted(LocalDateTime.now(), request.getRequestURI()));
+                                        }
+                                )
+
+                )
                 //Session sans etat (requis pour JWT)
                 .sessionManagement(
                         sess -> sess.sessionCreationPolicy(

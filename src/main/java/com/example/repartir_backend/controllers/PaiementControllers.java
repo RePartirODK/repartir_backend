@@ -46,8 +46,9 @@ public class PaiementControllers {
         {
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
                     .body("Erreur lors de la validation du paiement" + e.getMessage());
-        } catch (IOException e) {
-            throw new RuntimeException(e);
+        } catch (Exception e) {
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
+                    .body("Erreur lors de la validation du paiement" + e.getMessage());
         }
     }
 
@@ -60,12 +61,9 @@ public class PaiementControllers {
         }catch (EntityNotFoundException e)
         {
             return ResponseEntity.status(HttpStatus.NOT_FOUND).body(e.getMessage());
-        }catch (RuntimeException | MessagingException e)
-        {
+        } catch (Exception e) {
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
                     .body("Erreur lors de la validation du paiement" + e.getMessage());
-        } catch (IOException e) {
-            throw new RuntimeException(e);
         }
     }
 

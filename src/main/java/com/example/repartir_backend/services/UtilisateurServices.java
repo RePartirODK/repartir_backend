@@ -57,11 +57,9 @@ public class UtilisateurServices {
                         utilisateur.getRole() == Role.MENTOR ||
                         utilisateur.getRole() == Role.PARRAIN
         );
+        newUtilisateur.setUrlPhoto(utilisateur.getUrlPhoto());
         utilisateurRepository.save(newUtilisateur);
-        if(utilisateur.getUrlPhoto() != null)
-        {
-            newUtilisateur.setUrlPhoto(utilisateur.getUrlPhoto());
-        }
+
 
         switch(utilisateur.getRole())
         {
@@ -96,7 +94,7 @@ public class UtilisateurServices {
                 centre.setAgrement(utilisateur.getAgrement());
                 centreFormationRepository.save(centre);
                 // Notifier l'administrateur qu'un nouveau centre est en attente de validation.
-                notificationService.notifierAdmin("Un nouveau centre de formation '" + newUtilisateur.getNom() + "' s'est inscrit et est en attente de validation.");
+                //notificationService.notifierAdmin("Un nouveau centre de formation '" + newUtilisateur.getNom() + "' s'est inscrit et est en attente de validation.");
             }
             case ENTREPRISE -> {
                 Entreprise entreprise = new Entreprise();
@@ -106,7 +104,7 @@ public class UtilisateurServices {
                 entreprise.setAgrement(utilisateur.getAgrement());
                 entrepriseRepository.save(entreprise);
                 // Notifier l'administrateur qu'une nouvelle entreprise est en attente de validation.
-                notificationService.notifierAdmin("Une nouvelle entreprise '" + newUtilisateur.getNom() + "' s'est inscrite et est en attente de validation.");
+                //notificationService.notifierAdmin("Une nouvelle entreprise '" + newUtilisateur.getNom() + "' s'est inscrite et est en attente de validation.");
             }
             case PARRAIN -> {
                 Parrain parrain = new Parrain();
@@ -117,26 +115,22 @@ public class UtilisateurServices {
                 parrainRepository.save(parrain);
             }
         }
+
         //envoie d'un mail après la création des comptes utilisateurs
-        if (utilisateur.getRole() == Role.JEUNE || utilisateur.getRole() == Role.MENTOR || utilisateur.getRole() == Role.PARRAIN) {
-            String path = "src/main/resources/templates/comptevalider.html";
-            mailSendServices.envoyerEmailBienvenu(
-                    utilisateur.getEmail(),
-                    "Creation de compte",
-                    utilisateur.getNom(),
-                    path
-            );
-        } else {
-            String path = "src/main/resources/templates/encoursdevalidation.html";
-            mailSendServices.envoyerEmailBienvenu(
-                    utilisateur.getEmail(),
-                    "Compte en attente",
-                    utilisateur.getNom(),
-                    path
-            );
-        }
+        // Envoi de mail
+        String path = (newUtilisateur.getEtat() == Etat.VALIDE)
+                ? "src/main/resources/templates/comptevalider.html"
+                : "src/main/resources/templates/encoursdevalidation.html";
+
+        mailSendServices.envoyerEmailBienvenu(
+                utilisateur.getEmail(),
+                newUtilisateur.getEtat() == Etat.VALIDE ? "Création de compte" : "Compte en attente",
+                utilisateur.getNom(),
+                path
+        );
         return newUtilisateur;
     }
+
     public void deleteUtilisateur(int id) {
         Utilisateur utilisateur = utilisateurRepository.findById(id)
                 .orElseThrow(() -> new EntityNotFoundException("Utilisateur introuvable"));

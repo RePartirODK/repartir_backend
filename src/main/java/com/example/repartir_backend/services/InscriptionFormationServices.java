@@ -1,9 +1,11 @@
 package com.example.repartir_backend.services;
 
+import com.example.repartir_backend.dto.RequestPaiement;
 import com.example.repartir_backend.entities.Formation;
 import com.example.repartir_backend.entities.InscriptionFormation;
 import com.example.repartir_backend.entities.Jeune;
 import com.example.repartir_backend.entities.Utilisateur;
+import com.example.repartir_backend.enumerations.Etat;
 import com.example.repartir_backend.repositories.FormationRepository;
 import com.example.repartir_backend.repositories.InscriptionFormationRepository;
 import com.example.repartir_backend.repositories.JeuneRepository;
@@ -25,9 +27,10 @@ public class InscriptionFormationServices {
     private final UtilisateurRepository utilisateurRepository;
     private final JeuneRepository jeuneRepository;
     private final FormationRepository formationRepository;
+    private final PaiementServices paiementServices;
 
     @Transactional
-    public InscriptionResponseDto sInscrire(int formationId) {
+    public InscriptionResponseDto sInscrire(int formationId, boolean payerDirectement) {
         Jeune jeune = getCurrentJeune();
         Formation formation = formationRepository.findById(formationId)
                 .orElseThrow(() -> new EntityNotFoundException("Formation non trouvée."));
@@ -38,11 +41,20 @@ public class InscriptionFormationServices {
 
         InscriptionFormation inscription = new InscriptionFormation();
         inscription.setJeune(jeune);
+        inscription.setStatus(Etat.EN_ATTENTE);
         inscription.setFormation(formation);
         inscription.setDateInscription(new Date());
         inscription.setDemandeParrainage(false); // Inscription simple, sans demande de parrainage
-
         InscriptionFormation savedInscription = inscriptionFormationRepository.save(inscription);
+        //si le jeune veut payer directement
+        if (payerDirectement) {
+            RequestPaiement requestPaiement = new RequestPaiement();
+            requestPaiement.setIdJeune(jeune.getId());
+            requestPaiement.setIdInscription(savedInscription.getId());
+            requestPaiement.setMontant(formation.getCout());
+            requestPaiement.setIdParrainage(null); // pas de parrainage
+            paiementServices.creerPaiement(requestPaiement);
+        }
         return InscriptionResponseDto.fromEntity(savedInscription);
     }
 

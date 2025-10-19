@@ -4,6 +4,11 @@ import com.example.repartir_backend.dto.LogoutRequest;
 import com.example.repartir_backend.dto.RegisterUtilisateur;
 import com.example.repartir_backend.entities.Utilisateur;
 import com.example.repartir_backend.services.UtilisateurServices;
+import io.swagger.v3.oas.annotations.*;
+import io.swagger.v3.oas.annotations.media.Content;
+import io.swagger.v3.oas.annotations.media.Schema;
+import io.swagger.v3.oas.annotations.responses.*;
+import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.mail.MessagingException;
 import jakarta.persistence.EntityExistsException;
 import jakarta.persistence.EntityNotFoundException;
@@ -17,6 +22,7 @@ import java.io.IOException;
 
 @RestController
 @RequestMapping("/api/utilisateurs")
+@Tag(name = "Utilisateurs", description = "Gestion des comptes utilisateurs : inscription, suppression et photo de profil")
 public class UtilisateurControllers {
     UtilisateurServices utilisateurServices;
     public UtilisateurControllers(UtilisateurServices utilisateurServices){
@@ -24,6 +30,16 @@ public class UtilisateurControllers {
     }
 
     //endpoint pour s'inscrire
+    @Operation(
+            summary = "Créer un nouveau compte utilisateur",
+            description = "Permet à un utilisateur (jeune, parrain, centre de formation, etc.) de s’inscrire sur la plateforme.",
+            responses = {
+                    @ApiResponse(responseCode = "200", description = "Utilisateur créé avec succès",
+                            content = @Content(schema = @Schema(implementation = Utilisateur.class))),
+                    @ApiResponse(responseCode = "302", description = "Email déjà existant"),
+                    @ApiResponse(responseCode = "500", description = "Erreur interne du serveur")
+            }
+    )
     @PostMapping("/register")
     public ResponseEntity<?> creationCompte(@RequestBody RegisterUtilisateur registerUtilisateur)
     {
@@ -41,10 +57,9 @@ public class UtilisateurControllers {
 
             );
         } catch (RuntimeException e) {
-           return new ResponseEntity<>(
-                   "Une erreur s'est produite" + e.getMessage(),
-                   HttpStatus.INTERNAL_SERVER_ERROR
-           );
+            // 👇 affichage clair pour déboguer
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST)
+                    .body("Erreur inattendue : " + e.getClass().getSimpleName() + " - " + e.getMessage());
         }catch (IOException | MessagingException e)
         {
             return new ResponseEntity<>(
@@ -58,6 +73,14 @@ public class UtilisateurControllers {
 
 
     //endpoint pour supprimer un compte
+    @Operation(
+            summary = "Supprimer un compte utilisateur",
+            description = "Permet à un utilisateur de supprimer définitivement son compte à partir de son email.",
+            responses = {
+                    @ApiResponse(responseCode = "200", description = "Compte supprimé avec succès"),
+                    @ApiResponse(responseCode = "404", description = "Utilisateur non trouvé")
+            }
+    )
     @DeleteMapping("/supprimer")
     public ResponseEntity<?> supprimerCompte(@RequestBody LogoutRequest request)
     {
@@ -72,6 +95,17 @@ public class UtilisateurControllers {
     }
 
     //modifier photo de profil
+    @Operation(
+            summary = "Mettre à jour la photo de profil",
+            description = "Permet à un utilisateur d’ajouter ou de modifier sa photo de profil.",
+            responses = {
+                    @ApiResponse(responseCode = "200", description = "Photo enregistrée avec succès"),
+                    @ApiResponse(responseCode = "400", description = "Format de fichier non supporté"),
+                    @ApiResponse(responseCode = "404", description = "Utilisateur non trouvé"),
+                    @ApiResponse(responseCode = "413", description = "Fichier trop volumineux"),
+                    @ApiResponse(responseCode = "500", description = "Erreur interne du serveur")
+            }
+    )
     @PostMapping("/photoprofil")
     public ResponseEntity<?> uploadPhoto(
             @RequestParam("file") MultipartFile file,

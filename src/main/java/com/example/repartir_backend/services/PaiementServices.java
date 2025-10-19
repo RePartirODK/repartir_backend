@@ -20,7 +20,6 @@ import org.springframework.stereotype.Service;
 import java.io.IOException;
 import java.time.LocalDateTime;
 import java.util.List;
-
 @Service
 @RequiredArgsConstructor
 public class PaiementServices {
@@ -29,54 +28,50 @@ public class PaiementServices {
     private final ParrainageRepository parrainageRepository;
     private final JeuneRepository jeuneRepository;
     private final MailSendServices mailSendServices;
-    //creer un paiement
-    public ResponsePaiement creerPaiement(RequestPaiement paiement){
-        //rechercher le Jeune
-        Jeune jeune = jeuneRepository.findById(paiement.getIdJeune()).orElseThrow(()->
-                new EntityNotFoundException("Jeune non trouvé"));
 
-        //rechercher l'inscription
-        InscriptionFormation inscriptionFormation = inscriptionFormationRepository.findById(
-                paiement.getIdInscription()
-        ).orElseThrow(()-> new EntityNotFoundException("inscription non trouvée"));
+    @Transactional
+    public ResponsePaiement creerPaiement(RequestPaiement paiementRequest) {
+        Jeune jeune = jeuneRepository.findById(paiementRequest.getIdJeune())
+                .orElseThrow(() -> new EntityNotFoundException("Jeune non trouvé"));
+
+        InscriptionFormation inscription = inscriptionFormationRepository.findById(paiementRequest.getIdInscription())
+                .orElseThrow(() -> new EntityNotFoundException("Inscription non trouvée"));
 
         Parrainage parrainage = null;
-        if (paiement.getIdParrainage() != null) {
-            parrainage = parrainageRepository.findById(paiement.getIdParrainage())
+        if (paiementRequest.getIdParrainage() != null) {
+            parrainage = parrainageRepository.findById(paiementRequest.getIdParrainage())
                     .orElseThrow(() -> new EntityNotFoundException("Parrainage introuvable"));
         }
-        Paiement nouveauPaiement = new Paiement();
-        nouveauPaiement.setJeune(jeune);
-        nouveauPaiement.setInscriptionFormation(inscriptionFormation);
-        nouveauPaiement.setParrainage(parrainage);
-        nouveauPaiement.setMontant(paiement.getMontant());
-        nouveauPaiement.setDate(LocalDateTime.now());
-        nouveauPaiement.setStatus(Etat.EN_ATTENTE);
-        nouveauPaiement.setReference("PAY-" + System.currentTimeMillis());
 
-        return paiementRepository.save(nouveauPaiement).toResponse();
+        Paiement paiement = new Paiement();
+        paiement.setJeune(jeune);
+        paiement.setInscriptionFormation(inscription);
+        paiement.setParrainage(parrainage);
+        paiement.setMontant(paiementRequest.getMontant());
+        paiement.setDate(LocalDateTime.now());
+        paiement.setStatus(Etat.EN_ATTENTE);
+        paiement.setReference("PAY-" + System.currentTimeMillis());
+
+        return paiementRepository.save(paiement).toResponse();
     }
 
-    //valider un paiment
     @Transactional
-    public String validerPaiement(int idPaiement) throws MessagingException, IOException {
+    public String validerPaiement(int idPaiement) throws Exception {
         Paiement paiement = paiementRepository.findById(idPaiement)
                 .orElseThrow(() -> new EntityNotFoundException("Paiement introuvable"));
+
         paiement.setStatus(Etat.VALIDE);
         paiementRepository.save(paiement);
 
         InscriptionFormation inscription = paiement.getInscriptionFormation();
-        double totalValide = paiementRepository
-                .findByInscriptionFormationAndStatus(inscription, Etat.VALIDE)
-                .stream()
-                .mapToDouble(Paiement::getMontant)
-                .sum();
 
-        double coutFormation = inscription.getFormation().getCout();
-        // Dès que le total des paiements validés >= coût de la formation, on valide l’inscription
-        if (totalValide >= coutFormation) {
+        double totalValide = paiementRepository.findByInscriptionFormationAndStatus(inscription, Etat.VALIDE)
+                .stream().mapToDouble(Paiement::getMontant).sum();
+
+        if (totalValide >= inscription.getFormation().getCout()) {
             inscription.setStatus(Etat.VALIDE);
-            //Dès que l'inscription est validés, envois d'un mail de confirmation d'inscription
+
+            // Mail de confirmation
             String path = "src/main/resources/templates/inscriptionreussi.html";
             mailSendServices.acceptionInscription(
                     inscription.getJeune().getUtilisateur().getEmail(),
@@ -85,45 +80,44 @@ public class PaiementServices {
                     inscription.getFormation().getTitre(),
                     path
             );
+
             inscriptionFormationRepository.save(inscription);
         }
-        return "Paiement validé avec succès. Total validé = " + totalValide + "/" + coutFormation;
+
+        return "Paiement validé. Total payé : " + totalValide + "/" + inscription.getFormation().getCout();
     }
 
-    //refuser un paiement
     @Transactional
-    public String refuserPaiement(int idPaiement) throws MessagingException, IOException {
+    public String refuserPaiement(int idPaiement) throws Exception {
         Paiement paiement = paiementRepository.findById(idPaiement)
                 .orElseThrow(() -> new EntityNotFoundException("Paiement introuvable"));
+
         paiement.setStatus(Etat.REFUSE);
-        //mettre l'etat de l'inscription à refuser
-        InscriptionFormation inscriptionFormation = paiement.getInscriptionFormation();
-        inscriptionFormation.setStatus(Etat.REFUSE);
+        paiementRepository.save(paiement);
+
+        InscriptionFormation inscription = paiement.getInscriptionFormation();
+        inscription.setStatus(Etat.REFUSE);
+        inscriptionFormationRepository.save(inscription);
+
         String path = "src/main/resources/templates/refusreussi.html";
         mailSendServices.acceptionInscription(
-                inscriptionFormation.getJeune().getUtilisateur().getEmail(),
-                "Inscription acceptée",
-                inscriptionFormation.getJeune().getUtilisateur().getNom(),
-                inscriptionFormation.getFormation().getTitre(),
+                inscription.getJeune().getUtilisateur().getEmail(),
+                "Inscription refusée",
+                inscription.getJeune().getUtilisateur().getNom(),
+                inscription.getFormation().getTitre(),
                 path
         );
-        inscriptionFormationRepository.save(inscriptionFormation);
-        paiementRepository.save(paiement);
+
         return "Paiement refusé.";
     }
 
-    //lister les paiements d'une inscription
     public List<ResponsePaiement> getPaiementsParInscription(int idInscription) {
-        InscriptionFormation inscription = inscriptionFormationRepository.findById(idInscription)
-                .orElseThrow(() -> new EntityNotFoundException("Inscription introuvable"));
         return paiementRepository.findByInscriptionFormationId(idInscription).stream()
                 .map(Paiement::toResponse).toList();
     }
 
-    //lister les paiements d'un jeune
-    public List<ResponsePaiement> getPaiementByJeune(int idJeune){
+    public List<ResponsePaiement> getPaiementByJeune(int idJeune) {
         return paiementRepository.findByJeuneId(idJeune).stream()
                 .map(Paiement::toResponse).toList();
     }
-
 }

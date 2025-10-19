@@ -58,12 +58,13 @@ public class ParrainageServices {
         // Étape 1 : Sauvegarder l'entité. L'objet retourné n'est pas forcément complet.
         Parrainage parrainageSauvegarde = parrainageRepository.save(parrainage);
 
-        // Étape 2 : Recharger l'entité depuis la base de données par son ID pour garantir que toutes les relations sont chargées.
-        Parrainage parrainageComplet = parrainageRepository.findById(parrainageSauvegarde.getId())
-                .orElseThrow(() -> new EntityNotFoundException("Erreur lors de la récupération du parrainage après création."));
+        // Notification si parrain déjà assigné
+        if (parrain != null) {
+            String msg = "Vous êtes maintenant parrain pour la formation : " + formation.getTitre();
+            notificationService.notifierUtilisateur(parrain.getUtilisateur(), msg);
+        }
 
-        // Étape 3 : Convertir l'entité complète et renvoyer la réponse.
-        return parrainageComplet.toResponse();
+        return parrainageSauvegarde.toResponse();
     }
 
     /**

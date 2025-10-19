@@ -1,16 +1,21 @@
 package com.example.repartir_backend.services;
 
+import com.example.repartir_backend.dto.ResponseParrain;
+import com.example.repartir_backend.entities.Admin;
 import com.example.repartir_backend.entities.Notification;
 import com.example.repartir_backend.entities.Utilisateur;
 import com.example.repartir_backend.enumerations.Role;
+import com.example.repartir_backend.repositories.AdminRepository;
 import com.example.repartir_backend.repositories.NotificationRepository;
 import com.example.repartir_backend.repositories.UtilisateurRepository;
 import com.example.repartir_backend.dto.NotificationDto;
 import jakarta.persistence.EntityNotFoundException;
 import lombok.RequiredArgsConstructor;
+import org.springframework.http.HttpStatus;
 import org.springframework.messaging.simp.SimpMessagingTemplate;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import org.springframework.web.server.ResponseStatusException;
 
 import java.util.List;
 
@@ -25,6 +30,7 @@ public class NotificationService {
 
     private final NotificationRepository notificationRepository;
     private final UtilisateurRepository utilisateurRepository;
+    private final AdminRepository adminRepository;
     /**
      * Template pour l'envoi de messages via WebSocket.
      * C'est le composant clé qui permet de "pousser" les notifications
@@ -40,10 +46,20 @@ public class NotificationService {
      */
     @Transactional
     public void notifierAdmin(String message) {
-        Utilisateur admin = utilisateurRepository.findByRole(Role.ADMIN)
-                .orElseThrow(() -> new EntityNotFoundException("Aucun administrateur trouvé dans le système."));
+        List<Admin> admins= adminRepository.findAll();
 
-        creerEtEnvoyerNotification(admin, message);
+        if (admins.isEmpty()) {
+            throw new ResponseStatusException(HttpStatus.NOT_FOUND, "Aucun administrateur trouvé");
+        }
+
+        for(Admin admin: admins){
+            Utilisateur utilisateur = new Utilisateur(
+            );
+            utilisateur.setId(admin.getId());
+            utilisateur.setEmail(admin.getEmail());
+            creerEtEnvoyerNotification(utilisateur, message);
+        }
+
     }
 
     /**
