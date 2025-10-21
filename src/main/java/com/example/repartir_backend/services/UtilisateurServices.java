@@ -16,6 +16,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
 
 import java.io.IOException;
+import java.time.LocalDateTime;
 import java.util.Optional;
 
 @Service
@@ -58,6 +59,7 @@ public class UtilisateurServices {
                         utilisateur.getRole() == Role.PARRAIN
         );
         newUtilisateur.setUrlPhoto(utilisateur.getUrlPhoto());
+        newUtilisateur.setDateCreation(LocalDateTime.now());
         utilisateurRepository.save(newUtilisateur);
 
 
@@ -94,7 +96,7 @@ public class UtilisateurServices {
                 centre.setAgrement(utilisateur.getAgrement());
                 centreFormationRepository.save(centre);
                 // Notifier l'administrateur qu'un nouveau centre est en attente de validation.
-                //notificationService.notifierAdmin("Un nouveau centre de formation '" + newUtilisateur.getNom() + "' s'est inscrit et est en attente de validation.");
+                notificationService.notifierAdmin("Un nouveau centre de formation '" + newUtilisateur.getNom() + "' s'est inscrit et est en attente de validation.");
             }
             case ENTREPRISE -> {
                 Entreprise entreprise = new Entreprise();
@@ -104,7 +106,7 @@ public class UtilisateurServices {
                 entreprise.setAgrement(utilisateur.getAgrement());
                 entrepriseRepository.save(entreprise);
                 // Notifier l'administrateur qu'une nouvelle entreprise est en attente de validation.
-                //notificationService.notifierAdmin("Une nouvelle entreprise '" + newUtilisateur.getNom() + "' s'est inscrite et est en attente de validation.");
+                notificationService.notifierAdmin("Une nouvelle entreprise '" + newUtilisateur.getNom() + "' s'est inscrite et est en attente de validation.");
             }
             case PARRAIN -> {
                 Parrain parrain = new Parrain();

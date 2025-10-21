@@ -37,8 +37,17 @@ public class Notification {
      * lors du chargement d'une liste de notifications.
      */
     @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "destinataire_id", nullable = false)
+    @JoinColumn(name = "utilisateur_id")
     private Utilisateur destinataire;
+
+
+    /**
+     * Le destinataire admin (si la notification est pour un administrateur)
+     */
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "admin_id")
+    private Admin destinataireAdmin;
+
 
     /**
      * Indique si la notification a été lue par le destinataire.
@@ -53,4 +62,21 @@ public class Notification {
      */
     @Column(nullable = false)
     private LocalDateTime dateCreation = LocalDateTime.now();
+
+    /**
+     * Méthode exécutée automatiquement avant toute insertion ou mise à jour.
+     * Elle permet de s'assurer qu'une notification a un seul type de destinataire.
+     */
+    @PrePersist
+    @PreUpdate
+    private void checkDestinataire() {
+        if (destinataire != null && destinataireAdmin != null) {
+            throw new IllegalStateException("Une notification ne peut pas avoir deux destinataires.");
+        }
+        if (destinataire == null && destinataireAdmin == null) {
+            throw new IllegalStateException("Une notification doit avoir un destinataire.");
+        }
+    }
+
+
 }

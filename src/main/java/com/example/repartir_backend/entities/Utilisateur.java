@@ -10,6 +10,7 @@ import lombok.NoArgsConstructor;
 import lombok.Setter;
 import org.hibernate.type.TrueFalseConverter;
 
+import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -41,9 +42,15 @@ public class Utilisateur {
     @Convert(converter = TrueFalseConverter.class)
     private boolean estActive;
 
+    //date de creation du compte
+    @Column(nullable = false)
+    private LocalDateTime dateCreation;
+
 
     @OneToMany(mappedBy = "utilisateur")
-    @JsonIgnore
     private List<UserDomaine> userDomaineList = new ArrayList<>();
+
+    @OneToMany(mappedBy = "destinataire")
+    private List<Notification> notifications = new ArrayList<>();
 
 }
