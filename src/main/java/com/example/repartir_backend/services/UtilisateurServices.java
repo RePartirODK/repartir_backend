@@ -16,6 +16,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
 
 import java.io.IOException;
+import java.time.LocalDateTime;
 import java.util.Optional;
 
 @Service
@@ -57,11 +58,10 @@ public class UtilisateurServices {
                         utilisateur.getRole() == Role.MENTOR ||
                         utilisateur.getRole() == Role.PARRAIN
         );
+        newUtilisateur.setUrlPhoto(utilisateur.getUrlPhoto());
+        newUtilisateur.setDateCreation(LocalDateTime.now());
         utilisateurRepository.save(newUtilisateur);
-        if(utilisateur.getUrlPhoto() != null)
-        {
-            newUtilisateur.setUrlPhoto(utilisateur.getUrlPhoto());
-        }
+
 
         switch(utilisateur.getRole())
         {
@@ -117,26 +117,22 @@ public class UtilisateurServices {
                 parrainRepository.save(parrain);
             }
         }
+
         //envoie d'un mail après la création des comptes utilisateurs
-        if (utilisateur.getRole() == Role.JEUNE || utilisateur.getRole() == Role.MENTOR || utilisateur.getRole() == Role.PARRAIN) {
-            String path = "src/main/resources/templates/comptevalider.html";
-            mailSendServices.envoyerEmailBienvenu(
-                    utilisateur.getEmail(),
-                    "Creation de compte",
-                    utilisateur.getNom(),
-                    path
-            );
-        } else {
-            String path = "src/main/resources/templates/encoursdevalidation.html";
-            mailSendServices.envoyerEmailBienvenu(
-                    utilisateur.getEmail(),
-                    "Compte en attente",
-                    utilisateur.getNom(),
-                    path
-            );
-        }
+        // Envoi de mail
+        String path = (newUtilisateur.getEtat() == Etat.VALIDE)
+                ? "src/main/resources/templates/comptevalider.html"
+                : "src/main/resources/templates/encoursdevalidation.html";
+
+        mailSendServices.envoyerEmailBienvenu(
+                utilisateur.getEmail(),
+                newUtilisateur.getEtat() == Etat.VALIDE ? "Création de compte" : "Compte en attente",
+                utilisateur.getNom(),
+                path
+        );
         return newUtilisateur;
     }
+
     public void deleteUtilisateur(int id) {
         Utilisateur utilisateur = utilisateurRepository.findById(id)
                 .orElseThrow(() -> new EntityNotFoundException("Utilisateur introuvable"));

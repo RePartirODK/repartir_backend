@@ -1,6 +1,11 @@
 package com.example.repartir_backend.controllers;
 
 import com.example.repartir_backend.services.PassWordForget;
+import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.media.Content;
+import io.swagger.v3.oas.annotations.media.Schema;
+import io.swagger.v3.oas.annotations.responses.ApiResponse;
+import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.mail.MessagingException;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
@@ -13,6 +18,7 @@ import java.util.Map;
 @RestController
 @RequestMapping("/api/password")
 @RequiredArgsConstructor
+@Tag(name = "Mot de passe", description = "Gestion du mot de passe oublié et réinitialisation")
 public class PasswordForgetControllers {
 
     private final PassWordForget passWordForget;
@@ -20,6 +26,37 @@ public class PasswordForgetControllers {
     /**
      * Envoi du code par email
      */
+    @Operation(
+            summary = "Demande de réinitialisation du mot de passe",
+            description = "Envoie un code de vérification par email pour réinitialiser le mot de passe.",
+
+            responses = {
+                    @ApiResponse(
+                            responseCode = "200",
+                            description = "Email envoyé avec succès",
+                            content = @Content(mediaType = "application/json",
+                                    schema = @Schema(example = "\"Code de réinitialisation envoyé à votre adresse email.\""))
+                    ),
+                    @ApiResponse(
+                            responseCode = "400",
+                            description = "Requête invalide ou email manquant",
+                            content = @Content(mediaType = "application/json",
+                                    schema = @Schema(example = "\"Email requis !\""))
+                    ),
+                    @ApiResponse(
+                            responseCode = "403",
+                            description = "Accès interdit",
+                            content = @Content(mediaType = "application/json",
+                                    schema = @Schema(example = "\"Accès refusé à cette ressource.\""))
+                    ),
+                    @ApiResponse(
+                            responseCode = "500",
+                            description = "Erreur interne (envoi d’email)",
+                            content = @Content(mediaType = "application/json",
+                                    schema = @Schema(example = "\"Erreur lors de l'envoi du mail : ...\""))
+                    )
+            }
+    )
     @PostMapping("/forget")
     public ResponseEntity<?> forgetPassword(@RequestBody Map<String, String> request) {
         try {
@@ -49,6 +86,24 @@ public class PasswordForgetControllers {
      *   "nouveauPassword": "NouveauMotDePasse123!"
      * }
      */
+    @Operation(
+            summary = "Réinitialisation du mot de passe",
+            description = "Permet à l'utilisateur de saisir le code reçu et un nouveau mot de passe.",
+            responses = {
+                    @ApiResponse(
+                            responseCode = "200",
+                            description = "Mot de passe réinitialisé avec succès",
+                            content = @Content(mediaType = "application/json",
+                                    schema = @Schema(example = "\"Mot de passe modifié avec succès.\""))
+                    ),
+                    @ApiResponse(
+                            responseCode = "400",
+                            description = "Requête invalide (paramètres manquants ou code incorrect)",
+                            content = @Content(mediaType = "application/json",
+                                    schema = @Schema(example = "\"Code invalide ou expiré.\""))
+                    )
+            }
+    )
     @PostMapping("/reset")
     public ResponseEntity<?> resetPassword(@RequestBody Map<String, String> request) {
         try {

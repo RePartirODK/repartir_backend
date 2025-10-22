@@ -11,5 +11,5 @@ import java.util.List;
 @Repository
 public interface InscriptionFormationRepository extends JpaRepository<InscriptionFormation, Integer> {
     boolean existsByJeuneAndFormation(Jeune jeune, Formation formation);
-    List<InscriptionFormation> findByDemandeParrainageTrueAndParrainIsNull();
+
 }

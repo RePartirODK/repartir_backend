@@ -20,8 +20,9 @@ public class InscriptionFormationControllers {
 
     @PostMapping("/s-inscrire/{formationId}")
     @PreAuthorize("hasRole('JEUNE')")
-    public ResponseEntity<InscriptionResponseDto> sInscrireAFormation(@PathVariable int formationId) {
-        InscriptionResponseDto inscriptionDto = inscriptionFormationServices.sInscrire(formationId);
+    public ResponseEntity<InscriptionResponseDto> sInscrireAFormation(@PathVariable int formationId,
+                                                                      @PathVariable boolean payerDirectement) {
+        InscriptionResponseDto inscriptionDto = inscriptionFormationServices.sInscrire(formationId, payerDirectement);
         return ResponseEntity.ok(inscriptionDto);
     }
 }

@@ -46,7 +46,7 @@ public class Formation {
     private String urlCertificat;
 
     @OneToMany(mappedBy = "formation")
-    private List<InscriptionFormation> inscriptionFormationList = new ArrayList<>();
+    private List<InscriptionFormation> inscriptions = new ArrayList<>();
     @OneToMany(mappedBy = "formation")
     private List<Parrainage> parrainages = new ArrayList<>();
     @ManyToOne

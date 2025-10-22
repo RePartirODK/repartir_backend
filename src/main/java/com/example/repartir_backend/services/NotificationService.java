@@ -1,17 +1,21 @@
 package com.example.repartir_backend.services;
 
+import com.example.repartir_backend.dto.NotificationDto;
+import com.example.repartir_backend.entities.Admin;
 import com.example.repartir_backend.entities.Notification;
 import com.example.repartir_backend.entities.Utilisateur;
-import com.example.repartir_backend.enumerations.Role;
+import com.example.repartir_backend.repositories.AdminRepository;
 import com.example.repartir_backend.repositories.NotificationRepository;
 import com.example.repartir_backend.repositories.UtilisateurRepository;
-import com.example.repartir_backend.dto.NotificationDto;
 import jakarta.persistence.EntityNotFoundException;
 import lombok.RequiredArgsConstructor;
+import org.springframework.http.HttpStatus;
 import org.springframework.messaging.simp.SimpMessagingTemplate;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import org.springframework.web.server.ResponseStatusException;
 
+import java.time.LocalDateTime;
 import java.util.List;
 
 /**
@@ -25,25 +29,25 @@ public class NotificationService {
 
     private final NotificationRepository notificationRepository;
     private final UtilisateurRepository utilisateurRepository;
-    /**
-     * Template pour l'envoi de messages via WebSocket.
-     * C'est le composant clé qui permet de "pousser" les notifications
-     * en temps réel vers les clients connectés.
-     */
+    private final AdminRepository adminRepository;
     private final SimpMessagingTemplate messagingTemplate;
 
     /**
-     * Crée et envoie une notification à l'administrateur du système.
-     * Cette méthode recherche l'unique utilisateur avec le rôle ADMIN.
+     * Crée et envoie une notification à tous les administrateurs du système.
      * @param message Le contenu de la notification.
-     * @throws EntityNotFoundException si aucun utilisateur ADMIN n'est trouvé.
      */
     @Transactional
     public void notifierAdmin(String message) {
-        Utilisateur admin = utilisateurRepository.findByRole(Role.ADMIN)
-                .orElseThrow(() -> new EntityNotFoundException("Aucun administrateur trouvé dans le système."));
+        List<Admin> admins = adminRepository.findAll();
 
-        creerEtEnvoyerNotification(admin, message);
+        if (admins.isEmpty()) {
+            throw new ResponseStatusException(HttpStatus.NOT_FOUND, "Aucun administrateur trouvé");
+        }
+
+        // On notifie chaque admin
+        for (Admin admin : admins) {
+            creerEtEnvoyerNotification(null, admin, message);
+        }
     }
 
     /**
@@ -53,43 +57,77 @@ public class NotificationService {
      */
     @Transactional
     public void notifierUtilisateur(Utilisateur destinataire, String message) {
-        creerEtEnvoyerNotification(destinataire, message);
+        if (destinataire == null) {
+            throw new IllegalArgumentException("Le destinataire ne peut pas être null");
+        }
+        creerEtEnvoyerNotification(destinataire,null, message);
     }
 
     /**
-     * Méthode privée qui factorise la logique de création et d'envoi.
-     * 1. Crée une nouvelle entité Notification et la sauvegarde en base de données.
-     * 2. Envoie la notification via WebSocket à un canal privé de l'utilisateur.
-     * Le canal '/user/queue/notifications' est spécifique à chaque utilisateur.
-     * Le framework s'occupe de router le message vers le bon utilisateur grâce à son email (Principal).
-     * @param destinataire L'utilisateur à notifier.
+     * Méthode privée factorisée pour créer et envoyer une notification.
+     * @param destinataireUtilisateur L'utilisateur à notifier.
      * @param message Le message à envoyer.
      */
-    private void creerEtEnvoyerNotification(Utilisateur destinataire, String message) {
+    private void creerEtEnvoyerNotification(Utilisateur destinataireUtilisateur, Admin destinataireAdmin, String message) {
         Notification notification = new Notification();
-        notification.setDestinataire(destinataire);
         notification.setMessage(message);
+        notification.setDateCreation(LocalDateTime.now());
+        notification.setLue(false);
+
+        // Définir le bon destinataire
+        if (destinataireUtilisateur != null && destinataireAdmin != null) {
+            throw new IllegalArgumentException("Une notification ne peut pas avoir deux destinataires (Admin et Utilisateur).");
+        } else if (destinataireUtilisateur != null) {
+            notification.setDestinataire(destinataireUtilisateur);
+        } else if (destinataireAdmin != null) {
+            notification.setDestinataireAdmin(destinataireAdmin);
+        } else {
+            throw new IllegalArgumentException("Une notification doit avoir au moins un destinataire (Admin ou Utilisateur).");
+        }
+
+        // Sauvegarde en base
         notificationRepository.save(notification);
 
-        // Envoyer la notification en temps réel via WebSocket à un topic utilisateur spécifique
-        messagingTemplate.convertAndSendToUser(
-                destinataire.getEmail(),
-                "/queue/notifications",
-                notification
-        );
+        // Envoi via WebSocket
+        try {
+            String destinataireEmail = destinataireUtilisateur != null
+                    ? destinataireUtilisateur.getEmail()
+                    : destinataireAdmin.getEmail();
+
+            messagingTemplate.convertAndSendToUser(
+                    destinataireEmail,
+                    "/queue/notifications",
+                    NotificationDto.fromEntity(notification) // DTO allégé
+            );
+        } catch (Exception e) {
+            System.err.println("Erreur lors de l’envoi WebSocket : " + e.getMessage());
+        }
     }
 
     /**
-     * Récupère toutes les notifications non lues pour un utilisateur donné.
-     * L'annotation @Transactional garantit que la session de base de données reste ouverte,
-     * ce qui permet de charger les données associées (comme le destinataire) même si elles
-     * sont en chargement paresseux (LAZY), évitant ainsi une LazyInitializationException.
-     * @param utilisateurId L'ID de l'utilisateur pour lequel récupérer les notifications.
-     * @return Une liste de DTOs de notification, sûre à sérialiser en JSON.
+     * Récupère toutes les notifications non lues d’un utilisateur.
+     * @param utilisateurId L’ID de l’utilisateur.
+     * @return Liste de NotificationDto.
      */
     @Transactional(readOnly = true)
     public List<NotificationDto> getNotificationsNonLues(int utilisateurId) {
-        List<Notification> notifications = notificationRepository.findByDestinataireIdAndLueIsFalseOrderByDateCreationDesc(utilisateurId);
+        if (!utilisateurRepository.existsById(utilisateurId)) {
+            throw new ResponseStatusException(HttpStatus.NOT_FOUND, "Utilisateur non trouvé avec l'id " + utilisateurId);
+        }
+
+        List<Notification> notifications = notificationRepository
+                .findByDestinataireIdAndLueIsFalseOrderByDateCreationDesc(utilisateurId);
+
         return NotificationDto.fromEntities(notifications);
     }
+    /**
+     * Récupère les notifications non lues d’un administrateur spécifique.
+     */
+    @Transactional(readOnly = true)
+    public List<NotificationDto> getNotificationsNonLuesAdmin(int adminId) {
+        List<Notification> notifications =
+                notificationRepository.findByDestinataireAdminIdAndLueIsFalseOrderByDateCreationDesc(adminId);
+        return NotificationDto.fromEntities(notifications);
+    }
+
 }

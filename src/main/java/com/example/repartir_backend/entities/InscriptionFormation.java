@@ -6,7 +6,9 @@ import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
+import java.util.ArrayList;
 import java.util.Date;
+import java.util.List;
 
 @Entity
 @Data
@@ -25,10 +27,9 @@ public class InscriptionFormation {
     @JoinColumn(name = "formation_id", nullable = false)
     private Formation formation;
 
-    @ManyToOne
-    @JoinColumn(name = "parrain_id")
-    private Parrain parrain;
-
+    @OneToMany(mappedBy = "inscriptionFormation")
+    private List<Paiement> paiements = new ArrayList<>();
+    @Enumerated(EnumType.STRING)
     private Etat status;
     private Date dateInscription;
 

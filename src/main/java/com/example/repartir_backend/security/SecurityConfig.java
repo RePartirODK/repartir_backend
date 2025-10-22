@@ -2,6 +2,7 @@ package com.example.repartir_backend.security;
 
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.http.HttpStatus;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.AuthenticationProvider;
 import org.springframework.security.authentication.dao.DaoAuthenticationProvider;
@@ -20,6 +21,7 @@ import org.springframework.web.cors.CorsConfiguration;
 import org.springframework.web.cors.CorsConfigurationSource;
 import org.springframework.web.cors.UrlBasedCorsConfigurationSource;
 
+import java.time.LocalDateTime;
 import java.util.List;
 
 /**
@@ -51,13 +53,22 @@ public class SecurityConfig {
                 // Cela résout les erreurs 403 Forbidden sur les endpoints publics en s'assurant
                 // que les règles CORS sont appliquées avant les règles de sécurité.
                 .cors(cors -> cors.configurationSource(corsConfigurationSource))
-                //desactiver le csrf, pas besoin car jwt est sans etat
+                //désactiver le csrf, pas besoin car jwt est sans état
                 .csrf(AbstractHttpConfigurer::disable)
                 //configuration des authorisation des endpoints
                 .authorizeHttpRequests(
                         auth -> auth.requestMatchers(
-                                "/api/auth/login", "/api/utilisateurs/register", "/api/auth/refresh", "/ws/**",
-                                "/api/password/**"
+                                "/api/auth/login",
+                                        "/api/utilisateurs/register",
+                                        "/api/auth/refresh",
+                                        "/ws/**",
+                                        "/api/password/**",
+                                        "/v3/api-docs/**",
+                                        "/swagger-ui/**",
+                                        "/swagger-ui.html",
+                                        "/swagger-resources/**",
+                                        "/webjars/**"
+
                         ).permitAll()
                                 // Correction du chemin pour les administrateurs et ajout de règles spécifiques
                                 .requestMatchers("/administrateurs/**").hasRole("ADMIN")
@@ -106,13 +117,41 @@ public class SecurityConfig {
                                 .requestMatchers("/api/notifications/**").authenticated()
                                 .anyRequest()
                                 .authenticated()
-
-
-
-
+                )
+                .exceptionHandling(ex ->
+                        ex
+                                //utilisateur qui n'est pas authentifié du tout
+                                .authenticationEntryPoint((request, response, authException) -> {
+                                    response.setStatus(HttpStatus.UNAUTHORIZED.value());
+                                    response.setContentType("application/json");
+                                    response.getWriter().write("""
+                        {
+                            "timestamp": "%s",
+                            "status": 401,
+                            "error": "Unauthorized",
+                            "message": "Vous devez être connecté pour accéder à cette ressource.",
+                            "path": "%s"
+                        }
+                        """.formatted(LocalDateTime.now(), request.getRequestURI()));
+                                })
+                                //utilisateur authentifié, mais sans l'autorisation requise
+                                .accessDeniedHandler(
+                                        (request, response, accessDeniedException) -> {
+                                            response.setStatus(HttpStatus.FORBIDDEN.value());
+                                            response.setContentType("application/json");
+                                            response.getWriter().write("""
+                        {
+                            "timestamp": "%s",
+                            "status": 403,
+                            "error": "Forbidden",
+                            "message": "Vous n'êtes pas autorisé à effectuer cette action.",
+                            "path": "%s"
+                        }
+                        """.formatted(LocalDateTime.now(), request.getRequestURI()));
+                                        }
+                                )
 
                 )
-                //.exceptionHandling(ex -> ex.authenticationEntryPoint(unauthorizedHandler))
                 //Session sans etat (requis pour JWT)
                 .sessionManagement(
                         sess -> sess.sessionCreationPolicy(
