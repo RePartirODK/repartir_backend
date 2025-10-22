@@ -46,10 +46,7 @@ public class NotificationService {
 
         // On notifie chaque admin
         for (Admin admin : admins) {
-            // On récupère le véritable utilisateur correspondant à l’admin
-            Utilisateur utilisateur = utilisateurRepository.findById(admin.getId())
-                    .orElseThrow(() -> new EntityNotFoundException("Utilisateur admin non trouvé avec l'id : " + admin.getId()));
-            creerEtEnvoyerNotification(utilisateur, message);
+            creerEtEnvoyerNotification(null, admin, message);
         }
     }
 
@@ -63,30 +60,44 @@ public class NotificationService {
         if (destinataire == null) {
             throw new IllegalArgumentException("Le destinataire ne peut pas être null");
         }
-        creerEtEnvoyerNotification(destinataire, message);
+        creerEtEnvoyerNotification(destinataire,null, message);
     }
 
     /**
      * Méthode privée factorisée pour créer et envoyer une notification.
-     * @param destinataire L'utilisateur à notifier.
+     * @param destinataireUtilisateur L'utilisateur à notifier.
      * @param message Le message à envoyer.
      */
-    private void creerEtEnvoyerNotification(Utilisateur destinataire, String message) {
+    private void creerEtEnvoyerNotification(Utilisateur destinataireUtilisateur, Admin destinataireAdmin, String message) {
         Notification notification = new Notification();
-        notification.setDestinataire(destinataire);
         notification.setMessage(message);
         notification.setDateCreation(LocalDateTime.now());
         notification.setLue(false);
 
+        // Définir le bon destinataire
+        if (destinataireUtilisateur != null && destinataireAdmin != null) {
+            throw new IllegalArgumentException("Une notification ne peut pas avoir deux destinataires (Admin et Utilisateur).");
+        } else if (destinataireUtilisateur != null) {
+            notification.setDestinataire(destinataireUtilisateur);
+        } else if (destinataireAdmin != null) {
+            notification.setDestinataireAdmin(destinataireAdmin);
+        } else {
+            throw new IllegalArgumentException("Une notification doit avoir au moins un destinataire (Admin ou Utilisateur).");
+        }
+
         // Sauvegarde en base
         notificationRepository.save(notification);
 
-        // Envoi en temps réel via WebSocket
+        // Envoi via WebSocket
         try {
+            String destinataireEmail = destinataireUtilisateur != null
+                    ? destinataireUtilisateur.getEmail()
+                    : destinataireAdmin.getEmail();
+
             messagingTemplate.convertAndSendToUser(
-                    destinataire.getEmail(),
+                    destinataireEmail,
                     "/queue/notifications",
-                    NotificationDto.fromEntity(notification) // envoyer un DTO plus léger que l’entité complète
+                    NotificationDto.fromEntity(notification) // DTO allégé
             );
         } catch (Exception e) {
             System.err.println("Erreur lors de l’envoi WebSocket : " + e.getMessage());

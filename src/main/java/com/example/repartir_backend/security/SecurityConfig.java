@@ -53,13 +53,22 @@ public class SecurityConfig {
                 // Cela résout les erreurs 403 Forbidden sur les endpoints publics en s'assurant
                 // que les règles CORS sont appliquées avant les règles de sécurité.
                 .cors(cors -> cors.configurationSource(corsConfigurationSource))
-                //desactiver le csrf, pas besoin car jwt est sans etat
+                //désactiver le csrf, pas besoin car jwt est sans état
                 .csrf(AbstractHttpConfigurer::disable)
                 //configuration des authorisation des endpoints
                 .authorizeHttpRequests(
                         auth -> auth.requestMatchers(
-                                "/api/auth/login", "/api/utilisateurs/register", "/api/auth/refresh", "/ws/**",
-                                "/api/password/**"
+                                "/api/auth/login",
+                                        "/api/utilisateurs/register",
+                                        "/api/auth/refresh",
+                                        "/ws/**",
+                                        "/api/password/**",
+                                        "/v3/api-docs/**",
+                                        "/swagger-ui/**",
+                                        "/swagger-ui.html",
+                                        "/swagger-resources/**",
+                                        "/webjars/**"
+
                         ).permitAll()
                                 // Correction du chemin pour les administrateurs et ajout de règles spécifiques
                                 .requestMatchers("/administrateurs/**").hasRole("ADMIN")
@@ -108,11 +117,6 @@ public class SecurityConfig {
                                 .requestMatchers("/api/notifications/**").authenticated()
                                 .anyRequest()
                                 .authenticated()
-
-
-
-
-
                 )
                 .exceptionHandling(ex ->
                         ex
@@ -130,7 +134,7 @@ public class SecurityConfig {
                         }
                         """.formatted(LocalDateTime.now(), request.getRequestURI()));
                                 })
-                                //utilisateur authentifié mais sans l'autorisation requise
+                                //utilisateur authentifié, mais sans l'autorisation requise
                                 .accessDeniedHandler(
                                         (request, response, accessDeniedException) -> {
                                             response.setStatus(HttpStatus.FORBIDDEN.value());
