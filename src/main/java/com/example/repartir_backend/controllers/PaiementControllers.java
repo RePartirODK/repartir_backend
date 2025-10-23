@@ -3,6 +3,11 @@ package com.example.repartir_backend.controllers;
 import com.example.repartir_backend.dto.RequestPaiement;
 import com.example.repartir_backend.services.PaiementServices;
 import com.example.repartir_backend.services.ParrainServices;
+import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.media.Content;
+import io.swagger.v3.oas.annotations.responses.ApiResponse;
+import io.swagger.v3.oas.annotations.responses.ApiResponses;
+import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.mail.MessagingException;
 import jakarta.persistence.EntityNotFoundException;
 import lombok.RequiredArgsConstructor;
@@ -16,11 +21,19 @@ import java.io.IOException;
 @RestController
 @RequestMapping("/api/paiements")
 @RequiredArgsConstructor
+@Tag(name = "Paiements", description = "Endpoints pour la gestion des paiements (création, validation, refus, consultation)")
+
 public class PaiementControllers {
     private final ParrainServices parrainServices;
     private final PaiementServices paiementServices;
 
     @PostMapping("/creer")
+    @Operation(summary = "Créer un paiement", description = "Permet de créer un paiement pour une inscription donnée")
+    @ApiResponses({
+            @ApiResponse(responseCode = "200", description = "Paiement créé avec succès"),
+            @ApiResponse(responseCode = "404", description = "Utilisateur ou inscription non trouvé", content = @Content),
+            @ApiResponse(responseCode = "500", description = "Erreur interne lors de la création", content = @Content)
+    })
     public ResponseEntity<?> creerPaiement(@RequestBody RequestPaiement request) {
         try {
             return ResponseEntity.ok(paiementServices.creerPaiement(request));
@@ -35,6 +48,12 @@ public class PaiementControllers {
 
     //valider un paiement
     @PutMapping("/valider/{idPaiement}")
+    @Operation(summary = "Valider un paiement", description = "Permet de valider un paiement existant")
+    @ApiResponses({
+            @ApiResponse(responseCode = "200", description = "Paiement validé avec succès"),
+            @ApiResponse(responseCode = "404", description = "Paiement non trouvé", content = @Content),
+            @ApiResponse(responseCode = "500", description = "Erreur lors de la validation", content = @Content)
+    })
     public ResponseEntity<?> validerPaiement(@PathVariable int idPaiement) {
         try {
             paiementServices.validerPaiement(idPaiement);
@@ -54,6 +73,12 @@ public class PaiementControllers {
 
     // refuser un paiement
     @PutMapping("/refuser/{idPaiement}")
+    @Operation(summary = "Refuser un paiement", description = "Permet de refuser un paiement existant")
+    @ApiResponses({
+            @ApiResponse(responseCode = "200", description = "Paiement refusé avec succès"),
+            @ApiResponse(responseCode = "404", description = "Paiement non trouvé", content = @Content),
+            @ApiResponse(responseCode = "500", description = "Erreur lors du refus du paiement", content = @Content)
+    })
     public ResponseEntity<?> refuserPaiement(@PathVariable int idPaiement) {
         try {
             paiementServices.refuserPaiement(idPaiement);
@@ -69,6 +94,11 @@ public class PaiementControllers {
 
     //lister les paiements d'un jeune
     @GetMapping("/jeunes/{idJeune}")
+    @Operation(summary = "Lister les paiements d’un jeune", description = "Récupère tous les paiements effectués par un jeune spécifique")
+    @ApiResponses({
+            @ApiResponse(responseCode = "200", description = "Liste récupérée avec succès"),
+            @ApiResponse(responseCode = "500", description = "Erreur lors de la récupération", content = @Content)
+    })
     public ResponseEntity<?> getPaiementParJeune(@PathVariable int idJeune){
         try {
             return ResponseEntity.ok(paiementServices.getPaiementByJeune(idJeune));
@@ -83,6 +113,11 @@ public class PaiementControllers {
 
     //lister tous les paiements d'une inscription
     @GetMapping("/inscription/{idInscription}")
+    @Operation(summary = "Lister les paiements d’une inscription", description = "Récupère tous les paiements liés à une inscription donnée")
+    @ApiResponses({
+            @ApiResponse(responseCode = "200", description = "Liste récupérée avec succès"),
+            @ApiResponse(responseCode = "500", description = "Erreur lors de la récupération", content = @Content)
+    })
     public ResponseEntity<?> getAllPaiement(
             @PathVariable int idInscription
     )
