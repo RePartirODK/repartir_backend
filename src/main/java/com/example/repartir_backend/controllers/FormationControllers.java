@@ -8,7 +8,9 @@ import com.example.repartir_backend.services.FormationServices;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.Parameter;
 import io.swagger.v3.oas.annotations.media.Content;
+import io.swagger.v3.oas.annotations.media.Schema;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
+import io.swagger.v3.oas.annotations.responses.ApiResponses;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.persistence.EntityNotFoundException;
 import lombok.RequiredArgsConstructor;
@@ -86,11 +88,25 @@ public class FormationControllers {
         }
     }
 
+    @Operation(
+            summary = "Supprimer une formation",
+            description = "Supprime une formation à partir de son identifiant unique."
+    )
+    @ApiResponses({
+            @ApiResponse(responseCode = "204", description = "Formation supprimée avec succès"),
+            @ApiResponse(responseCode = "404", description = "Formation non trouvée")
+    })
     @DeleteMapping("/{id}")
     public ResponseEntity<?> deleteFormation(@PathVariable int id) {
         formationServices.deleteFormation(id);
         return ResponseEntity.noContent().build();
     }
+
+    @Operation(
+            summary = "Lister toutes les formations",
+            description = "Récupère la liste de toutes les formations disponibles dans la plateforme."
+    )
+    @ApiResponse(responseCode = "200", description = "Liste récupérée avec succès")
     @GetMapping
     public ResponseEntity<List<ResponseFormation>> getAllFormations() {
         List<ResponseFormation> formations = formationServices.getAllFormations();
@@ -98,12 +114,26 @@ public class FormationControllers {
     }
 
 
+    @Operation(
+            summary = "Lister les formations d’un centre",
+            description = "Récupère toutes les formations proposées par un centre de formation spécifique."
+    )
+    @ApiResponse(responseCode = "200", description = "Liste récupérée avec succès")
     @GetMapping("/centre/{centreId}")
     public ResponseEntity<List<ResponseFormation>> getFormationsByCentre(@PathVariable int centreId) {
         List<ResponseFormation> formations = formationServices.getFormationsByCentre(centreId);
         return ResponseEntity.ok(formations);
     }
 
+    @Operation(
+            summary = "Obtenir une formation par ID",
+            description = "Récupère les détails d’une formation à partir de son identifiant unique."
+    )
+    @ApiResponses({
+            @ApiResponse(responseCode = "200", description = "Formation trouvée",
+                    content = @Content(schema = @Schema(implementation = ResponseFormation.class))),
+            @ApiResponse(responseCode = "404", description = "Formation non trouvée", content = @Content)
+    })
     @GetMapping("/{id}")
     public ResponseEntity<ResponseFormation> getFormationById(@PathVariable int id) {
         ResponseFormation formation = formationServices.getFormationById(id);
