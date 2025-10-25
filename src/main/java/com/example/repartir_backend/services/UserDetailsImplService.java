@@ -44,7 +44,10 @@ public class UserDetailsImplService implements UserDetailsService {
             throw new UsernameNotFoundException("Le compte de l'utilisateur n'est pas actif ou est en attente de validation.");
         }
 
-
+        // Vérifier si le compte est bloqué (estActive = false)
+        if (!utilisateur.isEstActive()) {
+            throw new DisabledException("Votre compte a été bloqué par un administrateur. Contactez le support.");
+        }
 
         return new UserDetailsImpl(utilisateur);
     }

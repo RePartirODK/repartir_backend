@@ -1,6 +1,8 @@
 package com.example.repartir_backend.controllers;
 
 import com.example.repartir_backend.dto.AdminDto;
+import com.example.repartir_backend.dto.AdminResponseDto;
+import com.example.repartir_backend.dto.UpdateAdminDto;
 import com.example.repartir_backend.dto.UtilisateurResponseDto;
 import com.example.repartir_backend.entities.Admin;
 import com.example.repartir_backend.entities.Utilisateur;
@@ -29,11 +31,12 @@ public class AdminControllers {
      * @return L'administrateur créé.
      */
     @PostMapping("/creer")
-    public Admin creerAdmin(@RequestBody AdminDto adminDto){
+    public ResponseEntity<?> creerAdmin(@RequestBody AdminDto adminDto){
         try {
-            return adminServices.creerAdmin(adminDto);
+            AdminResponseDto adminResponseDto = adminServices.creerAdmin(adminDto);
+            return ResponseEntity.ok(adminResponseDto);
         } catch (MessagingException | IOException e) {
-            throw new RuntimeException(e);
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body("Erreur lors de la création de l'administrateur : " + e.getMessage());
         }
 
     }
@@ -72,17 +75,48 @@ public class AdminControllers {
     }
 
     /**
-     * Rejette un compte utilisateur.
-     * @param userId L'ID de l'utilisateur à rejeter.
-     * @return L'utilisateur avec le statut mis à jour.
+     * Bloque un utilisateur (empêche sa connexion).
+     * @param userId L'ID de l'utilisateur à bloquer.
+     * @return L'utilisateur avec le statut bloqué.
      */
-    @PutMapping("/refuser-compte/{userId}")
-    public ResponseEntity<?> refuserCompte(@PathVariable Integer userId) {
+    @PutMapping("/bloquer-utilisateur/{userId}")
+    public ResponseEntity<?> bloquerUtilisateur(@PathVariable Integer userId) {
         try {
-            UtilisateurResponseDto utilisateurDto = adminServices.rejeterCompte(userId);
+            UtilisateurResponseDto utilisateurDto = adminServices.bloquerUtilisateur(userId);
             return ResponseEntity.ok(utilisateurDto);
-        } catch (RuntimeException | MessagingException | IOException e) {
-            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(e.getMessage());
+        } catch (RuntimeException e) {
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(e.getMessage());
+        }
+    }
+
+    /**
+     * Modifie les informations d'un administrateur existant.
+     * @param adminId L'ID de l'administrateur à modifier.
+     * @param updateAdminDto Les nouvelles données de l'administrateur.
+     * @return L'administrateur mis à jour.
+     */
+    @PutMapping("/modifier/{adminId}")
+    public ResponseEntity<?> modifierAdmin(@PathVariable Integer adminId, @RequestBody UpdateAdminDto updateAdminDto) {
+        try {
+            AdminResponseDto adminResponseDto = adminServices.modifierAdmin(adminId, updateAdminDto);
+            return ResponseEntity.ok(adminResponseDto);
+        } catch (RuntimeException e) {
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(e.getMessage());
+        }
+    }
+
+    /**
+     * Débloque un utilisateur (autorise sa connexion).
+     * @param userId L'ID de l'utilisateur à débloquer.
+     * @return L'utilisateur avec le statut débloqué.
+     */
+    @PutMapping("/debloquer-utilisateur/{userId}")
+    public ResponseEntity<?> debloquerUtilisateur(@PathVariable Integer userId) {
+        try {
+            UtilisateurResponseDto utilisateurDto = adminServices.debloquerUtilisateur(userId);
+            return ResponseEntity.ok(utilisateurDto);
+        } catch (RuntimeException e) {
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(e.getMessage());
         }
     }
 }
