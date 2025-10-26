@@ -7,17 +7,16 @@ import com.example.repartir_backend.entities.Jeune;
 import com.example.repartir_backend.entities.Paiement;
 import com.example.repartir_backend.entities.Parrainage;
 import com.example.repartir_backend.enumerations.Etat;
+import com.example.repartir_backend.enumerations.StatutPaiement;
 import com.example.repartir_backend.repositories.InscriptionFormationRepository;
 import com.example.repartir_backend.repositories.JeuneRepository;
 import com.example.repartir_backend.repositories.PaiementRepository;
 import com.example.repartir_backend.repositories.ParrainageRepository;
-import jakarta.mail.MessagingException;
 import jakarta.persistence.EntityNotFoundException;
 import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 
-import java.io.IOException;
 import java.time.LocalDateTime;
 import java.util.List;
 @Service
@@ -49,7 +48,7 @@ public class PaiementServices {
         paiement.setParrainage(parrainage);
         paiement.setMontant(paiementRequest.getMontant());
         paiement.setDate(LocalDateTime.now());
-        paiement.setStatus(Etat.EN_ATTENTE);
+        paiement.setStatus(StatutPaiement.EN_ATTENTE);
         paiement.setReference("PAY-" + System.currentTimeMillis());
 
         return paiementRepository.save(paiement).toResponse();
@@ -60,7 +59,7 @@ public class PaiementServices {
         Paiement paiement = paiementRepository.findById(idPaiement)
                 .orElseThrow(() -> new EntityNotFoundException("Paiement introuvable"));
 
-        paiement.setStatus(Etat.VALIDE);
+        paiement.setStatus(StatutPaiement.VALIDE);
         paiementRepository.save(paiement);
 
         InscriptionFormation inscription = paiement.getInscriptionFormation();
@@ -92,7 +91,7 @@ public class PaiementServices {
         Paiement paiement = paiementRepository.findById(idPaiement)
                 .orElseThrow(() -> new EntityNotFoundException("Paiement introuvable"));
 
-        paiement.setStatus(Etat.REFUSE);
+        paiement.setStatus(StatutPaiement.REFUSE);
         paiementRepository.save(paiement);
 
         InscriptionFormation inscription = paiement.getInscriptionFormation();
@@ -120,4 +119,13 @@ public class PaiementServices {
         return paiementRepository.findByJeuneId(idJeune).stream()
                 .map(Paiement::toResponse).toList();
     }
+
+    public void marquerPaiementsARembourserParFormation(int idFormation) {
+        List<Paiement> paiements = paiementRepository.findByInscriptionFormation_Formation_Id(idFormation);
+        for (Paiement paiement : paiements) {
+            paiement.setStatus(StatutPaiement.A_REMBOURSE);
+            paiementRepository.save(paiement);
+        }
+    }
+
 }

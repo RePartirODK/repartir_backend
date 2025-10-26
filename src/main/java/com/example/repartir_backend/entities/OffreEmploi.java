@@ -23,7 +23,7 @@ public class OffreEmploi {
     private int id;
     @Column(nullable = false)
     private String titre;
-    @Column(nullable = false)
+    @Column(nullable = false, columnDefinition = "TEXT")
     private String description;
     private String competence;
     @Column(nullable = false)
