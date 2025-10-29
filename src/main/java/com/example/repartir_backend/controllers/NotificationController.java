@@ -6,6 +6,10 @@ import com.example.repartir_backend.entities.Utilisateur;
 import com.example.repartir_backend.repositories.NotificationRepository;
 import com.example.repartir_backend.repositories.UtilisateurRepository;
 import com.example.repartir_backend.services.NotificationService;
+import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.responses.ApiResponse;
+import io.swagger.v3.oas.annotations.responses.ApiResponses;
+import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.persistence.EntityNotFoundException;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
@@ -22,6 +26,8 @@ import java.util.List;
 @RestController
 @RequestMapping("/api/notifications")
 @RequiredArgsConstructor
+@Tag(name = "Notifications", description = "Endpoints pour la gestion des notifications utilisateur.")
+
 public class NotificationController {
 
     private final NotificationRepository notificationRepository;
@@ -33,6 +39,15 @@ public class NotificationController {
      * @param principal L'objet Principal injecté par Spring Security, représentant l'utilisateur authentifié.
      * @return Une liste de notifications, qui peut être vide si il n'y en a aucune.
      */
+    @Operation(
+            summary = "Récupérer les notifications non lues",
+            description = "Retourne la liste de toutes les notifications non lues de l'utilisateur actuellement authentifié."
+    )
+    @ApiResponses(value = {
+            @ApiResponse(responseCode = "200", description = "Liste récupérée avec succès."),
+            @ApiResponse(responseCode = "404", description = "Utilisateur non trouvé."),
+            @ApiResponse(responseCode = "401", description = "Utilisateur non authentifié.")
+    })
     @GetMapping("/non-lues")
     public ResponseEntity<List<NotificationDto>> getNotificationsNonLues(Principal principal) {
         Utilisateur utilisateur = utilisateurRepository.findByEmail(principal.getName())
@@ -52,6 +67,15 @@ public class NotificationController {
      * @throws EntityNotFoundException si la notification ou l'utilisateur n'est pas trouvé.
      * @throws AccessDeniedException si l'utilisateur essaie de marquer une notification qui ne lui appartient pas.
      */
+    @Operation(
+            summary = "Marquer une notification comme lue",
+            description = "Permet à un utilisateur de marquer l'une de ses propres notifications comme lue."
+    )
+    @ApiResponses(value = {
+            @ApiResponse(responseCode = "200", description = "Notification marquée comme lue."),
+            @ApiResponse(responseCode = "403", description = "L'utilisateur n'est pas autorisé à modifier cette notification."),
+            @ApiResponse(responseCode = "404", description = "Notification ou utilisateur non trouvé.")
+    })
     @PostMapping("/{id}/marquer-comme-lue")
     public ResponseEntity<Void> marquerCommeLue(@PathVariable int id, Principal principal) {
         Utilisateur utilisateur = utilisateurRepository.findByEmail(principal.getName())
