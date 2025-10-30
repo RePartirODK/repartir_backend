@@ -2,6 +2,7 @@ package com.example.repartir_backend.entities;
 
 
 import com.example.repartir_backend.enumerations.Role;
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
@@ -32,7 +33,8 @@ public class Admin {
     @Enumerated(EnumType.STRING)
     private Role role;
 
-    @OneToMany(mappedBy = "destinataireAdmin")
+    @OneToMany(mappedBy = "destinataireAdmin", fetch = FetchType.LAZY)
+    @JsonIgnore
     private List<Notification> notifications = new ArrayList<>();
 
 }

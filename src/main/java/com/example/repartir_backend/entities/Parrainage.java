@@ -1,6 +1,7 @@
 package com.example.repartir_backend.entities;
 
 import com.example.repartir_backend.dto.ResponseParrainage;
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
@@ -26,7 +27,8 @@ public class Parrainage {
     @JoinColumn(name = "id_parrain")
     private Parrain parrain;
 
-    @OneToMany(mappedBy = "parrainage")
+    @OneToMany(mappedBy = "parrainage", fetch = FetchType.LAZY)
+    @JsonIgnore
     private List<Paiement> paiements;
     @ManyToOne
     @JoinColumn(name = "id_formation", nullable = false)

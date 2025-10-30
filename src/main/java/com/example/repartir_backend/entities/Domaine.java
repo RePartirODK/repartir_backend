@@ -1,5 +1,6 @@
 package com.example.repartir_backend.entities;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
@@ -21,6 +22,7 @@ public class Domaine {
     @Column(nullable = false)
     private String libelle;
 
-    @OneToMany(mappedBy = "domaine")
+    @OneToMany(mappedBy = "domaine", fetch = FetchType.LAZY)
+    @JsonIgnore
     private List<UserDomaine> userDomaineList = new ArrayList<>();
 }

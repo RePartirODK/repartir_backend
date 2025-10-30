@@ -47,10 +47,12 @@ public class Utilisateur {
     private LocalDateTime dateCreation;
 
 
-    @OneToMany(mappedBy = "utilisateur")
+    @OneToMany(mappedBy = "utilisateur", fetch = FetchType.LAZY)
+    @JsonIgnore
     private List<UserDomaine> userDomaineList = new ArrayList<>();
 
-    @OneToMany(mappedBy = "destinataire")
+    @OneToMany(mappedBy = "destinataire", fetch = FetchType.LAZY)
+    @JsonIgnore
     private List<Notification> notifications = new ArrayList<>();
 
 }

@@ -56,15 +56,16 @@ public class GlobalExceptionHandler {
 
     @ExceptionHandler(RuntimeException.class)
     public ResponseEntity<ErrorResponse> handleRuntimeException(RuntimeException ex, HttpServletRequest request) {
-        logger.warn(">>> Exception d'exécution non gérée sur le chemin {}: {}", request.getRequestURI(), ex.getMessage());
+        logger.error(">>> Exception d'exécution non gérée sur le chemin {}: {}", request.getRequestURI(), ex.getMessage(), ex);
         ErrorResponse errorResponse = createErrorResponse(HttpStatus.BAD_REQUEST, ex.getMessage(), request.getRequestURI());
         return new ResponseEntity<>(errorResponse, HttpStatus.BAD_REQUEST);
     }
 
     @ExceptionHandler(Exception.class)
     public ResponseEntity<ErrorResponse> handleGeneralException(Exception ex, HttpServletRequest request) {
-        logger.error(">>> Erreur générale non interceptée sur le chemin {}", request.getRequestURI(), ex);
-        ErrorResponse errorResponse = createErrorResponse(HttpStatus.INTERNAL_SERVER_ERROR, "Une erreur inattendue est survenue.", request.getRequestURI());
+        logger.error(">>> Erreur générale non interceptée sur le chemin {}: {}", request.getRequestURI(), ex.getMessage(), ex);
+        String message = ex.getMessage() != null ? ex.getMessage() : "Une erreur inattendue est survenue.";
+        ErrorResponse errorResponse = createErrorResponse(HttpStatus.INTERNAL_SERVER_ERROR, message, request.getRequestURI());
         return new ResponseEntity<>(errorResponse, HttpStatus.INTERNAL_SERVER_ERROR);
     }
 }

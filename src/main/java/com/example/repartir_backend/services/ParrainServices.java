@@ -22,11 +22,14 @@ public class ParrainServices {
         this.parrainRepository = parrainRepository;
         this.utilisateurRepository = utilisateurRepository;
     }
+    @Transactional(readOnly = true)
     public ResponseParrain getParrainById(int id) {
         return parrainRepository.findById(id)
                 .orElseThrow(() -> new EntityNotFoundException("Parrain introuvable avec l'ID : " + id))
                 .toResponse();
     }
+    
+    @Transactional(readOnly = true)
     public List<ResponseParrain> getAllParrains() {
         return parrainRepository.findAll()
                 .stream()
@@ -35,10 +38,11 @@ public class ParrainServices {
     }
 
     //recuperer les parrains actifs
+    @Transactional(readOnly = true)
     public List<ResponseParrain> getParrainsActifs() {
         return parrainRepository.findAll()
                 .stream()
-                .filter(p -> p.getUtilisateur().isEstActive())
+                .filter(p -> p.getUtilisateur() != null && p.getUtilisateur().isEstActive())
                 .map(Parrain::toResponse)
                 .toList();
     }

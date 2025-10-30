@@ -10,3 +10,4 @@ public record UpdateAdminDto(
         String motDePasse
 ) {
 }
+

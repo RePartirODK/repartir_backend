@@ -11,10 +11,12 @@ import jakarta.mail.MessagingException;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 
 import java.io.IOException;
 import java.util.List;
+import java.util.stream.Collectors;
 
 /**
  * Contrôleur pour les opérations liées aux administrateurs.
@@ -46,8 +48,11 @@ public class AdminControllers {
      * @return Une liste d'administrateurs.
      */
     @GetMapping("/lister")
-    public List<Admin> listerAdmins(){
-        return adminServices.listerAdmins();
+    public List<AdminResponseDto> listerAdmins(){
+        return adminServices.listerAdmins()
+                .stream()
+                .map(AdminResponseDto::fromEntity)
+                .collect(Collectors.toList());
     }
 
     /**
@@ -65,6 +70,7 @@ public class AdminControllers {
      * @return L'utilisateur avec le statut mis à jour.
      */
     @PutMapping("/valider-compte/{userId}")
+    @PreAuthorize("hasRole('ADMIN')")
     public ResponseEntity<?> validerCompte(@PathVariable Integer userId) {
         try {
             UtilisateurResponseDto utilisateurDto = adminServices.approuverCompte(userId);
@@ -80,6 +86,7 @@ public class AdminControllers {
      * @return L'utilisateur avec le statut bloqué.
      */
     @PutMapping("/bloquer-utilisateur/{userId}")
+    @PreAuthorize("hasRole('ADMIN')")
     public ResponseEntity<?> bloquerUtilisateur(@PathVariable Integer userId) {
         try {
             UtilisateurResponseDto utilisateurDto = adminServices.bloquerUtilisateur(userId);
@@ -111,12 +118,29 @@ public class AdminControllers {
      * @return L'utilisateur avec le statut débloqué.
      */
     @PutMapping("/debloquer-utilisateur/{userId}")
+    @PreAuthorize("hasRole('ADMIN')")
     public ResponseEntity<?> debloquerUtilisateur(@PathVariable Integer userId) {
         try {
             UtilisateurResponseDto utilisateurDto = adminServices.debloquerUtilisateur(userId);
             return ResponseEntity.ok(utilisateurDto);
         } catch (RuntimeException e) {
             return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(e.getMessage());
+        }
+    }
+
+    /**
+     * Refuse un compte utilisateur.
+     * @param userId L'ID de l'utilisateur à refuser.
+     * @return L'utilisateur avec le statut mis à jour.
+     */
+    @PutMapping("/refuser-compte/{userId}")
+    @PreAuthorize("hasRole('ADMIN')")
+    public ResponseEntity<?> refuserCompte(@PathVariable Integer userId) {
+        try {
+            UtilisateurResponseDto utilisateurDto = adminServices.refuserCompte(userId);
+            return ResponseEntity.ok(utilisateurDto);
+        } catch (RuntimeException | MessagingException | IOException e) {
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(e.getMessage());
         }
     }
 }

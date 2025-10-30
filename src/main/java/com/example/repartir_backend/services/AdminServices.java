@@ -11,10 +11,12 @@ import com.example.repartir_backend.enumerations.Role;
 import com.example.repartir_backend.repositories.AdminRepository;
 import com.example.repartir_backend.repositories.UtilisateurRepository;
 import jakarta.mail.MessagingException;
-import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.io.IOException;
 import java.util.List;
@@ -26,6 +28,8 @@ import java.util.Optional;
 @Service
 @RequiredArgsConstructor
 public class AdminServices {
+    private static final Logger logger = LoggerFactory.getLogger(AdminServices.class);
+    
     private final AdminRepository adminRepository;
     private final PasswordEncoder passwordEncoder;
     private final UtilisateurRepository utilisateurRepository;
@@ -84,19 +88,43 @@ public class AdminServices {
      * @param userId L'identifiant de l'utilisateur.
      * @return Le DTO de l'utilisateur avec l'état mis à jour à VALIDE.
      */
+    @Transactional
     public UtilisateurResponseDto approuverCompte(Integer userId) throws MessagingException, IOException {
+        logger.info(">>> Approuver compte - ID utilisateur: {}", userId);
         String path = "src/main/resources/templates/comptevalider.html";
+        
         Utilisateur utilisateur = utilisateurRepository.findById(userId)
-                .orElseThrow(() -> new RuntimeException("Utilisateur non trouvé"));
+                .orElseThrow(() -> new RuntimeException("Utilisateur non trouvé avec l'ID: " + userId));
+        
+        logger.info(">>> Utilisateur trouvé - Avant modification: ID={}, État={}, estActive={}", 
+                    utilisateur.getId(), utilisateur.getEtat(), utilisateur.isEstActive());
+        
+        // CRITIQUE : Modifier les valeurs AVANT de sauvegarder
         utilisateur.setEtat(Etat.VALIDE);
         utilisateur.setEstActive(true);
-        Utilisateur utilisateurSauvegarde = utilisateurRepository.save(utilisateur);
-        //envoi d'un mail de validation de compte
+        
+        // CRITIQUE : Sauvegarder après les modifications
+        Utilisateur saved = utilisateurRepository.save(utilisateur);
+        
+        // CRITIQUE : Flush pour forcer l'écriture immédiate en base
+        utilisateurRepository.flush();
+        
+        // CRITIQUE : Vérifier que saved a bien les bonnes valeurs
+        logger.info(">>> Utilisateur sauvegardé - Après modification: ID={}, État={}, estActive={}", 
+                    saved.getId(), saved.getEtat(), saved.isEstActive());
+        
+        // Envoi d'un mail de validation de compte
+        try {
         mailSendServices.envoyerEmailBienvenu(utilisateur.getEmail(),
                 "Validation de compte",
                 utilisateur.getNom(),
                 path);
-        return mapToUtilisateurResponseDto(utilisateurSauvegarde);
+        } catch (Exception e) {
+            logger.warn(">>> Erreur lors de l'envoi de l'email de validation: {}", e.getMessage());
+            // Ne pas faire échouer la transaction si l'email échoue
+        }
+        
+        return mapToUtilisateurResponseDto(saved);
     }
 
     /**
@@ -139,6 +167,7 @@ public class AdminServices {
         
         utilisateur.setEstActive(false);
         Utilisateur utilisateurSauvegarde = utilisateurRepository.save(utilisateur);
+        utilisateurRepository.flush();
         
         return mapToUtilisateurResponseDto(utilisateurSauvegarde);
     }
@@ -160,8 +189,53 @@ public class AdminServices {
         
         utilisateur.setEstActive(true);
         Utilisateur utilisateurSauvegarde = utilisateurRepository.save(utilisateur);
+        utilisateurRepository.flush();
         
         return mapToUtilisateurResponseDto(utilisateurSauvegarde);
+    }
+
+    /**
+     * Refuse un compte utilisateur (met le statut à REFUSE sans supprimer l'utilisateur).
+     * @param userId L'identifiant de l'utilisateur à refuser.
+     * @return Le DTO de l'utilisateur avec le statut mis à jour à REFUSE.
+     */
+    @Transactional
+    public UtilisateurResponseDto refuserCompte(Integer userId) throws MessagingException, IOException {
+        logger.info(">>> Refuser compte - ID utilisateur: {}", userId);
+        String path = "src/main/resources/templates/refusecompte.html";
+        
+        Utilisateur utilisateur = utilisateurRepository.findById(userId)
+                .orElseThrow(() -> new RuntimeException("Utilisateur non trouvé avec l'ID: " + userId));
+        
+        logger.info(">>> Utilisateur trouvé - Avant modification: ID={}, État={}, estActive={}", 
+                    utilisateur.getId(), utilisateur.getEtat(), utilisateur.isEstActive());
+        
+        // CRITIQUE : Modifier les valeurs AVANT de sauvegarder
+        utilisateur.setEtat(Etat.REFUSE);
+        utilisateur.setEstActive(false);
+        
+        // CRITIQUE : Sauvegarder après les modifications
+        Utilisateur saved = utilisateurRepository.save(utilisateur);
+        
+        // CRITIQUE : Flush pour forcer l'écriture immédiate en base
+        utilisateurRepository.flush();
+        
+        // CRITIQUE : Vérifier que saved a bien les bonnes valeurs
+        logger.info(">>> Utilisateur sauvegardé - Après modification: ID={}, État={}, estActive={}", 
+                    saved.getId(), saved.getEtat(), saved.isEstActive());
+        
+        // Envoyer un email de notification
+        try {
+            mailSendServices.envoyerEmailBienvenu(utilisateur.getEmail(),
+                    "Refus de création de compte",
+                    utilisateur.getNom(),
+                    path);
+        } catch (Exception e) {
+            logger.warn(">>> Erreur lors de l'envoi de l'email de refus: {}", e.getMessage());
+            // Ne pas faire échouer la transaction si l'email échoue
+        }
+        
+        return mapToUtilisateurResponseDto(saved);
     }
 
     /**

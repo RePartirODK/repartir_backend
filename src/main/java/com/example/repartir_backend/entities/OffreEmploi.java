@@ -37,6 +37,7 @@ public class OffreEmploi {
     @ManyToOne
     @JoinColumn(name = "id_entreprise")
     private Entreprise entreprise;
-    @OneToMany(mappedBy = "offreEmploi")
+    @OneToMany(mappedBy = "offreEmploi", fetch = FetchType.LAZY)
+    @JsonIgnore
     private List<CandidatureOffre> candidatureOffreList = new ArrayList<>();
 }

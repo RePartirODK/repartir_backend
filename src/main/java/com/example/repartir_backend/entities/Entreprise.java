@@ -27,6 +27,7 @@ public class Entreprise {
     @OneToOne
     @JoinColumn(name = "id_utilisateur", nullable = false)
     private Utilisateur utilisateur;
-    @OneToMany(mappedBy = "entreprise")
+    @OneToMany(mappedBy = "entreprise", fetch = FetchType.LAZY)
+    @JsonIgnore
     private List<OffreEmploi> offreEmploiList = new ArrayList<>();
 }

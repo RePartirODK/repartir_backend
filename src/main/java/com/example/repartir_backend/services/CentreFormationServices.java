@@ -26,16 +26,18 @@ public class CentreFormationServices {
     }
 
 
+    @Transactional(readOnly = true)
     public List<ResponseCentre> getAllCentres() {
-        return centreFormationRepository.findAll().stream().map(
-                CentreFormation::toResponse
-        ).toList();
+        return centreFormationRepository.findAll().stream()
+                .map(CentreFormation::toResponse)
+                .toList();
     }
 
+    @Transactional(readOnly = true)
     public List<ResponseCentre> getCentresActifs() {
         return centreFormationRepository.findAll()
                 .stream()
-                .filter(c -> c.getUtilisateur().isEstActive())
+                .filter(c -> c.getUtilisateur() != null && c.getUtilisateur().isEstActive())
                 .map(CentreFormation::toResponse)
                 .toList();
     }
@@ -64,7 +66,9 @@ public class CentreFormationServices {
         CentreFormation centre = centreFormationRepository.findById(idCentre)
                 .orElseThrow(() -> new EntityNotFoundException("Centre introuvable"));
         centre.getUtilisateur().setEstActive(true);
-        return centreFormationRepository.save(centre).toResponse();
+        CentreFormation saved = centreFormationRepository.save(centre);
+        centreFormationRepository.flush();
+        return saved.toResponse();
     }
 
     @Transactional
@@ -72,7 +76,9 @@ public class CentreFormationServices {
         CentreFormation centre = centreFormationRepository.findById(idCentre)
                 .orElseThrow(() -> new EntityNotFoundException("Centre introuvable"));
         centre.getUtilisateur().setEstActive(false);
-        return centreFormationRepository.save(centre).toResponse();
+        CentreFormation saved = centreFormationRepository.save(centre);
+        centreFormationRepository.flush();
+        return saved.toResponse();
     }
 
     @Transactional

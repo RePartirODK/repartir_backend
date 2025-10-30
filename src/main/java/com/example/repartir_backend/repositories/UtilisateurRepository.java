@@ -4,6 +4,8 @@ import com.example.repartir_backend.entities.Utilisateur;
 import com.example.repartir_backend.enumerations.Etat;
 import com.example.repartir_backend.enumerations.Role;
 import org.springframework.data.jpa.repository.JpaRepository;
+import org.springframework.data.jpa.repository.Query;
+import org.springframework.data.repository.query.Param;
 import org.springframework.stereotype.Repository;
 
 import java.util.List;
@@ -30,4 +32,10 @@ public interface UtilisateurRepository extends JpaRepository<Utilisateur, Intege
      * @return Un Optional contenant l'utilisateur s'il est trouvé.
      */
     Optional<Utilisateur> findByRole(Role role);
+
+    long countByEstActiveFalse();
+    long countByEtat(Etat etat);
+
+    @Query("SELECT MONTH(u.dateCreation) as month, COUNT(u) as total FROM Utilisateur u WHERE YEAR(u.dateCreation) = :year GROUP BY MONTH(u.dateCreation) ORDER BY month")
+    List<Object[]> countMonthlyRegistrations(@Param("year") int year);
 }
