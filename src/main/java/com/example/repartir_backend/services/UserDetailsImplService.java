@@ -35,7 +35,7 @@ public class UserDetailsImplService implements UserDetailsService {
         Utilisateur utilisateur = utilisateurRepo.findByEmail(email)
                 .orElseThrow(() -> new UsernameNotFoundException("Mot de passe ou email incorrect : " + email));
         Etat etat = utilisateur.getEtat();
-        //verifier si le compte à été supprimer
+        //verifier si le compte a été supprimé
         if(etat == Etat.SUPPRIME){
             throw new DisabledException("Créer un compte");
         }

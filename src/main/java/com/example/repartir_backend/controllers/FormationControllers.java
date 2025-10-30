@@ -98,9 +98,17 @@ public class FormationControllers {
     })
     @DeleteMapping("/{id}")
     public ResponseEntity<?> deleteFormation(@PathVariable int id) {
-        formationServices.deleteFormation(id);
-        return ResponseEntity.noContent().build();
+        try {
+            formationServices.deleteFormation(id);
+            return ResponseEntity.ok("Formation supprimée et paiements marqués pour remboursement.");
+        } catch (EntityNotFoundException e) {
+            return ResponseEntity.status(HttpStatus.NOT_FOUND).body(e.getMessage());
+        } catch (Exception e) {
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
+                    .body("Erreur lors de la suppression : " + e.getMessage());
+        }
     }
+
 
     @Operation(
             summary = "Lister toutes les formations",

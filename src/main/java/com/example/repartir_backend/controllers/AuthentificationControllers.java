@@ -78,6 +78,6 @@ public class AuthentificationControllers {
 
 
 
-    public static record JwtResponse(String token, String email, Object roles) {}
+
 
 }
