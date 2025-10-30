@@ -2,6 +2,7 @@ package com.example.repartir_backend.entities;
 
 import com.example.repartir_backend.dto.ResponsePaiement;
 import com.example.repartir_backend.enumerations.Etat;
+import com.example.repartir_backend.enumerations.StatutPaiement;
 import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
@@ -25,7 +26,7 @@ public class Paiement {
     private String reference;
     //statut du paiement
     @Column
-    private Etat status;
+    private StatutPaiement status;
 
     @Column(nullable = false)
     private LocalDateTime date;

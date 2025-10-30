@@ -14,7 +14,7 @@ public class Message {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private int id;
-    @Column
+    @Column(columnDefinition = "TEXT")
     private String contenu;
     @Column
     private LocalDateTime date;

@@ -4,12 +4,17 @@ import com.example.repartir_backend.dto.RequestFormation;
 import com.example.repartir_backend.dto.ResponseFormation;
 import com.example.repartir_backend.entities.CentreFormation;
 import com.example.repartir_backend.entities.Formation;
+import com.example.repartir_backend.entities.Paiement;
 import com.example.repartir_backend.enumerations.Etat;
+import com.example.repartir_backend.enumerations.StatutPaiement;
 import com.example.repartir_backend.repositories.CentreFormationRepository;
 import com.example.repartir_backend.repositories.FormationRepository;
+import com.example.repartir_backend.repositories.PaiementRepository;
 import com.example.repartir_backend.repositories.UtilisateurRepository;
 import com.example.repartir_backend.entities.Utilisateur;
+import jakarta.mail.MessagingException;
 import jakarta.persistence.EntityNotFoundException;
+import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
@@ -23,6 +28,8 @@ public class FormationServices {
     private final FormationRepository formationRepository;
     private final CentreFormationRepository centreFormationRepository;
     private final UtilisateurRepository utilisateurRepository;
+    private final PaiementRepository paiementRepository;
+    private final MailSendServices mailSendServices;
 
     //creation d'une formation
     public Formation createFormation(RequestFormation requestFormation, int centreId) {
@@ -84,12 +91,50 @@ public class FormationServices {
         return formationRepository.save(formation);
     }
     //supprimer une formation
-    public void deleteFormation(int id) {
-        if (!formationRepository.existsById(id)) {
-            throw new EntityNotFoundException("Formation introuvable");
+    @Transactional
+    public void deleteFormation(int idFormation) {
+        Formation formation = formationRepository.findById(idFormation)
+                .orElseThrow(() -> new EntityNotFoundException("Formation non trouvée"));
+
+        // Étape 1 : récupérer les jeunes et parrains concernés
+        List<Paiement> paiements = paiementRepository.findByInscriptionFormation_Formation_Id(idFormation);
+
+        // Étape 2 : marquer les paiements "à rembourser"
+        for (Paiement paiement : paiements) {
+            paiement.setStatus(StatutPaiement.A_REMBOURSE);
+            paiementRepository.save(paiement);
+
+            // Étape 3 : envoyer les mails
+            try {
+                String path = "templates/remboursement.html"; // modèle d'email
+                mailSendServices.envoiMimeMessage(
+                        paiement.getParrainage().getParrain().getUtilisateur().getEmail(),
+                        "Remboursement suite à annulation de formation",
+                        "<p>Bonjour " +
+                                paiement.getParrainage().getParrain().getPrenom()
+                                + ",</p>" +
+                                "<p>La formation <strong>" +
+                                formation.getTitre()
+                                + "</strong> a été annulée.</p>" +
+                                "<p>Vous serez remboursé sous peu.</p>"
+                );
+
+                mailSendServices.envoiMimeMessage(
+                        paiement.getJeune().getUtilisateur().getEmail(),
+                        "Formation annulée",
+                        "<p>Bonjour " + paiement.getJeune().getUtilisateur().getNom() + ",</p>" +
+                                "<p>La formation <strong>" + formation.getTitre() + "</strong> a été annulée.</p>" +
+                                "<p>Le remboursement est en cours.</p>"
+                );
+            } catch (MessagingException e) {
+                throw new RuntimeException("Erreur lors de l'envoi du mail : " + e.getMessage());
+            }
         }
-        formationRepository.deleteById(id);
+
+        // Étape 4 : suppression de la formation
+        formationRepository.delete(formation);
     }
+
 
     //recuperer toutes les formations
     public List<ResponseFormation> getAllFormations() {
