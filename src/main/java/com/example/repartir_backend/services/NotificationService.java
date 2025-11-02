@@ -121,13 +121,43 @@ public class NotificationService {
         return NotificationDto.fromEntities(notifications);
     }
     /**
-     * Récupère les notifications non lues d’un administrateur spécifique.
+     * Récupère les notifications non lues d'un administrateur spécifique par son ID.
      */
     @Transactional(readOnly = true)
     public List<NotificationDto> getNotificationsNonLuesAdmin(int adminId) {
         List<Notification> notifications =
                 notificationRepository.findByDestinataireAdminIdAndLueIsFalseOrderByDateCreationDesc(adminId);
         return NotificationDto.fromEntities(notifications);
+    }
+
+    /**
+     * Récupère les notifications non lues d'un administrateur spécifique par son email.
+     */
+    @Transactional(readOnly = true)
+    public List<NotificationDto> getNotificationsNonLuesAdmin(String adminEmail) {
+        Admin admin = adminRepository.findByEmail(adminEmail)
+                .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Admin non trouvé avec l'email " + adminEmail));
+        return getNotificationsNonLuesAdmin(admin.getId());
+    }
+
+    /**
+     * Marque une notification comme lue pour un administrateur.
+     */
+    @Transactional
+    public void marquerCommeLueAdmin(Integer notificationId, String adminEmail) {
+        Admin admin = adminRepository.findByEmail(adminEmail)
+                .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Admin non trouvé avec l'email " + adminEmail));
+
+        Notification notification = notificationRepository.findById(notificationId)
+                .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Notification non trouvée avec l'id " + notificationId));
+
+        // Vérification de sécurité : s'assurer que l'admin ne modifie que ses propres notifications
+        if (notification.getDestinataireAdmin() == null || notification.getDestinataireAdmin().getId() != admin.getId()) {
+            throw new ResponseStatusException(HttpStatus.FORBIDDEN, "Vous n'êtes pas autorisé à modifier cette notification.");
+        }
+
+        notification.setLue(true);
+        notificationRepository.save(notification);
     }
 
 }

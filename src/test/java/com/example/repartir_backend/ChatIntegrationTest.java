@@ -81,6 +81,7 @@ public class ChatIntegrationTest {
         // Le test attendra jusqu'à ce que le latch soit décrémenté à zéro (quand le message est reçu).
         final CountDownLatch latch = new CountDownLatch(1);
         final AtomicReference<Throwable> failure = new AtomicReference<>();
+        
         final AtomicReference<ChatMessageResponseDto> receivedMessage = new AtomicReference<>();
 
         // --- EXÉCUTION ---

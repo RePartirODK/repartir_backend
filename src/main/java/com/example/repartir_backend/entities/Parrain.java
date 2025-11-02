@@ -28,16 +28,6 @@ public class Parrain {
     private Utilisateur utilisateur;
 
     public ResponseParrain toResponse(){
-        return new ResponseParrain(
-        this.utilisateur.getNom(),
-        this.prenom,
-        this.utilisateur.getEmail(),
-        this.utilisateur.getTelephone(),
-        this.utilisateur.getUrlPhoto() !=null ? this.utilisateur.getUrlPhoto(): null,
-        this.utilisateur.getRole(),
-        this.utilisateur.isEstActive(),
-        this.profession,
-                this.getUtilisateur().getDateCreation()
-        );
+        return ResponseParrain.fromEntity(this);
     }
 }

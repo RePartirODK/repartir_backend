@@ -1,5 +1,6 @@
 package com.example.repartir_backend.controllers;
 
+import com.example.repartir_backend.dto.JeuneResponseDto;
 import com.example.repartir_backend.dto.UpdateJeuneDto;
 import com.example.repartir_backend.entities.Jeune;
 import com.example.repartir_backend.services.JeuneServices;
@@ -13,6 +14,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 
+import java.util.List;
 import java.util.Map;
 
 @RestController
@@ -65,5 +67,14 @@ public class JeuneControllers {
     public ResponseEntity<?> deleteJeuneProfile() {
         jeuneServices.deleteJeune();
         return ResponseEntity.ok(Map.of("message", "Compte jeune supprimé avec succès."));
+    }
+
+    @Operation(
+            summary = "Lister tous les jeunes",
+            description = "Récupère la liste complète des jeunes enregistrés dans la base de données."
+    )
+    @GetMapping
+    public ResponseEntity<List<JeuneResponseDto>> getAllJeunes() {
+        return ResponseEntity.ok(jeuneServices.getAllJeunes());
     }
 }

@@ -1,5 +1,6 @@
 package com.example.repartir_backend.entities;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
@@ -32,7 +33,8 @@ public class Mentor {
     private Utilisateur utilisateur;
 
     //relation entre mentor et mentoring
-    @OneToMany(mappedBy = "mentor")
+    @OneToMany(mappedBy = "mentor", fetch = FetchType.LAZY)
+    @JsonIgnore
     private List<Mentoring> mentorings = new ArrayList<>();
 
 
