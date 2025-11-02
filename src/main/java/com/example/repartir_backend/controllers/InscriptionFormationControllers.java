@@ -1,6 +1,7 @@
 package com.example.repartir_backend.controllers;
 
 import com.example.repartir_backend.dto.InscriptionResponseDto;
+import com.example.repartir_backend.dto.InscriptionDetailDto;
 import com.example.repartir_backend.entities.InscriptionFormation;
 import com.example.repartir_backend.services.InscriptionFormationServices;
 import io.swagger.v3.oas.annotations.Operation;
@@ -14,6 +15,7 @@ import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 
 import java.nio.file.AccessDeniedException;
+import java.util.List;
 
 @RestController
 @RequestMapping("/api/inscriptions")
@@ -45,5 +47,21 @@ public class InscriptionFormationControllers {
     {
         InscriptionResponseDto inscriptionDto = inscriptionFormationServices.sInscrire(formationId, payerDirectement);
         return ResponseEntity.ok(inscriptionDto);
+    }
+
+    @GetMapping("/mes-inscriptions")
+    @PreAuthorize("hasRole('JEUNE')")
+    @Operation(
+            summary = "Récupérer les formations auxquelles le jeune est inscrit",
+            description = "Retourne la liste des inscriptions du jeune connecté avec les détails complets des formations.",
+            responses = {
+                    @ApiResponse(responseCode = "200", description = "Liste des inscriptions récupérée avec succès"),
+                    @ApiResponse(responseCode = "403", description = "Accès refusé — rôle non autorisé", content = @Content),
+                    @ApiResponse(responseCode = "404", description = "Jeune non trouvé", content = @Content)
+            }
+    )
+    public ResponseEntity<List<InscriptionDetailDto>> getMesInscriptions() {
+        List<InscriptionDetailDto> inscriptions = inscriptionFormationServices.getMesInscriptions();
+        return ResponseEntity.ok(inscriptions);
     }
 }

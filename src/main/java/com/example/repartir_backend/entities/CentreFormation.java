@@ -1,6 +1,7 @@
 package com.example.repartir_backend.entities;
 
 import com.example.repartir_backend.dto.ResponseCentre;
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
@@ -26,7 +27,8 @@ public class CentreFormation {
     @OneToOne
     @JoinColumn(name = "id_utilisateur", nullable = false)
     private Utilisateur utilisateur;
-    @OneToMany(mappedBy = "centreFormation")
+    @OneToMany(mappedBy = "centreFormation", fetch = FetchType.LAZY)
+    @JsonIgnore
     private List<Formation> formations = new ArrayList<>();
 
     public ResponseCentre toResponse(){
