@@ -34,7 +34,7 @@ public class UtilisateurControllers {
             summary = "Créer un nouveau compte utilisateur",
             description = "Permet à un utilisateur (jeune, parrain, centre de formation, etc.) de s’inscrire sur la plateforme.",
             responses = {
-                    @ApiResponse(responseCode = "200", description = "Utilisateur créé avec succès",
+                    @ApiResponse(responseCode = "201", description = "Utilisateur créé avec succès",
                             content = @Content(schema = @Schema(implementation = Utilisateur.class))),
                     @ApiResponse(responseCode = "302", description = "Email déjà existant"),
                     @ApiResponse(responseCode = "500", description = "Erreur interne du serveur")
@@ -47,7 +47,7 @@ public class UtilisateurControllers {
             Utilisateur utilisateursaved = utilisateurServices.register(registerUtilisateur);
             return new ResponseEntity<>(
                     utilisateursaved,
-                    HttpStatus.OK
+                    HttpStatus.CREATED
             );
         }catch (EntityExistsException e)
         {
