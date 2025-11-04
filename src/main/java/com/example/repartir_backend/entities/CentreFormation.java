@@ -32,18 +32,6 @@ public class CentreFormation {
     private List<Formation> formations = new ArrayList<>();
 
     public ResponseCentre toResponse(){
-        return new ResponseCentre(
-                this.id,
-                this.utilisateur.getNom(),
-                this.adresse,
-                this.utilisateur.getTelephone(),
-                this.utilisateur.getEmail(),
-                this.utilisateur.getUrlPhoto() != null
-                        ? this.utilisateur.getUrlPhoto()
-                        : null,
-                this.utilisateur.getRole(),
-                this.utilisateur.isEstActive(),
-                this.agrement
-        );
+        return ResponseCentre.fromEntity(this);
     }
 }

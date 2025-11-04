@@ -1,5 +1,6 @@
 package com.example.repartir_backend.controllers;
 
+import com.example.repartir_backend.dto.JeuneResponseDto;
 import com.example.repartir_backend.dto.UpdateJeuneDto;
 import com.example.repartir_backend.dto.DashboardJeuneDto;
 import com.example.repartir_backend.entities.Jeune;
@@ -59,6 +60,8 @@ public class JeuneControllers {
                     @ApiResponse(responseCode = "500", description = "Erreur interne du serveur", content = @Content)
             }
     )
+
+
     @PutMapping("/modifier")
     @PreAuthorize("hasRole('JEUNE')")
     public ResponseEntity<?> updateJeuneProfile(@RequestBody UpdateJeuneDto updateDto) {
@@ -112,5 +115,14 @@ public class JeuneControllers {
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
                     .body("Erreur lors de la récupération du dashboard : " + e.getMessage());
         }
+    }
+
+    @Operation(
+            summary = "Lister tous les jeunes",
+            description = "Récupère la liste complète des jeunes enregistrés dans la base de données."
+    )
+    @GetMapping
+    public ResponseEntity<List<JeuneResponseDto>> getAllJeunes() {
+        return ResponseEntity.ok(jeuneServices.getAllJeunes());
     }
 }
