@@ -60,7 +60,7 @@ public class Formation {
         this.description,
         this.date_debut,
         this.date_fin,
-        this.statut,
+        this.getStatutActuel(),
         this.cout,
         this.nbre_place,
        this.format,
@@ -88,5 +88,16 @@ public class Formation {
         formation.setUrlCertificat(requestFormation.getUrlCertificat());
 
         return formation;
+    }
+    public Etat getStatutActuel() {
+        LocalDateTime now = LocalDateTime.now();
+
+        if (now.isBefore(this.date_debut)) {
+            return Etat.EN_ATTENTE;
+        } else if (now.isAfter(this.date_fin)) {
+            return Etat.TERMINE;
+        } else {
+            return Etat.EN_COURS;
+        }
     }
 }

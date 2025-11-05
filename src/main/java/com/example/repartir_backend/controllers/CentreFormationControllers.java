@@ -14,6 +14,7 @@ import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.persistence.EntityNotFoundException;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
+import org.springframework.security.core.Authentication;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
@@ -193,5 +194,15 @@ public class CentreFormationControllers {
         } catch (EntityNotFoundException e) {
             return ResponseEntity.status(404).body(e.getMessage());
         }
+    }
+
+    @GetMapping("/me")
+    public ResponseEntity<ResponseCentre> getCurrentCentre(Authentication authentication) {
+        // L'email est automatiquement injecté par Spring Security via le token JWT
+        String email = authentication.getName();
+        System.out.println(email);
+        ResponseCentre centre = centreFormationServices.getCentreByEmail(email);
+
+        return ResponseEntity.ok(centre);
     }
 }

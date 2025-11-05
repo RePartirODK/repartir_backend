@@ -148,4 +148,10 @@ public class FormationControllers {
         return ResponseEntity.ok(formation);
     }
 
+    @GetMapping("/centre/{email}")
+    public ResponseEntity<List<ResponseFormation>> getFormationsByCentreEmail(@PathVariable String email) {
+        List<ResponseFormation> formations = formationServices.getFormationsByCentreEmail(email);
+        return ResponseEntity.ok(formations);
+    }
+
 }

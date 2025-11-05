@@ -44,7 +44,8 @@ public class CentreFormationServices {
         Utilisateur utilisateur = utilisateurRepository.findByEmail(email)
                 .orElseThrow(() -> new EntityNotFoundException("Aucun utilisateur avec cet email."));
         return centreFormationRepository.findByUtilisateur(utilisateur)
-                .orElseThrow(() -> new EntityNotFoundException("Aucun centre associé à cet utilisateur."))
+                .orElseThrow(() -> new EntityNotFoundException("Aucun centre associé à cet utilisateur."
+                        + utilisateur.getEmail()))
                 .toResponse();
     }
 

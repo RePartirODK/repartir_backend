@@ -16,9 +16,11 @@ import jakarta.mail.MessagingException;
 import jakarta.persistence.EntityNotFoundException;
 import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
+import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
 
+import java.time.LocalDateTime;
 import java.util.List;
 import java.util.stream.Collectors;
 
@@ -149,6 +151,13 @@ public class FormationServices {
                 .map(Formation::toResponse).collect(Collectors.toList());
     }
 
+    public List<ResponseFormation> getFormationsByCentreEmail(String email) {
+        return formationRepository
+                .findByCentreFormation_Utilisateur_Email(email).stream()
+                .map(Formation::toResponse)
+                .collect(Collectors.toList());
+    }
+
     public List<ResponseFormation> getMesFormations() {
         String email = SecurityContextHolder.getContext().getAuthentication().getName();
         Utilisateur utilisateur = utilisateurRepository.findByEmail(email)
@@ -165,5 +174,38 @@ public class FormationServices {
         return formationRepository.findById(id).orElseThrow(
                 () -> new EntityNotFoundException("formation avec l'id non trouvée: " + id)
         ).toResponse();
+    }
+
+
+
+    /**
+     * Cette méthode s'exécute toutes les x minutes.
+     * Elle doit être changée en vingt-quatre heures en prod.
+     * Elle met à jour automatiquement le statut des formations.
+     */
+    @Scheduled(fixedRate = 2 * 60 * 1000) // toutes les 2 minutes
+    public void updateFormationStatus() {
+        LocalDateTime now = LocalDateTime.now();
+        List<Formation> formations = formationRepository.findAll();
+
+        for (Formation f : formations) {
+            Etat nouveauStatut;
+
+            if (now.isBefore(f.getDate_debut())) {
+                nouveauStatut = Etat.EN_ATTENTE;
+            } else if (now.isAfter(f.getDate_fin())) {
+                nouveauStatut = Etat.TERMINE;
+            } else {
+                nouveauStatut = Etat.EN_COURS;
+            }
+
+            // Mise à jour seulement si le statut a changé
+            if (f.getStatut() != nouveauStatut) {
+                f.setStatut(nouveauStatut);
+                formationRepository.save(f);
+            }
+        }
+
+        System.out.println("✅ Statuts des formations mis à jour à " + now);
     }
 }
