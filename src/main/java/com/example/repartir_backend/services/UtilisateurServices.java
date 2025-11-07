@@ -196,8 +196,6 @@ public class UtilisateurServices {
         //enregistrer l'utilisateur modifier
         utilisateurRepository.save(utilisateur);
         return urlPhoto;
-
-
     }
 
 }

@@ -183,7 +183,7 @@ public class FormationServices {
      * Elle doit être changée en vingt-quatre heures en prod.
      * Elle met à jour automatiquement le statut des formations.
      */
-    @Scheduled(fixedRate = 2 * 60 * 1000) // toutes les 2 minutes
+    @Scheduled(fixedRate = 24 * 60 * 60 * 1000) // toutes les 2 minutes
     public void updateFormationStatus() {
         LocalDateTime now = LocalDateTime.now();
         List<Formation> formations = formationRepository.findAll();
