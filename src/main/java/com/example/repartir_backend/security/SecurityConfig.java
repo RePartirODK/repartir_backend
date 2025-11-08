@@ -116,6 +116,8 @@ public class SecurityConfig {
                                 )
                                 // Autoriser tous les utilisateurs authentifiés à accéder aux endpoints de notifications.
                                 .requestMatchers("/api/notifications/**").authenticated()
+                                //Autoriser tous les utilisateurs authentifiés à se logout
+                                .requestMatchers("/api/logout").authenticated()
                                 .anyRequest()
                                 .authenticated()
                 )

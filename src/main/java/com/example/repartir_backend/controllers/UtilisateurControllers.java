@@ -150,4 +150,5 @@ public class UtilisateurControllers {
                         || contentType.equalsIgnoreCase("image/png")
                         || contentType.equalsIgnoreCase("image/jpg"));
     }
+
 }
