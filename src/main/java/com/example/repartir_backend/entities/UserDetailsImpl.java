@@ -16,12 +16,14 @@ public class UserDetailsImpl implements UserDetails {
     private final String email;
     private final String motDePasse;
     private final Role role;
+    private final boolean estActive;
 
     public UserDetailsImpl(Utilisateur utilisateur) {
         this.id = utilisateur.getId();
         this.email = utilisateur.getEmail();
         this.motDePasse = utilisateur.getMotDePasse();
         this.role = utilisateur.getRole();
+        this.estActive = utilisateur.isEstActive();
     }
 
     public UserDetailsImpl(Admin admin) {
@@ -29,6 +31,7 @@ public class UserDetailsImpl implements UserDetails {
         this.email = admin.getEmail();
         this.motDePasse = admin.getMotDePasse();
         this.role = admin.getRole();
+        this.estActive = true; // Les admins sont toujours actifs
     }
 
 
@@ -63,6 +66,6 @@ public class UserDetailsImpl implements UserDetails {
 
     @Override
     public boolean isEnabled() {
-        return true;
+        return estActive;
     }
 }

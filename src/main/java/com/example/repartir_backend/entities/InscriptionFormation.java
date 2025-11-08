@@ -1,6 +1,7 @@
 package com.example.repartir_backend.entities;
 
 import com.example.repartir_backend.enumerations.Etat;
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
 import lombok.Data;
@@ -27,7 +28,8 @@ public class InscriptionFormation {
     @JoinColumn(name = "formation_id", nullable = false)
     private Formation formation;
 
-    @OneToMany(mappedBy = "inscriptionFormation")
+    @OneToMany(mappedBy = "inscriptionFormation", fetch = FetchType.LAZY)
+    @JsonIgnore
     private List<Paiement> paiements = new ArrayList<>();
     @Enumerated(EnumType.STRING)
     private Etat status;
