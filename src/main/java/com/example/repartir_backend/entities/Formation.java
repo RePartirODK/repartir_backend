@@ -5,6 +5,7 @@ import com.example.repartir_backend.dto.ResponseCentre;
 import com.example.repartir_backend.dto.ResponseFormation;
 import com.example.repartir_backend.enumerations.Etat;
 import com.example.repartir_backend.enumerations.Format;
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
@@ -45,9 +46,11 @@ public class Formation {
     private String urlFormation;
     private String urlCertificat;
 
-    @OneToMany(mappedBy = "formation")
+    @OneToMany(mappedBy = "formation", fetch = FetchType.LAZY)
+    @JsonIgnore
     private List<InscriptionFormation> inscriptions = new ArrayList<>();
-    @OneToMany(mappedBy = "formation")
+    @OneToMany(mappedBy = "formation", fetch = FetchType.LAZY)
+    @JsonIgnore
     private List<Parrainage> parrainages = new ArrayList<>();
     @ManyToOne
     @JoinColumn(name = "id_centreformation", nullable = false)

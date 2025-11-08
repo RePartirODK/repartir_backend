@@ -10,6 +10,7 @@ import io.swagger.v3.oas.annotations.media.Schema;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.responses.ApiResponses;
 import io.swagger.v3.oas.annotations.tags.Tag;
+import jakarta.persistence.EntityNotFoundException;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
@@ -61,6 +62,49 @@ public class DomaineControllers {
         } catch (Exception e) {
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
                     .body("Une erreur est survenue lors de la récupération des domaines.");
+        }
+    }
+
+    @PutMapping("/modifier/{id}")
+    @PreAuthorize("hasRole('ADMIN')")
+    @Operation(
+            summary = "Modifier un domaine",
+            description = "Permet de modifier le libellé d'un domaine existant."
+    )
+    @ApiResponses({
+            @ApiResponse(responseCode = "200", description = "Domaine modifié avec succès"),
+            @ApiResponse(responseCode = "404", description = "Domaine non trouvé", content = @Content),
+            @ApiResponse(responseCode = "400", description = "Erreur de validation", content = @Content)
+    })
+    public ResponseEntity<?> modifierDomaine(@PathVariable int id, @RequestBody DomaineDto domaineDto) {
+        try {
+            DomaineResponseDto domaine = domaineServices.modifierDomaine(id, domaineDto);
+            return ResponseEntity.ok(domaine);
+        } catch (EntityNotFoundException e) {
+            return ResponseEntity.status(HttpStatus.NOT_FOUND).body(e.getMessage());
+        } catch (Exception e) {
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body("Erreur lors de la modification : " + e.getMessage());
+        }
+    }
+
+    @DeleteMapping("/supprimer/{id}")
+    @PreAuthorize("hasRole('ADMIN')")
+    @Operation(
+            summary = "Supprimer un domaine",
+            description = "Supprime définitivement un domaine de la base de données."
+    )
+    @ApiResponses({
+            @ApiResponse(responseCode = "200", description = "Domaine supprimé avec succès"),
+            @ApiResponse(responseCode = "404", description = "Domaine non trouvé", content = @Content)
+    })
+    public ResponseEntity<?> supprimerDomaine(@PathVariable int id) {
+        try {
+            domaineServices.supprimerDomaine(id);
+            return ResponseEntity.ok("Domaine supprimé avec succès");
+        } catch (EntityNotFoundException e) {
+            return ResponseEntity.status(HttpStatus.NOT_FOUND).body(e.getMessage());
+        } catch (Exception e) {
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body("Erreur lors de la suppression : " + e.getMessage());
         }
     }
 }

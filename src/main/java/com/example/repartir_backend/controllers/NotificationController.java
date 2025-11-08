@@ -14,6 +14,7 @@ import jakarta.persistence.EntityNotFoundException;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.AccessDeniedException;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 
 import java.security.Principal;
@@ -92,6 +93,54 @@ public class NotificationController {
         notification.setLue(true);
         notificationRepository.save(notification);
 
+        return ResponseEntity.ok().build();
+    }
+
+    /**
+     * Récupère la liste de toutes les notifications non lues pour l'administrateur authentifié.
+     * @param principal L'objet Principal injecté par Spring Security, représentant l'administrateur authentifié.
+     * @return Une liste de notifications, qui peut être vide si il n'y en a aucune.
+     */
+    @Operation(
+            summary = "Récupérer les notifications non lues (Admin)",
+            description = "Retourne la liste de toutes les notifications non lues de l'administrateur actuellement authentifié."
+    )
+    @ApiResponses(value = {
+            @ApiResponse(responseCode = "200", description = "Liste récupérée avec succès."),
+            @ApiResponse(responseCode = "404", description = "Admin non trouvé."),
+            @ApiResponse(responseCode = "401", description = "Utilisateur non authentifié."),
+            @ApiResponse(responseCode = "403", description = "Accès refusé.")
+    })
+    @GetMapping("/admin/non-lues")
+    @PreAuthorize("hasRole('ADMIN')")
+    public ResponseEntity<List<NotificationDto>> getNotificationsNonLuesAdmin(Principal principal) {
+        String adminEmail = principal.getName();
+        List<NotificationDto> notifications = notificationService.getNotificationsNonLuesAdmin(adminEmail);
+        return ResponseEntity.ok(notifications);
+    }
+
+    /**
+     * Marque une notification spécifique comme "lue" pour un administrateur.
+     * L'administrateur authentifié ne peut marquer que ses propres notifications.
+     * @param id L'ID de la notification à marquer comme lue.
+     * @param principal L'administrateur authentifié.
+     * @return Une réponse HTTP 200 OK si l'opération réussit.
+     */
+    @Operation(
+            summary = "Marquer une notification comme lue (Admin)",
+            description = "Permet à un administrateur de marquer l'une de ses propres notifications comme lue."
+    )
+    @ApiResponses(value = {
+            @ApiResponse(responseCode = "200", description = "Notification marquée comme lue."),
+            @ApiResponse(responseCode = "403", description = "L'administrateur n'est pas autorisé à modifier cette notification."),
+            @ApiResponse(responseCode = "404", description = "Notification ou admin non trouvé."),
+            @ApiResponse(responseCode = "401", description = "Utilisateur non authentifié.")
+    })
+    @PostMapping("/admin/{id}/marquer-comme-lue")
+    @PreAuthorize("hasRole('ADMIN')")
+    public ResponseEntity<?> marquerCommeLue(@PathVariable Integer id, Principal principal) {
+        String adminEmail = principal.getName();
+        notificationService.marquerCommeLueAdmin(id, adminEmail);
         return ResponseEntity.ok().build();
     }
 }

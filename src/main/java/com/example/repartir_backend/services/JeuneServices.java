@@ -1,16 +1,18 @@
 package com.example.repartir_backend.services;
 
 
+import com.example.repartir_backend.dto.JeuneResponseDto;
 import com.example.repartir_backend.dto.UpdateJeuneDto;
 import com.example.repartir_backend.entities.Jeune;
 import com.example.repartir_backend.entities.Utilisateur;
 import com.example.repartir_backend.repositories.JeuneRepository;
 import com.example.repartir_backend.repositories.UtilisateurRepository;
 import jakarta.persistence.EntityNotFoundException;
-import jakarta.transaction.Transactional;
 import org.springframework.security.core.context.SecurityContextHolder;
+import org.springframework.transaction.annotation.Transactional;
 import org.springframework.stereotype.Service;
 
+import java.util.List;
 import java.util.Optional;
 
 @Service
@@ -64,5 +66,11 @@ public class JeuneServices {
 
         jeuneRepository.delete(jeune);
         utilisateurRepository.delete(utilisateur);
+    }
+
+    @Transactional(readOnly = true)
+    public List<JeuneResponseDto> getAllJeunes() {
+        List<Jeune> jeunes = jeuneRepository.findAll();
+        return JeuneResponseDto.fromEntities(jeunes);
     }
 }
