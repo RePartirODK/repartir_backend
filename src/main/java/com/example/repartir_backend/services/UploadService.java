@@ -16,6 +16,10 @@ import java.util.Optional;
 public class UploadService {
     @Value("${file.upload-dir:${user.home}/Desktop/uploads}")
     private String baseUploadDir;
+
+    @Value("${server.url}")
+    private String serverUrl;
+
     public String uploadFile(MultipartFile file, String fileName, TypeFichier typefichier){
         try{
             //recupérer le fichier le dossier cible en fonction du type de fichier
@@ -38,7 +42,7 @@ public class UploadService {
             // Sauvegarde
             Files.copy(file.getInputStream(), filePath, StandardCopyOption.REPLACE_EXISTING);
 
-            return filePath.toString();
+            return serverUrl + "/uploads/" + getFolderName(typefichier) + "/" + fileName + extension;
 
 
         }catch (IOException e) {

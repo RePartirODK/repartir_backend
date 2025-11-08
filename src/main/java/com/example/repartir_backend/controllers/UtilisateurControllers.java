@@ -19,6 +19,7 @@ import org.springframework.web.multipart.MaxUploadSizeExceededException;
 import org.springframework.web.multipart.MultipartFile;
 
 import java.io.IOException;
+import java.util.Map;
 
 @RestController
 @RequestMapping("/api/utilisateurs")
@@ -115,18 +116,23 @@ public class UtilisateurControllers {
             // Vérifier que le fichier est une image valide
             if (!isValidImage(file)) {
                 return ResponseEntity.badRequest()
-                        .body("Format de fichier non supporté. Seules les images JPG, JPEG et PNG sont autorisées.");
+                        .body(
+                                Map.of("error",
+                                        "Format de fichier non supporté. Seules les images JPG, " +
+                                                "JPEG et PNG sont autorisées."));
             }
 
             // Enregistrer le fichier
             String savedFileName = utilisateurServices.uploadPhotoProfil(file, email);
 
-            return ResponseEntity.ok("Photo enregistrée avec succès : " + savedFileName);
-
+            return ResponseEntity.ok(Map.of(
+                    "message", "Photo enregistrée avec succès",
+                    "urlPhoto", savedFileName
+            ));
         } catch (EntityNotFoundException e) {
             return ResponseEntity.status(HttpStatus.NOT_FOUND).body(e.getMessage());
         } catch (MaxUploadSizeExceededException e) {
-            // Ne sera pas capté ici directement, mais géré par la méthode ci-dessous
+
             return ResponseEntity.status(HttpStatus.PAYLOAD_TOO_LARGE)
                     .body("Fichier trop volumineux. Taille maximale autorisée dépassée !");
         } catch (Exception e) {

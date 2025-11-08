@@ -1,5 +1,6 @@
 package com.example.repartir_backend.controllers;
 
+import com.example.repartir_backend.dto.RegisterUtilisateur;
 import com.example.repartir_backend.dto.ResponseCentre;
 import com.example.repartir_backend.dto.ResponseFormation;
 import com.example.repartir_backend.entities.CentreFormation;
@@ -118,6 +119,16 @@ public class CentreFormationControllers {
             @RequestBody CentreFormation centreDetails) {
         try {
             return ResponseEntity.ok(centreFormationServices.updateCentre(id, centreDetails).toResponse());
+        } catch (EntityNotFoundException e) {
+            return ResponseEntity.status(404).body(e.getMessage());
+        }
+    }
+
+    @PutMapping("/v1")
+    public ResponseEntity<?> updateCentreV1(
+            @RequestBody RegisterUtilisateur centreDetails) {
+        try {
+            return ResponseEntity.ok(centreFormationServices.updateCentreV1(centreDetails));
         } catch (EntityNotFoundException e) {
             return ResponseEntity.status(404).body(e.getMessage());
         }
