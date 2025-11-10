@@ -70,6 +70,9 @@ public class SecurityConfig {
                                         "/webjars/**"
 
                         ).permitAll()
+                                // Endpoints publics pour les centres et formations
+                                .requestMatchers("/api/centres/**").permitAll()
+                                .requestMatchers("/api/formations/**").permitAll()
                                 // Correction du chemin pour les administrateurs et ajout de règles spécifiques
                                 .requestMatchers("/administrateurs/**").hasRole("ADMIN")
                                 .requestMatchers("/api/domaines/**").hasRole("ADMIN")
@@ -78,7 +81,6 @@ public class SecurityConfig {
                                 ,"ADMIN")
                                 .requestMatchers("/api/mentors/**").hasAnyRole("MENTOR", "JEUNE",
                                         "ADMIN")
-                                .requestMatchers("/api/centres/**").hasAnyRole("CENTRE", "ADMIN")
                                 .requestMatchers("/api/entreprises/**").hasAnyRole("ENTREPRISE",
                                         "ADMIN")
                                 .requestMatchers("/api/inscription/**").hasAnyRole("CENTRE", "PARRAIN",
@@ -101,10 +103,6 @@ public class SecurityConfig {
                                 .requestMatchers("/api/userdomaines/**")
                                 .hasAnyRole("ADMIN", "MENTOR", "CENTRE","ENTREPRISE",
                                         "PARRAIN", "JEUNE")
-                                // Les CENTRES ne peuvent plus voir toutes les formations via cet endpoint.
-                                // Ils utiliseront leur endpoint dédié.
-                                .requestMatchers("/api/formations/**").hasAnyRole("ADMIN", "MENTOR",
-                                        "PARRAIN", "CENTRE","JEUNE")
                                 .requestMatchers("/api/updatepassword/**",
                                         "/api/logout",
                                         "/api/utilisateurs/photoprofil")

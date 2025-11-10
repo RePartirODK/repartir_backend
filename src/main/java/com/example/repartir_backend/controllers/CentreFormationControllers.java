@@ -13,7 +13,6 @@ import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.persistence.EntityNotFoundException;
 import org.springframework.http.ResponseEntity;
-import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
@@ -32,13 +31,11 @@ public class CentreFormationControllers {
     }
 
     @GetMapping("/mes-formations")
-    @PreAuthorize("hasRole('CENTRE')")
     @Operation(
             summary = "Lister les formations du centre connecté",
-            description = "Retourne la liste des formations appartenant au centre actuellement connecté (nécessite le rôle CENTRE).",
+            description = "Retourne la liste des formations appartenant au centre actuellement connecté.",
             responses = {
-                    @ApiResponse(responseCode = "200", description = "Liste des formations récupérée avec succès"),
-                    @ApiResponse(responseCode = "403", description = "Accès refusé - rôle manquant")
+                    @ApiResponse(responseCode = "200", description = "Liste des formations récupérée avec succès")
             }
     )
     public ResponseEntity<List<ResponseFormation>> listerMesFormations() {
