@@ -84,7 +84,6 @@ public class FormationServices {
         Formation updatedFormation = formationRepository.save(formation);
         return updatedFormation.toResponse();
     }
-
     //mettre à jour le statut d'une formation
     public Formation updateStatut(int id, Etat statut) {
         Formation formation = formationRepository.findById(id)
