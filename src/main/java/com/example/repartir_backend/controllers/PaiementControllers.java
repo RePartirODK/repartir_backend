@@ -1,6 +1,7 @@
 package com.example.repartir_backend.controllers;
 
 import com.example.repartir_backend.dto.RequestPaiement;
+import com.example.repartir_backend.dto.ResponseParrain;
 import com.example.repartir_backend.services.PaiementServices;
 import com.example.repartir_backend.services.ParrainServices;
 import io.swagger.v3.oas.annotations.Operation;
@@ -14,6 +15,8 @@ import lombok.RequiredArgsConstructor;
 import org.apache.coyote.Response;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PreAuthorize;
+import org.springframework.security.core.Authentication;
 import org.springframework.web.bind.annotation.*;
 
 import java.io.IOException;
@@ -127,6 +130,22 @@ public class PaiementControllers {
         } catch (RuntimeException e) {
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
                     .body("Une erreur est survenue lors de la recupération" + e.getMessage());
+        }
+    }
+
+    @GetMapping("/parrains/me/total")
+    @PreAuthorize("hasRole('PARRAIN')")
+    @Operation(summary = "Total des donations du parrain courant", description = "Retourne la somme des paiements validés liés aux parrainages du parrain connecté")
+    public ResponseEntity<?> getTotalPourParrain(Authentication authentication) {
+        try {
+            String email = authentication.getName();
+            ResponseParrain current = parrainServices.getParrainByEmail(email);
+            double total = paiementServices.getTotalDonationsByParrain(current.getId());
+            return ResponseEntity.ok(total);
+        } catch (EntityNotFoundException e) {
+            return ResponseEntity.status(HttpStatus.NOT_FOUND).body(e.getMessage());
+        } catch (RuntimeException e) {
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body("Erreur : " + e.getMessage());
         }
     }
 

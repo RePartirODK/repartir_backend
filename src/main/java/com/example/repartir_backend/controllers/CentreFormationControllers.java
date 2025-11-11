@@ -213,7 +213,6 @@ public class CentreFormationControllers {
         String email = authentication.getName();
         System.out.println(email);
         ResponseCentre centre = centreFormationServices.getCentreByEmail(email);
-
         return ResponseEntity.ok(centre);
     }
 }

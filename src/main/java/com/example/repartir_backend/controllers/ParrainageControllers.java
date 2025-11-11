@@ -3,6 +3,7 @@ package com.example.repartir_backend.controllers;
 import com.example.repartir_backend.dto.ParrainageDto;
 import com.example.repartir_backend.dto.RequestParrainageDto;
 import com.example.repartir_backend.dto.ResponseParrainage;
+import com.example.repartir_backend.services.ParrainServices;
 import com.example.repartir_backend.services.ParrainageServices;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
@@ -11,9 +12,11 @@ import io.swagger.v3.oas.annotations.tags.Tag;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
+import org.springframework.security.core.Authentication;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
+import java.util.Map;
 
 @RestController
 @RequestMapping("/api/parrainages")
@@ -21,7 +24,8 @@ import java.util.List;
 @Tag(name = "Parrainages", description = "Endpoints pour la gestion des parrainages entre jeunes et parrains")
 public class ParrainageControllers {
 
-    private final ParrainageServices parrainageServices;
+     private final ParrainageServices parrainageServices;
+    private final ParrainServices parrainServices; 
 
     @Operation(summary = "Créer un parrainage", description = "Permet à un jeune de créer une demande de parrainage pour une formation donnée.")
     @ApiResponses(value = {
@@ -67,6 +71,34 @@ public class ParrainageControllers {
     @GetMapping("/lister")
     public ResponseEntity<List<ResponseParrainage>> getAllParrainages() {
         return ResponseEntity.ok(parrainageServices.getAllParrainages());
+    }
+
+    @GetMapping("/parrain/{idParrain}")
+    public ResponseEntity<List<ResponseParrainage>> getParrainagesByParrain(@PathVariable int idParrain) {
+        return ResponseEntity.ok(parrainageServices.getParrainagesByParrain(idParrain));
+    }
+
+    @GetMapping("/me/acceptes")
+    @PreAuthorize("hasRole('PARRAIN')")
+    public ResponseEntity<List<ResponseParrainage>> listerAcceptesPourMoi(Authentication authentication) {
+        String email = authentication.getName();
+        var parrain = parrainServices.getParrainByEmail(email);
+        return ResponseEntity.ok(parrainageServices.getParrainagesByParrain(parrain.getId()));
+    }
+
+    @GetMapping("/me/jeunes")
+    @PreAuthorize("hasRole('PARRAIN')")
+    public ResponseEntity<?> listerJeunesParraines(Authentication authentication) {
+        String email = authentication.getName();
+        var parrain = parrainServices.getParrainByEmail(email);
+        var parrainages = parrainageServices.getParrainagesEntitiesByParrain(parrain.getId());
+
+        var result = parrainages.stream().map(p -> Map.of(
+                "jeune", com.example.repartir_backend.dto.JeuneResponseDto.fromEntity(p.getJeune()),
+                "idFormation", p.getFormation().getId()
+        )).toList();
+
+        return ResponseEntity.ok(result);
     }
 }
 

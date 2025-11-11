@@ -137,9 +137,9 @@ public class ParrainControllers {
 
     @PutMapping("/v1")
     public ResponseEntity<?> updateCentreV1(
-            @RequestBody RegisterUtilisateur centreDetails) {
+            @RequestBody RegisterUtilisateur parrainDetails) {
         try {
-            return ResponseEntity.ok(parrainServices.updateCentreV1(centreDetails));
+            return ResponseEntity.ok(parrainServices.updateCentreV1(parrainDetails));
         } catch (EntityNotFoundException e) {
             return ResponseEntity.status(404).body(e.getMessage());
         }
