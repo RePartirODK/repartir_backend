@@ -12,18 +12,26 @@ import java.time.LocalDateTime;
 @NoArgsConstructor
 public class ResponseMentoring {
     private int id;
+    
+    // Informations du jeune
     private String nomJeune;
     private String prenomJeune;
+    private int idJeune;
+    private String urlPhotoJeune;
+    
+    // Informations du mentor
     private String nomMentor;
     private String prenomMentor;
+    private int idMentor;
+    private String specialiteMentor;
+    private Integer anneesExperienceMentor;
+    private String urlPhotoMentor;
+    
+    // Informations du mentoring
     private LocalDateTime dateDebut;
     private String objectif;
     private String description;
     private int noteMentor;
     private int noteJeune;
     private String statut;
-    private int idMentor;
-    private String specialiteMentor;
-    private Integer anneesExperienceMentor;
-    private String urlPhotoMentor;
 }

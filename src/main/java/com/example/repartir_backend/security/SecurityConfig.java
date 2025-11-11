@@ -57,7 +57,12 @@ public class SecurityConfig {
                 .csrf(AbstractHttpConfigurer::disable)
                 //configuration des authorisation des endpoints
                 .authorizeHttpRequests(
-                        auth -> auth.requestMatchers(
+                        auth -> auth
+                                // ⚠️ IMPORTANT : Accès public aux fichiers uploadés (photos, CV, etc.)
+                                // DOIT être EN PREMIER pour éviter 401 Unauthorized
+                                .requestMatchers("/uploads/**").permitAll()
+                                // Endpoints publics d'authentification et documentation
+                                .requestMatchers(
                                 "/api/auth/login",
                                         "/api/utilisateurs/register",
                                         "/api/auth/refresh",

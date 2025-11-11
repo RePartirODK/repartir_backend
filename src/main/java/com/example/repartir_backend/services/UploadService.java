@@ -16,6 +16,10 @@ import java.util.Optional;
 public class UploadService {
     @Value("${file.upload-dir:${user.home}/Desktop/uploads}")
     private String baseUploadDir;
+    
+    @Value("${server.url:http://localhost:8183}")
+    private String serverUrl;
+    
     public String uploadFile(MultipartFile file, String fileName, TypeFichier typefichier){
         try{
             //recupérer le fichier le dossier cible en fonction du type de fichier
@@ -38,7 +42,11 @@ public class UploadService {
             // Sauvegarde
             Files.copy(file.getInputStream(), filePath, StandardCopyOption.REPLACE_EXISTING);
 
-            return filePath.toString();
+            // Construire l'URL HTTP au lieu du chemin local
+            String folderName = getFolderName(typefichier); // "photos" ou "autres"
+            String relativePath = folderName + "/" + fileName + extension;
+            return serverUrl + "/uploads/" + relativePath;
+            // Retourne "http://localhost:8183/uploads/photos/user_14.jpg"
 
 
         }catch (IOException e) {

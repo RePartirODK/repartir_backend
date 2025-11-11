@@ -42,22 +42,28 @@ public class Mentoring {
         ResponseMentoring response = new ResponseMentoring();
         
         response.setId(this.id);
+        
+        // Informations du jeune
         response.setNomJeune(this.jeune.getUtilisateur().getNom());
         response.setPrenomJeune(this.jeune.getPrenom());
+        response.setIdJeune(this.jeune.getId());
+        response.setUrlPhotoJeune(this.jeune.getUtilisateur().getUrlPhoto());
+        
+        // Informations du mentor
         response.setNomMentor(this.mentor.getUtilisateur().getNom());
         response.setPrenomMentor(this.mentor.getPrenom());
+        response.setIdMentor(this.mentor.getId());
+        response.setSpecialiteMentor(this.mentor.getProfession());  // profession = spécialité
+        response.setAnneesExperienceMentor(this.mentor.getAnnee_experience());
+        response.setUrlPhotoMentor(this.mentor.getUtilisateur().getUrlPhoto());
+        
+        // Informations du mentoring
         response.setDateDebut(this.date_debut);
         response.setObjectif(this.objectif);
         response.setDescription(this.description);
         response.setNoteMentor(this.noteMentor);
         response.setNoteJeune(this.noteJeune);
         response.setStatut(this.statut != null ? this.statut.name() : null);
-        
-        // Informations supplémentaires du mentor
-        response.setIdMentor(this.mentor.getId());
-        response.setSpecialiteMentor(this.mentor.getProfession());  // profession = spécialité
-        response.setAnneesExperienceMentor(this.mentor.getAnnee_experience());
-        response.setUrlPhotoMentor(this.mentor.getUtilisateur().getUrlPhoto());
         
         return response;
     }
