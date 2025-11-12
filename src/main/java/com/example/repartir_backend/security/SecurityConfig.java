@@ -74,6 +74,7 @@ public class SecurityConfig {
                                 .requestMatchers("/administrateurs/**").hasRole("ADMIN")
                                 .requestMatchers("/api/domaines/**").hasRole("ADMIN")
                                 .requestMatchers("/api/entreprise/**").hasRole("ENTREPRISE")
+                                .requestMatchers("/api/centres/me").hasRole("CENTRE")
                                 .requestMatchers("/api/parrains/**").hasAnyRole("PARRAIN"
                                 ,"ADMIN")
                                 .requestMatchers("/api/mentors/**").hasAnyRole("MENTOR", "JEUNE",
@@ -115,6 +116,8 @@ public class SecurityConfig {
                                 )
                                 // Autoriser tous les utilisateurs authentifiés à accéder aux endpoints de notifications.
                                 .requestMatchers("/api/notifications/**").authenticated()
+                                //Autoriser tous les utilisateurs authentifiés à se logout
+                                .requestMatchers("/api/logout").authenticated()
                                 .anyRequest()
                                 .authenticated()
                 )
@@ -199,7 +202,8 @@ public class SecurityConfig {
         CorsConfiguration corsConfiguration = new CorsConfiguration();
         corsConfiguration.setAllowedMethods(List.of("POST", "GET", "PUT", "DELETE", "PATCH"));
         corsConfiguration.addAllowedHeader("*");
-        corsConfiguration.setAllowedOriginPatterns(List.of("http://localhost:*", "http://127.0.0.1:*"));
+        corsConfiguration.setAllowedOriginPatterns(List.of("http://localhost:*", "http://127.0.0.1:*",
+                "http://10.0.2.2:*"));
         corsConfiguration.setAllowCredentials(true);
         UrlBasedCorsConfigurationSource source = new UrlBasedCorsConfigurationSource();
         source.registerCorsConfiguration("/**", corsConfiguration);

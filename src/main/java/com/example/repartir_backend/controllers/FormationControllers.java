@@ -147,5 +147,4 @@ public class FormationControllers {
         ResponseFormation formation = formationServices.getFormationById(id);
         return ResponseEntity.ok(formation);
     }
-
 }

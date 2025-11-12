@@ -10,6 +10,7 @@ import com.example.repartir_backend.repositories.FormationRepository;
 import com.example.repartir_backend.repositories.InscriptionFormationRepository;
 import com.example.repartir_backend.repositories.JeuneRepository;
 import com.example.repartir_backend.repositories.UtilisateurRepository;
+import com.example.repartir_backend.services.PaiementServices;
 import jakarta.persistence.EntityNotFoundException;
 import lombok.RequiredArgsConstructor;
 import org.springframework.security.core.context.SecurityContextHolder;
@@ -18,6 +19,8 @@ import org.springframework.transaction.annotation.Transactional;
 
 import java.nio.file.AccessDeniedException;
 import java.util.Date;
+import java.util.List;
+
 import com.example.repartir_backend.dto.InscriptionResponseDto;
 
 @Service
@@ -85,5 +88,23 @@ public class InscriptionFormationServices {
 
         return jeuneRepository.findByUtilisateur(utilisateur)
                 .orElseThrow(() -> new EntityNotFoundException("Profil jeune non trouvé."));
+    }
+
+     // New: list inscriptions for a formation
+    @Transactional(readOnly = true)
+    public List<InscriptionResponseDto> listerParFormation(int formationId) {
+        return inscriptionFormationRepository.findAllByFormation_Id(formationId)
+                .stream()
+                .map(InscriptionResponseDto::fromEntity)
+                .toList();
+    }
+
+    // New: list inscriptions for all formations of a centre
+    @Transactional(readOnly = true)
+    public List<InscriptionResponseDto> listerParCentre(int centreId) {
+        return inscriptionFormationRepository.findAllByFormation_CentreFormation_Id(centreId)
+                .stream()
+                .map(InscriptionResponseDto::fromEntity)
+                .toList();
     }
 }
