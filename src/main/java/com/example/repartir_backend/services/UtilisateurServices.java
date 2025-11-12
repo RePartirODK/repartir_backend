@@ -85,7 +85,6 @@ public class UtilisateurServices {
                 mentor.setProfession(utilisateur.getProfession());
                 mentor.setA_propos(utilisateur.getA_propos());
                 mentor.setAnnee_experience(utilisateur.getAnnee_experience());
-
                 mentorRepository.save(mentor);
             }
             case CENTRE -> {
