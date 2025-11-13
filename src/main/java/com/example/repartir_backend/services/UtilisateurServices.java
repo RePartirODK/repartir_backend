@@ -181,12 +181,15 @@ public class UtilisateurServices {
 
 
     //service pour upload photo de profil
+    @Transactional
     public String uploadPhotoProfil(MultipartFile file,String email){
 
         //on recherche l'utilisateur
         Utilisateur utilisateur = utilisateurRepository.findByEmail(email).orElseThrow(
                 ()-> new EntityNotFoundException("Email incorrecte")
         );
+        System.out.println("🔍 [DEBUG] Utilisateur trouvé - ID: " + utilisateur.getId() + ", Role: " + utilisateur.getRole());
+        
         String fileName = "user_" + utilisateur.getId();
         //appel de la methode
         String urlPhoto = uploadService.uploadFile(file, fileName, TypeFichier.PHOTO);
@@ -194,6 +197,25 @@ public class UtilisateurServices {
 
         //enregistrer l'utilisateur modifier
         utilisateurRepository.save(utilisateur);
+        System.out.println("✅ [DEBUG] Utilisateur.urlPhoto mis à jour: " + urlPhoto);
+
+        // Si l'utilisateur est une entreprise, mettre à jour également urlPhotoEntreprise
+        if (utilisateur.getRole() == Role.ENTREPRISE) {
+            System.out.println("🏢 [DEBUG] C'est une ENTREPRISE, recherche de l'entité...");
+            Optional<Entreprise> entrepriseOpt = entrepriseRepository.findByUtilisateurEmail(email);
+            if (entrepriseOpt.isPresent()) {
+                Entreprise entreprise = entrepriseOpt.get();
+                System.out.println("✅ [DEBUG] Entreprise trouvée - ID: " + entreprise.getId());
+                entreprise.setUrlPhotoEntreprise(urlPhoto);
+                entrepriseRepository.save(entreprise);
+                System.out.println("✅ [DEBUG] Entreprise.urlPhotoEntreprise mis à jour: " + urlPhoto);
+            } else {
+                System.out.println("❌ [DEBUG] ERREUR: Entreprise NON TROUVÉE pour email: " + email);
+            }
+        } else {
+            System.out.println("ℹ️ [DEBUG] Utilisateur n'est pas une entreprise (role: " + utilisateur.getRole() + ")");
+        }
+
         return urlPhoto;
     }
 
