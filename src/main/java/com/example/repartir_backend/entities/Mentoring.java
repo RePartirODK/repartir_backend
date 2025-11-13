@@ -39,17 +39,33 @@ public class Mentoring {
     private Mentor mentor;
 
     public ResponseMentoring toResponse(){
-        return new ResponseMentoring(
-                this.id,
-                this.jeune.getUtilisateur().getNom(),
-                this.jeune.getPrenom(),
-                this.mentor.getUtilisateur().getNom(),
-                this.mentor.getPrenom(),
-        this.date_debut,
-        this.getObjectif(),
-        this.getDescription(),
-        this.getNoteJeune(),
-        this.getNoteMentor());
+        ResponseMentoring response = new ResponseMentoring();
+        
+        response.setId(this.id);
+        
+        // Informations du jeune
+        response.setNomJeune(this.jeune.getUtilisateur().getNom());
+        response.setPrenomJeune(this.jeune.getPrenom());
+        response.setIdJeune(this.jeune.getId());
+        response.setUrlPhotoJeune(this.jeune.getUtilisateur().getUrlPhoto());
+        
+        // Informations du mentor
+        response.setNomMentor(this.mentor.getUtilisateur().getNom());
+        response.setPrenomMentor(this.mentor.getPrenom());
+        response.setIdMentor(this.mentor.getId());
+        response.setSpecialiteMentor(this.mentor.getProfession());  // profession = spécialité
+        response.setAnneesExperienceMentor(this.mentor.getAnnee_experience());
+        response.setUrlPhotoMentor(this.mentor.getUtilisateur().getUrlPhoto());
+        
+        // Informations du mentoring
+        response.setDateDebut(this.date_debut);
+        response.setObjectif(this.objectif);
+        response.setDescription(this.description);
+        response.setNoteMentor(this.noteMentor);
+        response.setNoteJeune(this.noteJeune);
+        response.setStatut(this.statut != null ? this.statut.name() : null);
+        
+        return response;
     }
 
 }

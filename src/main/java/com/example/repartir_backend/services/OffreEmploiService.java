@@ -107,4 +107,11 @@ public class OffreEmploiService {
         List<OffreEmploi> offres = offreEmploiRepository.findAll();
         return OffreEmploiResponseDto.fromEntities(offres);
     }
+
+    @Transactional(readOnly = true)
+    public OffreEmploiResponseDto getOffreById(int id) {
+        OffreEmploi offre = offreEmploiRepository.findById(id)
+                .orElseThrow(() -> new EntityNotFoundException("Offre non trouvée"));
+        return OffreEmploiResponseDto.fromEntity(offre);
+    }
 }

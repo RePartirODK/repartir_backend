@@ -1,7 +1,13 @@
 package com.example.repartir_backend.controllers;
 
+<<<<<<< HEAD
+import com.example.repartir_backend.dto.InscriptionResponseDto;
+import com.example.repartir_backend.dto.InscriptionDetailDto;
+import com.example.repartir_backend.entities.InscriptionFormation;
+=======
 import com.example.repartir_backend.dto.InscriptionResponseDto;// ... existing code ...
 // ... existing code ...
+>>>>>>> main
 import com.example.repartir_backend.services.InscriptionFormationServices;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.media.Content;
@@ -16,6 +22,12 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 
+<<<<<<< HEAD
+import java.nio.file.AccessDeniedException;
+import java.util.List;
+
+=======
+>>>>>>> main
 @RestController
 @RequestMapping("/api/inscriptions")
 @Tag(name = "Inscriptions", description = "Endpoints pour la gestion des inscriptions aux formations")
@@ -48,6 +60,22 @@ public class InscriptionFormationControllers {
         return ResponseEntity.ok(inscriptionDto);
     }
 
+<<<<<<< HEAD
+    @GetMapping("/mes-inscriptions")
+    @PreAuthorize("hasRole('JEUNE')")
+    @Operation(
+            summary = "Récupérer les formations auxquelles le jeune est inscrit",
+            description = "Retourne la liste des inscriptions du jeune connecté avec les détails complets des formations.",
+            responses = {
+                    @ApiResponse(responseCode = "200", description = "Liste des inscriptions récupérée avec succès"),
+                    @ApiResponse(responseCode = "403", description = "Accès refusé — rôle non autorisé", content = @Content),
+                    @ApiResponse(responseCode = "404", description = "Jeune non trouvé", content = @Content)
+            }
+    )
+    public ResponseEntity<List<InscriptionDetailDto>> getMesInscriptions() {
+        List<InscriptionDetailDto> inscriptions = inscriptionFormationServices.getMesInscriptions();
+        return ResponseEntity.ok(inscriptions);
+=======
 
     
     // New: list inscriptions for a formation (applicants to a specific formation)
@@ -70,5 +98,6 @@ public class InscriptionFormationControllers {
     })
     public ResponseEntity<List<InscriptionResponseDto>> listerInscriptionsParCentre(@PathVariable int centreId) {
         return ResponseEntity.ok(inscriptionFormationServices.listerParCentre(centreId));
+>>>>>>> main
     }
 }

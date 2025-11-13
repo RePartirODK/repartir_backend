@@ -11,6 +11,7 @@ import org.springframework.stereotype.Repository;// ... existing code ...
 @Repository
 public interface InscriptionFormationRepository extends JpaRepository<InscriptionFormation, Integer> {
     boolean existsByJeuneAndFormation(Jeune jeune, Formation formation);
+    List<InscriptionFormation> findByJeune(Jeune jeune);
 
     // New: list inscriptions for a given formation
     List<InscriptionFormation> findAllByFormation_Id(int formationId);

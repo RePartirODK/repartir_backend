@@ -57,7 +57,12 @@ public class SecurityConfig {
                 .csrf(AbstractHttpConfigurer::disable)
                 //configuration des authorisation des endpoints
                 .authorizeHttpRequests(
-                        auth -> auth.requestMatchers(
+                        auth -> auth
+                                // ⚠️ IMPORTANT : Accès public aux fichiers uploadés (photos, CV, etc.)
+                                // DOIT être EN PREMIER pour éviter 401 Unauthorize
+                                // Endpoints publics d'authentification et documentation
+                                .requestMatchers(
+                                        "/uploads/**",
                                 "/api/auth/login",
                                         "/api/utilisateurs/register",
                                         "/api/auth/refresh",
@@ -72,6 +77,9 @@ public class SecurityConfig {
                                         "/webjars/**"
 
                         ).permitAll()
+                                // Endpoints publics pour les centres et formations
+                                .requestMatchers("/api/centres/**").permitAll()
+                                .requestMatchers("/api/formations/**").permitAll()
                                 // Correction du chemin pour les administrateurs et ajout de règles spécifiques
                                 .requestMatchers("/administrateurs/**").hasRole("ADMIN")
                                 .requestMatchers("/api/domaines/**").hasRole("ADMIN")
@@ -81,7 +89,6 @@ public class SecurityConfig {
                                 ,"ADMIN")
                                 .requestMatchers("/api/mentors/**").hasAnyRole("MENTOR", "JEUNE",
                                         "ADMIN")
-                                .requestMatchers("/api/centres/**").hasAnyRole("CENTRE", "ADMIN")
                                 .requestMatchers("/api/entreprises/**").hasAnyRole("ENTREPRISE",
                                         "ADMIN")
                                 .requestMatchers("/api/inscription/**").hasAnyRole("CENTRE", "PARRAIN",
@@ -101,11 +108,6 @@ public class SecurityConfig {
                                         "PARRAIN", "JEUNE", "ADMIN")
                                 .requestMatchers("/api/parrainage/**")
                                 .hasAnyRole("PARRAIN", "JEUNE", "CENTRE", "ADMIN")
-
-                                // Les CENTRES ne peuvent plus voir toutes les formations via cet endpoint.
-                                // Ils utiliseront leur endpoint dédié.
-                                .requestMatchers("/api/formations/**").hasAnyRole("ADMIN", "MENTOR",
-                                        "PARRAIN", "CENTRE","JEUNE")
                                 .requestMatchers("/api/updatepassword/**",
                                         "/api/logout",
                                         "/api/utilisateurs/photoprofil")

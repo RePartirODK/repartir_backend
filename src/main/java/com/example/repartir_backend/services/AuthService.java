@@ -36,7 +36,7 @@ public class AuthService {
      */
     public Map<String, Object> authenticate(String email, String password) {
         try {
-            // Authentifie l’utilisateur via Spring Security
+            // Authentifie l'utilisateur via Spring Security
             Authentication authentication = authenticationManager.authenticate(
                     new UsernamePasswordAuthenticationToken(email, password)
             );
@@ -45,7 +45,7 @@ public class AuthService {
                 throw new RuntimeException("Authentification échouée : utilisateur non reconnu.");
             }
 
-            // Récupère les infos de l’utilisateur
+            // Récupère les infos de l'utilisateur
             UserDetails userDetails = (UserDetails) authentication.getPrincipal();
 
             // Génère un access token
@@ -54,12 +54,28 @@ public class AuthService {
             // Crée un refresh token (gestion interne des doublons dans le service)
             RefreshToken refreshToken = refreshTokenService.createRefreshToken(email);
 
+            // Récupérer l'ID utilisateur depuis la base de données
+            int userId;
+            var utilisateurOpt = utilisateurRepository.findByEmail(email);
+            if (utilisateurOpt.isPresent()) {
+                userId = utilisateurOpt.get().getId();
+            } else {
+                // Si pas dans Utilisateur, chercher dans Admin
+                var adminOpt = adminRepository.findByEmail(email);
+                if (adminOpt.isPresent()) {
+                    userId = adminOpt.get().getId();
+                } else {
+                    throw new RuntimeException("Utilisateur non trouvé dans la base de données");
+                }
+            }
+
             // Réponse JSON propre
             Map<String, Object> response = new HashMap<>();
             response.put("access_token", accessToken);
             response.put("refresh_token", refreshToken.getToken());
             response.put("email", userDetails.getUsername());
             response.put("role", userDetails.getAuthorities());
+            response.put("id", userId); // ← AJOUT de l'ID utilisateur
 
             return response;
 

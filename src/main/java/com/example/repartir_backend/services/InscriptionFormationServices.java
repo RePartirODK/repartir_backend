@@ -20,8 +20,9 @@ import org.springframework.transaction.annotation.Transactional;
 import java.nio.file.AccessDeniedException;
 import java.util.Date;
 import java.util.List;
-
+import java.util.stream.Collectors;
 import com.example.repartir_backend.dto.InscriptionResponseDto;
+import com.example.repartir_backend.dto.InscriptionDetailDto;
 
 @Service
 @RequiredArgsConstructor
@@ -79,6 +80,15 @@ public class InscriptionFormationServices {
         inscription.setDemandeParrainage(true);
         InscriptionFormation updatedInscription = inscriptionFormationRepository.save(inscription);
         return InscriptionResponseDto.fromEntity(updatedInscription);
+    }
+
+    @Transactional(readOnly = true)
+    public List<InscriptionDetailDto> getMesInscriptions() {
+        Jeune jeune = getCurrentJeune();
+        List<InscriptionFormation> inscriptions = inscriptionFormationRepository.findByJeune(jeune);
+        return inscriptions.stream()
+                .map(InscriptionDetailDto::fromEntity)
+                .collect(Collectors.toList());
     }
 
     private Jeune getCurrentJeune() {
