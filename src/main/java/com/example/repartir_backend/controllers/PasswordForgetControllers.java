@@ -66,7 +66,7 @@ public class PasswordForgetControllers {
             }
 
             String message = passWordForget.passwordForget(email);
-            return ResponseEntity.ok(message);
+            return ResponseEntity.ok(Map.of("message", message));
 
         } catch (MessagingException | IOException e) {
             return ResponseEntity.internalServerError().body("Erreur lors de l'envoi du mail : " + e.getMessage());
@@ -116,10 +116,12 @@ public class PasswordForgetControllers {
             }
 
             String message = passWordForget.modifierPassword(email, code, nouveauPassword);
-            return ResponseEntity.ok(message);
+            return ResponseEntity.ok(Map.of("message", message));
 
         } catch (Exception e) {
             return ResponseEntity.badRequest().body(e.getMessage());
         }
     }
+
+
 }
