@@ -61,8 +61,10 @@ public class SecurityConfig {
                                 "/api/auth/login",
                                         "/api/utilisateurs/register",
                                         "/api/auth/refresh",
+                                        "/api/user-domaines/**",
                                         "/ws/**",
                                         "/api/password/**",
+                                        "/api/domaines/lister",
                                         "/v3/api-docs/**",
                                         "/swagger-ui/**",
                                         "/swagger-ui.html",
@@ -99,9 +101,7 @@ public class SecurityConfig {
                                         "PARRAIN", "JEUNE", "ADMIN")
                                 .requestMatchers("/api/parrainage/**")
                                 .hasAnyRole("PARRAIN", "JEUNE", "CENTRE", "ADMIN")
-                                .requestMatchers("/api/userdomaines/**")
-                                .hasAnyRole("ADMIN", "MENTOR", "CENTRE","ENTREPRISE",
-                                        "PARRAIN", "JEUNE")
+
                                 // Les CENTRES ne peuvent plus voir toutes les formations via cet endpoint.
                                 // Ils utiliseront leur endpoint dédié.
                                 .requestMatchers("/api/formations/**").hasAnyRole("ADMIN", "MENTOR",
