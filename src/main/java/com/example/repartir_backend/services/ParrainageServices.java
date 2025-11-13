@@ -155,4 +155,10 @@ public class ParrainageServices {
                 .collect(Collectors.toList());
     }
 
+    public List<Parrainage> getParrainagesEntitiesByParrain(int idParrain) {
+        parrainRepository.findById(idParrain)
+                .orElseThrow(() -> new EntityNotFoundException("Parrain introuvable avec ID : " + idParrain));
+        return parrainageRepository.findAllByParrain_Id(idParrain);
+    }
+
 }

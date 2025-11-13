@@ -1,5 +1,7 @@
 package com.example.repartir_backend.controllers;
 
+import com.example.repartir_backend.dto.RegisterUtilisateur;
+import com.example.repartir_backend.dto.ResponseCentre;
 import com.example.repartir_backend.dto.ResponseParrain;
 import com.example.repartir_backend.entities.Parrain;
 import com.example.repartir_backend.services.ParrainServices;
@@ -9,6 +11,7 @@ import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import jakarta.persistence.EntityNotFoundException;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.core.Authentication;
 import org.springframework.web.bind.annotation.*;
 import java.util.List;
 
@@ -81,6 +84,16 @@ public class ParrainControllers {
         }
     }
 
+    @GetMapping("/me")
+    public ResponseEntity<ResponseParrain> getCurrentCentre(Authentication authentication) {
+        // L'email est automatiquement injecté par Spring Security via le token JWT
+        String email = authentication.getName();
+        System.out.println(email);
+        ResponseParrain parrain = parrainServices.getParrainByEmail(email);
+
+        return ResponseEntity.ok(parrain);
+    }
+
     // PUT /api/parrains/{id}
     @Operation(
             summary = "Mettre à jour un parrain",
@@ -119,6 +132,16 @@ public class ParrainControllers {
             return ResponseEntity.noContent().build();
         } catch (EntityNotFoundException e) {
             return ResponseEntity.notFound().build();
+        }
+    }
+
+    @PutMapping("/v1")
+    public ResponseEntity<?> updateCentreV1(
+            @RequestBody RegisterUtilisateur parrainDetails) {
+        try {
+            return ResponseEntity.ok(parrainServices.updateCentreV1(parrainDetails));
+        } catch (EntityNotFoundException e) {
+            return ResponseEntity.status(404).body(e.getMessage());
         }
     }
 }

@@ -1,5 +1,6 @@
 package com.example.repartir_backend.controllers;
 
+import com.example.repartir_backend.dto.RegisterUtilisateur;
 import com.example.repartir_backend.dto.ResponseCentre;
 import com.example.repartir_backend.dto.ResponseFormation;
 import com.example.repartir_backend.entities.CentreFormation;
@@ -13,6 +14,11 @@ import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.persistence.EntityNotFoundException;
 import org.springframework.http.ResponseEntity;
+<<<<<<< HEAD
+=======
+import org.springframework.security.access.prepost.PreAuthorize;
+import org.springframework.security.core.Authentication;
+>>>>>>> main
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
@@ -119,6 +125,16 @@ public class CentreFormationControllers {
         }
     }
 
+    @PutMapping("/v1")
+    public ResponseEntity<?> updateCentreV1(
+            @RequestBody RegisterUtilisateur centreDetails) {
+        try {
+            return ResponseEntity.ok(centreFormationServices.updateCentreV1(centreDetails));
+        } catch (EntityNotFoundException e) {
+            return ResponseEntity.status(404).body(e.getMessage());
+        }
+    }
+
     @Operation(
             summary = "Activer un centre de formation",
             description = "Permet d’activer un centre précédemment désactivé.",
@@ -190,5 +206,14 @@ public class CentreFormationControllers {
         } catch (EntityNotFoundException e) {
             return ResponseEntity.status(404).body(e.getMessage());
         }
+    }
+
+    @GetMapping("/me")
+    public ResponseEntity<ResponseCentre> getCurrentCentre(Authentication authentication) {
+        // L'email est automatiquement injecté par Spring Security via le token JWT
+        String email = authentication.getName();
+        System.out.println(email);
+        ResponseCentre centre = centreFormationServices.getCentreByEmail(email);
+        return ResponseEntity.ok(centre);
     }
 }

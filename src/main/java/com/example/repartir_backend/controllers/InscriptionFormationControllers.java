@@ -1,8 +1,13 @@
 package com.example.repartir_backend.controllers;
 
+<<<<<<< HEAD
 import com.example.repartir_backend.dto.InscriptionResponseDto;
 import com.example.repartir_backend.dto.InscriptionDetailDto;
 import com.example.repartir_backend.entities.InscriptionFormation;
+=======
+import com.example.repartir_backend.dto.InscriptionResponseDto;// ... existing code ...
+// ... existing code ...
+>>>>>>> main
 import com.example.repartir_backend.services.InscriptionFormationServices;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.media.Content;
@@ -10,13 +15,19 @@ import io.swagger.v3.oas.annotations.media.Schema;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.responses.ApiResponses;
 import io.swagger.v3.oas.annotations.tags.Tag;
+
+import java.util.List;
+
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 
+<<<<<<< HEAD
 import java.nio.file.AccessDeniedException;
 import java.util.List;
 
+=======
+>>>>>>> main
 @RestController
 @RequestMapping("/api/inscriptions")
 @Tag(name = "Inscriptions", description = "Endpoints pour la gestion des inscriptions aux formations")
@@ -49,6 +60,7 @@ public class InscriptionFormationControllers {
         return ResponseEntity.ok(inscriptionDto);
     }
 
+<<<<<<< HEAD
     @GetMapping("/mes-inscriptions")
     @PreAuthorize("hasRole('JEUNE')")
     @Operation(
@@ -63,5 +75,29 @@ public class InscriptionFormationControllers {
     public ResponseEntity<List<InscriptionDetailDto>> getMesInscriptions() {
         List<InscriptionDetailDto> inscriptions = inscriptionFormationServices.getMesInscriptions();
         return ResponseEntity.ok(inscriptions);
+=======
+
+    
+    // New: list inscriptions for a formation (applicants to a specific formation)
+    @GetMapping("/formation/{formationId}")
+    @Operation(summary = "Lister les inscriptions d’une formation", description = "Retourne les inscriptions pour une formation donnée.")
+    @ApiResponses({
+            @ApiResponse(responseCode = "200", description = "Liste des inscriptions récupérée avec succès",
+                    content = @Content(schema = @Schema(implementation = InscriptionResponseDto.class)))
+    })
+    public ResponseEntity<List<InscriptionResponseDto>> listerInscriptionsParFormation(@PathVariable int formationId) {
+        return ResponseEntity.ok(inscriptionFormationServices.listerParFormation(formationId));
+    }
+
+    // New: list inscriptions for all formations of a centre (applicants to centre’s formations)
+    @GetMapping("/centre/{centreId}")
+    @Operation(summary = "Lister les inscriptions d’un centre", description = "Retourne toutes les inscriptions des formations d’un centre donné.")
+    @ApiResponses({
+            @ApiResponse(responseCode = "200", description = "Liste des inscriptions récupérée avec succès",
+                    content = @Content(schema = @Schema(implementation = InscriptionResponseDto.class)))
+    })
+    public ResponseEntity<List<InscriptionResponseDto>> listerInscriptionsParCentre(@PathVariable int centreId) {
+        return ResponseEntity.ok(inscriptionFormationServices.listerParCentre(centreId));
+>>>>>>> main
     }
 }
