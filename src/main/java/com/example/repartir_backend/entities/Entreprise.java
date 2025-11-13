@@ -23,6 +23,11 @@ public class Entreprise {
     private String adresse;
     @Column(nullable = false)
     private String agrement;
+    
+    private String secteurActivite;
+    @Column(length = 1000)
+    private String description;
+    private String urlPhotoEntreprise;
 
     @OneToOne
     @JoinColumn(name = "id_utilisateur", nullable = false)
