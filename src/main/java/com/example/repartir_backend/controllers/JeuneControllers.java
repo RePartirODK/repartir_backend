@@ -2,6 +2,7 @@ package com.example.repartir_backend.controllers;
 
 import com.example.repartir_backend.dto.JeuneResponseDto;
 import com.example.repartir_backend.dto.UpdateJeuneDto;
+import com.example.repartir_backend.dto.DashboardJeuneDto;
 import com.example.repartir_backend.entities.Jeune;
 import com.example.repartir_backend.services.JeuneServices;
 import io.swagger.v3.oas.annotations.Operation;
@@ -25,6 +26,30 @@ public class JeuneControllers {
     private final JeuneServices jeuneServices;
     public JeuneControllers(JeuneServices jeuneServices){
         this.jeuneServices = jeuneServices;
+    }
+
+    @Operation(
+            summary = "Récupérer le profil du jeune connecté",
+            description = "Permet au jeune connecté de récupérer ses informations personnelles.",
+            responses = {
+                    @ApiResponse(responseCode = "200", description = "Profil récupéré avec succès"),
+                    @ApiResponse(responseCode = "404", description = "Jeune introuvable", content = @Content),
+                    @ApiResponse(responseCode = "500", description = "Erreur interne du serveur", content = @Content)
+            }
+    )
+    @GetMapping("/profile")
+    @PreAuthorize("hasRole('JEUNE')")
+    public ResponseEntity<?> getJeuneProfile() {
+        try {
+            Jeune jeune = jeuneServices.getCurrentJeuneProfile();
+            return ResponseEntity.ok(jeune);
+        } catch (EntityNotFoundException e) {
+            return ResponseEntity.status(HttpStatus.NOT_FOUND)
+                    .body(e.getMessage());
+        } catch (Exception e) {
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
+                    .body("Erreur lors de la récupération du profil : " + e.getMessage());
+        }
     }
 
     @Operation(
@@ -67,6 +92,30 @@ public class JeuneControllers {
     public ResponseEntity<?> deleteJeuneProfile() {
         jeuneServices.deleteJeune();
         return ResponseEntity.ok(Map.of("message", "Compte jeune supprimé avec succès."));
+    }
+
+    @Operation(
+            summary = "Récupérer le dashboard du jeune",
+            description = "Retourne les statistiques et données récentes du jeune connecté.",
+            responses = {
+                    @ApiResponse(responseCode = "200", description = "Dashboard récupéré avec succès"),
+                    @ApiResponse(responseCode = "404", description = "Jeune introuvable", content = @Content),
+                    @ApiResponse(responseCode = "500", description = "Erreur interne du serveur", content = @Content)
+            }
+    )
+    @GetMapping("/dashboard")
+    @PreAuthorize("hasRole('JEUNE')")
+    public ResponseEntity<?> getDashboard() {
+        try {
+            DashboardJeuneDto dashboard = jeuneServices.getDashboard();
+            return ResponseEntity.ok(dashboard);
+        } catch (EntityNotFoundException e) {
+            return ResponseEntity.status(HttpStatus.NOT_FOUND)
+                    .body(e.getMessage());
+        } catch (Exception e) {
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
+                    .body("Erreur lors de la récupération du dashboard : " + e.getMessage());
+        }
     }
 
     @Operation(

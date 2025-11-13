@@ -1,0 +1,988 @@
+openapi: 3.0.3
+info:
+  title: Repartir - API Mobile Jeune
+  version: 1.0.0
+  description: |
+    Spécification des endpoints nécessaires pour l'intégration Flutter côté Jeune.
+    - Authentification via Bearer JWT
+    - Horodatages au format ISO 8601 (UTC)
+    - Pagination par défaut page=1, limit=20
+    - Tri par défaut sur les listes par date desc (équivalent sort="-createdAt")
+servers:
+  - url: https://api.example.com
+    description: Production
+  - url: https://staging.api.example.com
+    description: Staging
+security:
+  - bearerAuth: []
+
+paths:
+  /api/me/profile:
+    get:
+      tags: [Profil]
+      summary: Consulter mon profil
+      responses:
+        '200':
+          description: Profil du jeune connecté
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ProfileDTO'
+        '401': { $ref: '#/components/responses/Unauthorized' }
+    patch:
+      tags: [Profil]
+      summary: Modifier mon profil
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/UpdateProfileRequest'
+      responses:
+        '200':
+          description: Profil mis à jour
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ProfileDTO'
+        '400': { $ref: '#/components/responses/BadRequest' }
+        '401': { $ref: '#/components/responses/Unauthorized' }
+        '422': { $ref: '#/components/responses/ValidationError' }
+
+  /api/me/profile/photo:
+    post:
+      tags: [Profil]
+      summary: Upload photo de profil
+      requestBody:
+        required: true
+        content:
+          multipart/form-data:
+            schema:
+              type: object
+              properties:
+                file:
+                  type: string
+                  format: binary
+      responses:
+        '200':
+          description: URL de la photo uploadée
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  url:
+                    type: string
+                    format: uri
+        '401': { $ref: '#/components/responses/Unauthorized' }
+        '413':
+          description: Fichier trop volumineux
+
+  /api/me/dashboard:
+    get:
+      tags: [Dashboard]
+      summary: Dashboard du jeune connecté
+      responses:
+        '200':
+          description: Statistiques et éléments récents
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/DashboardDTO'
+        '401': { $ref: '#/components/responses/Unauthorized' }
+
+  /api/mentors:
+    get:
+      tags: [Mentors]
+      summary: Liste publique des mentors
+      parameters:
+        - in: query
+          name: search
+          schema: { type: string }
+        - in: query
+          name: specialite
+          schema: { type: string }
+        - $ref: '#/components/parameters/PageParam'
+        - $ref: '#/components/parameters/LimitParam'
+      responses:
+        '200':
+          description: Liste paginée de mentors
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PaginatedMentorDTO'
+
+  /api/mentors/{mentorId}:
+    get:
+      tags: [Mentors]
+      summary: Détail d'un mentor
+      parameters:
+        - in: path
+          name: mentorId
+          required: true
+          schema: { type: string }
+      responses:
+        '200':
+          description: Mentor
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/MentorDTO'
+        '404': { $ref: '#/components/responses/NotFound' }
+
+  /api/me/mentoring:
+    get:
+      tags: [Mentoring]
+      summary: Relations de mentoring du jeune
+      parameters:
+        - in: query
+          name: status
+          schema:
+            type: string
+            enum: [EN_ATTENTE, VALIDE, REFUSE]
+        - $ref: '#/components/parameters/PageParam'
+        - $ref: '#/components/parameters/LimitParam'
+      responses:
+        '200':
+          description: Liste paginée de relations
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PaginatedMentoringRelationDTO'
+        '401': { $ref: '#/components/responses/Unauthorized' }
+
+  /api/me/mentors:
+    get:
+      tags: [Mentoring]
+      summary: Mes mentors (statut VALIDE)
+      parameters:
+        - $ref: '#/components/parameters/PageParam'
+        - $ref: '#/components/parameters/LimitParam'
+      responses:
+        '200':
+          description: Liste paginée des mentors validés
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PaginatedMentorDTO'
+        '401': { $ref: '#/components/responses/Unauthorized' }
+
+  /api/offres:
+    get:
+      tags: [Offres]
+      summary: Catalogue des offres d'emploi
+      parameters:
+        - in: query
+          name: contractType
+          schema: { type: string, enum: [CDI, CDD, STAGE] }
+        - in: query
+          name: companyId
+          schema: { type: string }
+        - in: query
+          name: search
+          schema: { type: string }
+        - $ref: '#/components/parameters/PageParam'
+        - $ref: '#/components/parameters/LimitParam'
+      responses:
+        '200':
+          description: Liste paginée des offres
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PaginatedOffreDTO'
+
+  /api/offres/{offreId}:
+    get:
+      tags: [Offres]
+      summary: Détail d'une offre d'emploi
+      parameters:
+        - in: path
+          name: offreId
+          required: true
+          schema: { type: string }
+      responses:
+        '200':
+          description: Offre
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/OffreDTO'
+        '404': { $ref: '#/components/responses/NotFound' }
+
+  /api/centres:
+    get:
+      tags: [Centres]
+      summary: Liste publique des centres
+      parameters:
+        - in: query
+          name: active
+          schema: { type: boolean }
+        - $ref: '#/components/parameters/PageParam'
+        - $ref: '#/components/parameters/LimitParam'
+      responses:
+        '200':
+          description: Liste paginée des centres
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PaginatedCentreDTO'
+
+  /api/centres/actifs:
+    get:
+      tags: [Centres]
+      summary: Liste des centres actifs
+      parameters:
+        - $ref: '#/components/parameters/PageParam'
+        - $ref: '#/components/parameters/LimitParam'
+      responses:
+        '200':
+          description: Liste paginée des centres actifs
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PaginatedCentreDTO'
+
+  /api/centres/{centreId}:
+    get:
+      tags: [Centres]
+      summary: Détail d'un centre
+      parameters:
+        - in: path
+          name: centreId
+          required: true
+          schema: { type: string }
+      responses:
+        '200':
+          description: Centre
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/CentreDTO'
+        '404': { $ref: '#/components/responses/NotFound' }
+
+  /api/centres/{centreId}/formations:
+    get:
+      tags: [Centres]
+      summary: Formations proposées par un centre
+      parameters:
+        - in: path
+          name: centreId
+          required: true
+          schema: { type: string }
+        - $ref: '#/components/parameters/PageParam'
+        - $ref: '#/components/parameters/LimitParam'
+      responses:
+        '200':
+          description: Liste paginée des formations du centre
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PaginatedFormationDTO'
+
+  /api/formations:
+    get:
+      tags: [Formations]
+      summary: Catalogue des formations
+      parameters:
+        - in: query
+          name: centreId
+          schema: { type: string }
+        - in: query
+          name: type
+          schema: { type: string }
+        - in: query
+          name: specialite
+          schema: { type: string }
+        - in: query
+          name: search
+          schema: { type: string }
+        - in: query
+          name: status
+          schema: { type: string, enum: [OUVERTE, CLOTUREE] }
+        - $ref: '#/components/parameters/PageParam'
+        - $ref: '#/components/parameters/LimitParam'
+      responses:
+        '200':
+          description: Liste paginée des formations
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PaginatedFormationDTO'
+
+  /api/formations/{formationId}:
+    get:
+      tags: [Formations]
+      summary: Détail d'une formation
+      parameters:
+        - in: path
+          name: formationId
+          required: true
+          schema: { type: string }
+      responses:
+        '200':
+          description: Formation
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/FormationDTO'
+        '404': { $ref: '#/components/responses/NotFound' }
+
+  /api/me/inscriptions:
+    get:
+      tags: [Inscriptions]
+      summary: Mes inscriptions du jeune connecté
+      parameters:
+        - in: query
+          name: status
+          schema: { type: string, enum: [INSCRIT, EN_COURS, TERMINEE] }
+        - $ref: '#/components/parameters/PageParam'
+        - $ref: '#/components/parameters/LimitParam'
+      responses:
+        '200':
+          description: Liste paginée des inscriptions
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PaginatedInscriptionDTO'
+        '401': { $ref: '#/components/responses/Unauthorized' }
+    post:
+      tags: [Inscriptions]
+      summary: Inscription du jeune à une formation
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/CreateInscriptionRequest'
+      responses:
+        '200':
+          description: Inscription créée
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/InscriptionResponse'
+        '401': { $ref: '#/components/responses/Unauthorized' }
+        '404': { $ref: '#/components/responses/NotFound' }
+        '409': { $ref: '#/components/responses/Conflict' }
+        '422': { $ref: '#/components/responses/ValidationError' }
+
+  /api/me/parrainages:
+    get:
+      tags: [Parrainage]
+      summary: Liste de mes parrainages
+      parameters:
+        - in: query
+          name: status
+          schema: { type: string, enum: [EN_ATTENTE, ACCEPTE, REFUSE] }
+        - $ref: '#/components/parameters/PageParam'
+        - $ref: '#/components/parameters/LimitParam'
+      responses:
+        '200':
+          description: Liste paginée de parrainages
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PaginatedParrainageDTO'
+    post:
+      tags: [Parrainage]
+      summary: Créer une demande de parrainage
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/CreateParrainageRequest'
+      responses:
+        '201':
+          description: Parrainage créé
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ParrainageDTO'
+        '401': { $ref: '#/components/responses/Unauthorized' }
+        '422': { $ref: '#/components/responses/ValidationError' }
+
+  /api/me/parrainages/historique:
+    get:
+      tags: [Parrainage]
+      summary: Historique de parrainage
+      parameters:
+        - $ref: '#/components/parameters/PageParam'
+        - $ref: '#/components/parameters/LimitParam'
+      responses:
+        '200':
+          description: Historique paginé
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PaginatedParrainageDTO'
+
+  /api/me/conversations:
+    get:
+      tags: [Chat]
+      summary: Liste des conversations du jeune connecté
+      parameters:
+        - $ref: '#/components/parameters/PageParam'
+        - $ref: '#/components/parameters/LimitParam'
+      responses:
+        '200':
+          description: Conversations paginées
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PaginatedConversationDTO'
+        '401': { $ref: '#/components/responses/Unauthorized' }
+
+  /api/me/conversations/{conversationId}/messages:
+    get:
+      tags: [Chat]
+      summary: Historique des messages d'une conversation
+      parameters:
+        - in: path
+          name: conversationId
+          required: true
+          schema: { type: string }
+        - in: query
+          name: sort
+          schema: { type: string, enum: [asc, desc] }
+        - $ref: '#/components/parameters/PageParam'
+        - $ref: '#/components/parameters/LimitParam'
+      responses:
+        '200':
+          description: Messages paginés
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PaginatedMessageDTO'
+        '401': { $ref: '#/components/responses/Unauthorized' }
+        '403': { $ref: '#/components/responses/Forbidden' }
+        '404': { $ref: '#/components/responses/NotFound' }
+
+  /api/me/messages/{messageId}/read:
+    post:
+      tags: [Chat]
+      summary: Marquer un message comme lu
+      parameters:
+        - in: path
+          name: messageId
+          required: true
+          schema: { type: string }
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/SuccessResponse'
+        '401': { $ref: '#/components/responses/Unauthorized' }
+        '403': { $ref: '#/components/responses/Forbidden' }
+        '404': { $ref: '#/components/responses/NotFound' }
+
+  /api/me/conversations/{conversationId}/readAll:
+    post:
+      tags: [Chat]
+      summary: Tout marquer comme lu dans une conversation
+      parameters:
+        - in: path
+          name: conversationId
+          required: true
+          schema: { type: string }
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/SuccessResponse'
+        '401': { $ref: '#/components/responses/Unauthorized' }
+        '403': { $ref: '#/components/responses/Forbidden' }
+        '404': { $ref: '#/components/responses/NotFound' }
+
+  /api/me/notifications:
+    get:
+      tags: [Notifications]
+      summary: Liste des notifications du jeune connecté
+      parameters:
+        - in: query
+          name: status
+          schema: { type: string, enum: [read, unread, all] }
+        - $ref: '#/components/parameters/PageParam'
+        - $ref: '#/components/parameters/LimitParam'
+      responses:
+        '200':
+          description: Notifications paginées
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PaginatedNotificationDTO'
+        '401': { $ref: '#/components/responses/Unauthorized' }
+
+  /api/me/notifications/unread-count:
+    get:
+      tags: [Notifications]
+      summary: Compteur des notifications non lues
+      responses:
+        '200':
+          description: Compteur
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  count:
+                    type: integer
+        '401': { $ref: '#/components/responses/Unauthorized' }
+
+  /api/me/notifications/{notificationId}/read:
+    post:
+      tags: [Notifications]
+      summary: Marquer une notification comme lue
+      parameters:
+        - in: path
+          name: notificationId
+          required: true
+          schema: { type: string }
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/SuccessResponse'
+        '401': { $ref: '#/components/responses/Unauthorized' }
+        '404': { $ref: '#/components/responses/NotFound' }
+
+  /api/me/notifications/readAll:
+    post:
+      tags: [Notifications]
+      summary: Marquer toutes les notifications comme lues
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/SuccessResponse'
+        '401': { $ref: '#/components/responses/Unauthorized' }
+
+components:
+  securitySchemes:
+    bearerAuth:
+      type: http
+      scheme: bearer
+      bearerFormat: JWT
+
+  parameters:
+    PageParam:
+      name: page
+      in: query
+      schema: { type: integer, default: 1, minimum: 1 }
+    LimitParam:
+      name: limit
+      in: query
+      schema: { type: integer, default: 20, minimum: 1, maximum: 100 }
+    SortParam:
+      name: sort
+      in: query
+      description: Champ de tri, préfixer par '-' pour ordre descendant. Par défaut -createdAt
+      schema: { type: string, default: -createdAt }
+
+  responses:
+    Unauthorized:
+      description: Non authentifié
+    Forbidden:
+      description: Accès interdit
+    NotFound:
+      description: Ressource introuvable
+      content:
+        application/json:
+          schema: { $ref: '#/components/schemas/ErrorResponse' }
+    Conflict:
+      description: Conflit
+      content:
+        application/json:
+          schema: { $ref: '#/components/schemas/ErrorResponse' }
+    BadRequest:
+      description: Requête invalide
+      content:
+        application/json:
+          schema: { $ref: '#/components/schemas/ErrorResponse' }
+    ValidationError:
+      description: Erreurs de validation
+      content:
+        application/json:
+          schema: { $ref: '#/components/schemas/ValidationErrorResponse' }
+
+  schemas:
+    SuccessResponse:
+      type: object
+      properties:
+        success:
+          type: boolean
+          example: true
+
+    ErrorResponse:
+      type: object
+      properties:
+        error:
+          type: object
+          properties:
+            code: { type: string }
+            message: { type: string }
+            details:
+              type: array
+              items:
+                type: object
+                properties:
+                  field: { type: string }
+                  message: { type: string }
+
+    ValidationErrorResponse:
+      allOf:
+        - $ref: '#/components/schemas/ErrorResponse'
+
+    Pagination:
+      type: object
+      properties:
+        page: { type: integer }
+        limit: { type: integer }
+        totalItems: { type: integer }
+        totalPages: { type: integer }
+
+    PaginatedMentorDTO:
+      type: object
+      properties:
+        data:
+          type: array
+          items: { $ref: '#/components/schemas/MentorDTO' }
+        pagination: { $ref: '#/components/schemas/Pagination' }
+
+    PaginatedMentoringRelationDTO:
+      type: object
+      properties:
+        data:
+          type: array
+          items: { $ref: '#/components/schemas/MentoringRelationDTO' }
+        pagination: { $ref: '#/components/schemas/Pagination' }
+
+    PaginatedOffreDTO:
+      type: object
+      properties:
+        data:
+          type: array
+          items: { $ref: '#/components/schemas/OffreDTO' }
+        pagination: { $ref: '#/components/schemas/Pagination' }
+
+    PaginatedCentreDTO:
+      type: object
+      properties:
+        data:
+          type: array
+          items: { $ref: '#/components/schemas/CentreDTO' }
+        pagination: { $ref: '#/components/schemas/Pagination' }
+
+    PaginatedFormationDTO:
+      type: object
+      properties:
+        data:
+          type: array
+          items: { $ref: '#/components/schemas/FormationDTO' }
+        pagination: { $ref: '#/components/schemas/Pagination' }
+
+    PaginatedInscriptionDTO:
+      type: object
+      properties:
+        data:
+          type: array
+          items: { $ref: '#/components/schemas/InscriptionDTO' }
+        pagination: { $ref: '#/components/schemas/Pagination' }
+
+    PaginatedParrainageDTO:
+      type: object
+      properties:
+        data:
+          type: array
+          items: { $ref: '#/components/schemas/ParrainageDTO' }
+        pagination: { $ref: '#/components/schemas/Pagination' }
+
+    PaginatedConversationDTO:
+      type: object
+      properties:
+        data:
+          type: array
+          items: { $ref: '#/components/schemas/ConversationDTO' }
+        pagination: { $ref: '#/components/schemas/Pagination' }
+
+    PaginatedMessageDTO:
+      type: object
+      properties:
+        data:
+          type: array
+          items: { $ref: '#/components/schemas/MessageDTO' }
+        pagination: { $ref: '#/components/schemas/Pagination' }
+
+    PaginatedNotificationDTO:
+      type: object
+      properties:
+        data:
+          type: array
+          items: { $ref: '#/components/schemas/NotificationDTO' }
+        pagination: { $ref: '#/components/schemas/Pagination' }
+
+    ProfileDTO:
+      type: object
+      properties:
+        id: { type: string }
+        nom: { type: string }
+        prenom: { type: string }
+        email: { type: string, format: email }
+        telephone: { type: string }
+        age: { type: integer }
+        genre: { type: string, enum: [HOMME, FEMME, AUTRE] }
+        niveau: { type: string }
+        diplome: { type: string }
+        urlPhoto: { type: string, format: uri }
+        urlDiplome: { type: string, format: uri }
+        a_propos: { type: string }
+        createdAt: { type: string, format: date-time }
+        updatedAt: { type: string, format: date-time }
+
+    UpdateProfileRequest:
+      type: object
+      properties:
+        nom: { type: string }
+        prenom: { type: string }
+        telephone: { type: string }
+        age: { type: integer, minimum: 0 }
+        a_propos: { type: string }
+        niveau: { type: string }
+        urlPhoto: { type: string, format: uri }
+        urlDiplome: { type: string, format: uri }
+        genre: { type: string, enum: [HOMME, FEMME, AUTRE] }
+
+    DashboardDTO:
+      type: object
+      properties:
+        stats:
+          type: object
+          properties:
+            offres_consultees: { type: integer }
+            offres_postulees: { type: integer }
+            formations_inscrites: { type: integer }
+            formations_terminees: { type: integer }
+            mentors_actifs: { type: integer }
+        recents:
+          type: object
+          properties:
+            offres:
+              type: array
+              items:
+                type: object
+                properties:
+                  id: { type: string }
+                  titre: { type: string }
+                  entreprise: { type: string }
+                  datePublication: { type: string, format: date-time }
+            formations:
+              type: array
+              items:
+                type: object
+                properties:
+                  id: { type: string }
+                  titre: { type: string }
+                  dateDebut: { type: string, format: date-time }
+                  centreId: { type: string }
+
+    MentorDTO:
+      type: object
+      properties:
+        id: { type: string }
+        nom: { type: string }
+        prenom: { type: string }
+        profession: { type: string }
+        experienceAnnees: { type: integer }
+        specialites:
+          type: array
+          items: { type: string }
+        a_propos: { type: string }
+        urlPhoto: { type: string, format: uri }
+
+    MentoringRelationDTO:
+      type: object
+      properties:
+        id: { type: string }
+        mentor:
+          type: object
+          properties:
+            id: { type: string }
+            nom: { type: string }
+            prenom: { type: string }
+            urlPhoto: { type: string, format: uri }
+        status: { type: string, enum: [EN_ATTENTE, VALIDE, REFUSE] }
+        createdAt: { type: string, format: date-time }
+        updatedAt: { type: string, format: date-time }
+
+    EntrepriseLightDTO:
+      type: object
+      properties:
+        id: { type: string }
+        nom: { type: string }
+
+    OffreDTO:
+      type: object
+      properties:
+        id: { type: string }
+        titre: { type: string }
+        description: { type: string }
+        competences:
+          type: array
+          items: { type: string }
+        typeContrat: { type: string, enum: [CDI, CDD, STAGE] }
+        lienCandidature: { type: string, format: uri }
+        datePublication: { type: string, format: date-time }
+        dateExpiration: { type: string, format: date-time }
+        entreprise: { $ref: '#/components/schemas/EntrepriseLightDTO' }
+
+    CentreDTO:
+      type: object
+      properties:
+        id: { type: string }
+        nom: { type: string }
+        adresse: { type: string }
+        contact: { type: string }
+        urlPhoto: { type: string, format: uri }
+        agrement: { type: string }
+        actif: { type: boolean }
+
+    FormationDTO:
+      type: object
+      properties:
+        id: { type: string }
+        titre: { type: string }
+        description: { type: string }
+        dateDebut: { type: string, format: date-time }
+        dateFin: { type: string, format: date-time }
+        statut: { type: string, enum: [OUVERTE, CLOTUREE] }
+        cout: { type: number }
+        monnaie: { type: string, example: XOF }
+        nombrePlaces: { type: integer }
+        format: { type: string, enum: [PRESENTIEL, DISTANCIEL, HYBRIDE] }
+        dureeHeures: { type: integer }
+        supports:
+          type: array
+          items: { type: string, format: uri }
+        centre:
+          type: object
+          properties:
+            id: { type: string }
+            nom: { type: string }
+
+    InscriptionDTO:
+      type: object
+      properties:
+        id: { type: string }
+        formation:
+          type: object
+          properties:
+            id: { type: string }
+            titre: { type: string }
+            dateDebut: { type: string, format: date-time }
+        statut: { type: string, enum: [INSCRIT, EN_COURS, TERMINEE] }
+        dateInscription: { type: string, format: date-time }
+        parrainage:
+          type: object
+          properties:
+            existe: { type: boolean }
+            status: { type: string, enum: [EN_ATTENTE, ACCEPTE, REFUSE] }
+
+    CreateInscriptionRequest:
+      type: object
+      required: [formationId]
+      properties:
+        formationId: { type: string }
+        paiement:
+          type: object
+          properties:
+            mode: { type: string, enum: [MOBILE_MONEY, CARTE] }
+            referenceClient: { type: string }
+
+    PaymentInfo:
+      type: object
+      properties:
+        status: { type: string, enum: [PENDING, SUCCESS, FAILED] }
+        provider: { type: string }
+        checkoutUrl: { type: string, format: uri }
+
+    InscriptionResponse:
+      allOf:
+        - $ref: '#/components/schemas/InscriptionDTO'
+      properties:
+        payment:
+          $ref: '#/components/schemas/PaymentInfo'
+
+    ParrainageDTO:
+      type: object
+      properties:
+        id: { type: string }
+        formationId: { type: string }
+        parrainId: { type: string, nullable: true }
+        status: { type: string, enum: [EN_ATTENTE, ACCEPTE, REFUSE] }
+        createdAt: { type: string, format: date-time }
+
+    CreateParrainageRequest:
+      type: object
+      required: [formationId]
+      properties:
+        formationId: { type: string }
+        parrainId: { type: string, nullable: true }
+        message: { type: string }
+
+    ConversationDTO:
+      type: object
+      properties:
+        id: { type: string }
+        mentor:
+          type: object
+          properties:
+            id: { type: string }
+            nom: { type: string }
+            prenom: { type: string }
+            urlPhoto: { type: string, format: uri }
+        lastMessage:
+          type: object
+          properties:
+            id: { type: string }
+            content: { type: string }
+            sentAt: { type: string, format: date-time }
+        unreadCount: { type: integer }
+        updatedAt: { type: string, format: date-time }
+
+    MessageDTO:
+      type: object
+      properties:
+        id: { type: string }
+        sender:
+          type: object
+          properties:
+            id: { type: string }
+            type: { type: string, enum: [JEUNE, MENTOR] }
+        content: { type: string }
+        attachments:
+          type: array
+          items: { type: string, format: uri }
+        read: { type: boolean }
+        sentAt: { type: string, format: date-time }
+
+    NotificationDTO:
+      type: object
+      properties:
+        id: { type: string }
+        type: { type: string, enum: [MENTORING_STATUS, NEW_MESSAGE, FORMATION_UPDATE, SYSTEM] }
+        title: { type: string }
+        body: { type: string }
+        read: { type: boolean }
+        createdAt: { type: string, format: date-time }
+        context:
+          type: object
+          additionalProperties: true
+
