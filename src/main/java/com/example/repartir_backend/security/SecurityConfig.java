@@ -59,15 +59,17 @@ public class SecurityConfig {
                 .authorizeHttpRequests(
                         auth -> auth
                                 // ⚠️ IMPORTANT : Accès public aux fichiers uploadés (photos, CV, etc.)
-                                // DOIT être EN PREMIER pour éviter 401 Unauthorized
-                                .requestMatchers("/uploads/**").permitAll()
+                                // DOIT être EN PREMIER pour éviter 401 Unauthorize
                                 // Endpoints publics d'authentification et documentation
                                 .requestMatchers(
+                                        "/uploads/**",
                                 "/api/auth/login",
                                         "/api/utilisateurs/register",
                                         "/api/auth/refresh",
+                                        "/api/user-domaines/**",
                                         "/ws/**",
                                         "/api/password/**",
+                                        "/api/domaines/lister",
                                         "/v3/api-docs/**",
                                         "/swagger-ui/**",
                                         "/swagger-ui.html",
@@ -82,6 +84,7 @@ public class SecurityConfig {
                                 .requestMatchers("/administrateurs/**").hasRole("ADMIN")
                                 .requestMatchers("/api/domaines/**").hasRole("ADMIN")
                                 .requestMatchers("/api/entreprise/**").hasRole("ENTREPRISE")
+                                .requestMatchers("/api/centres/me").hasRole("CENTRE")
                                 .requestMatchers("/api/parrains/**").hasAnyRole("PARRAIN"
                                 ,"ADMIN")
                                 .requestMatchers("/api/mentors/**").hasAnyRole("MENTOR", "JEUNE",
@@ -105,9 +108,6 @@ public class SecurityConfig {
                                         "PARRAIN", "JEUNE", "ADMIN")
                                 .requestMatchers("/api/parrainage/**")
                                 .hasAnyRole("PARRAIN", "JEUNE", "CENTRE", "ADMIN")
-                                .requestMatchers("/api/userdomaines/**")
-                                .hasAnyRole("ADMIN", "MENTOR", "CENTRE","ENTREPRISE",
-                                        "PARRAIN", "JEUNE")
                                 .requestMatchers("/api/updatepassword/**",
                                         "/api/logout",
                                         "/api/utilisateurs/photoprofil")
@@ -118,6 +118,8 @@ public class SecurityConfig {
                                 )
                                 // Autoriser tous les utilisateurs authentifiés à accéder aux endpoints de notifications.
                                 .requestMatchers("/api/notifications/**").authenticated()
+                                //Autoriser tous les utilisateurs authentifiés à se logout
+                                .requestMatchers("/api/logout").authenticated()
                                 .anyRequest()
                                 .authenticated()
                 )
@@ -202,7 +204,8 @@ public class SecurityConfig {
         CorsConfiguration corsConfiguration = new CorsConfiguration();
         corsConfiguration.setAllowedMethods(List.of("POST", "GET", "PUT", "DELETE", "PATCH"));
         corsConfiguration.addAllowedHeader("*");
-        corsConfiguration.setAllowedOriginPatterns(List.of("http://localhost:*", "http://127.0.0.1:*"));
+        corsConfiguration.setAllowedOriginPatterns(List.of("http://localhost:*", "http://127.0.0.1:*",
+                "http://10.0.2.2:*"));
         corsConfiguration.setAllowCredentials(true);
         UrlBasedCorsConfigurationSource source = new UrlBasedCorsConfigurationSource();
         source.registerCorsConfiguration("/**", corsConfiguration);

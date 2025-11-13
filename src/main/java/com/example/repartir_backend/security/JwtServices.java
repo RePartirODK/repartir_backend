@@ -6,6 +6,7 @@ import io.jsonwebtoken.Claims;
 import io.jsonwebtoken.Jwts;
 import io.jsonwebtoken.io.Decoders;
 import io.jsonwebtoken.security.Keys;
+import jakarta.annotation.PostConstruct;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.stereotype.Component;
@@ -21,6 +22,12 @@ public class JwtServices {
 
     @Value("${jwt.secret}")
     private String secret;
+
+
+    @PostConstruct
+    public void init() {
+        System.out.println("🔑 Clé JWT utilisée au démarrage : " + secret);
+    }
 
     /**
      * Génère un token JWT pour un utilisateur.

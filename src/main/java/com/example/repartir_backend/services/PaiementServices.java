@@ -128,4 +128,18 @@ public class PaiementServices {
         }
     }
 
+      public double getTotalDonationsByParrain(int idParrain) {
+        double total = 0.0;
+        List<Parrainage> parrainages = parrainageRepository.findAllByParrain_Id(idParrain);
+        for (Parrainage p : parrainages) {
+            List<Paiement> paiements = paiementRepository.findAllByParrainage_Id(p.getId());
+            for (Paiement pa : paiements) {
+                if (pa.getStatus() == StatutPaiement.VALIDE) {
+                    total += pa.getMontant();
+                }
+            }
+        }
+        return total;
+    }
+
 }
