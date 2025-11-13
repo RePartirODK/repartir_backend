@@ -14,11 +14,7 @@ import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.persistence.EntityNotFoundException;
 import org.springframework.http.ResponseEntity;
-<<<<<<< HEAD
-=======
-import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.security.core.Authentication;
->>>>>>> main
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
