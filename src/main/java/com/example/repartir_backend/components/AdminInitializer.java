@@ -23,7 +23,7 @@ public class AdminInitializer implements CommandLineRunner {
 
     public AdminInitializer(UtilisateurRepository utilisateurRepository,
                            AdminRepository adminRepository,
-                           @Lazy PasswordEncoder passwordEncoder) {
+                           PasswordEncoder passwordEncoder) {
         this.utilisateurRepository = utilisateurRepository;
         this.adminRepository = adminRepository;
         this.passwordEncoder = passwordEncoder;
