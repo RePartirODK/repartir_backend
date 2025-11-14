@@ -10,6 +10,7 @@ import jakarta.mail.MessagingException;
 import jakarta.persistence.EntityExistsException;
 import jakarta.persistence.EntityNotFoundException;
 import jakarta.transaction.Transactional;
+import lombok.RequiredArgsConstructor;
 import org.springframework.context.annotation.Lazy;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
@@ -20,6 +21,7 @@ import java.time.LocalDateTime;
 import java.util.Optional;
 
 @Service
+@RequiredArgsConstructor
 public class UtilisateurServices {
     private final UtilisateurRepository utilisateurRepository;
     private final ParrainRepository parrainRepository;
@@ -32,31 +34,6 @@ public class UtilisateurServices {
     private final MailSendServices mailSendServices;
     private final UploadService uploadService;
     private final NotificationService notificationService;
-
-    public UtilisateurServices(UtilisateurRepository utilisateurRepository,
-                              ParrainRepository parrainRepository,
-                              MentorRepository mentorRepository,
-                              CentreFormationRepository centreFormationRepository,
-                              JeuneRepository jeuneRepository,
-                              EntrepriseRepository entrepriseRepository,
-                              RefreshTokenRepository refreshTokenRepository,
-                              @Lazy PasswordEncoder passwordEncoder,
-                              MailSendServices mailSendServices,
-                              UploadService uploadService,
-                              NotificationService notificationService) {
-        this.utilisateurRepository = utilisateurRepository;
-        this.parrainRepository = parrainRepository;
-        this.mentorRepository = mentorRepository;
-        this.centreFormationRepository = centreFormationRepository;
-        this.jeuneRepository = jeuneRepository;
-        this.entrepriseRepository = entrepriseRepository;
-        this.refreshTokenRepository = refreshTokenRepository;
-        this.passwordEncoder = passwordEncoder;
-        this.mailSendServices = mailSendServices;
-        this.uploadService = uploadService;
-        this.notificationService = notificationService;
-    }
-
     @Transactional
     public Utilisateur register(RegisterUtilisateur utilisateur) throws MessagingException, IOException {
         //verifier si un utilisateur avec l'email existe déjà

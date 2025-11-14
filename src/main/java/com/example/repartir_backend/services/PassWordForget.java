@@ -5,6 +5,7 @@ import com.example.repartir_backend.enumerations.Etat;
 import com.example.repartir_backend.repositories.UtilisateurRepository;
 import jakarta.mail.MessagingException;
 import jakarta.persistence.EntityNotFoundException;
+import lombok.RequiredArgsConstructor;
 import org.springframework.context.annotation.Lazy;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
@@ -14,19 +15,12 @@ import java.time.LocalDateTime;
 import java.util.*;
 
 @Service
+@RequiredArgsConstructor
 public class PassWordForget {
 
     private final UtilisateurRepository utilisateurRepository;
     private final PasswordEncoder passwordEncoder;
     private final MailSendServices mailSendServices;
-
-    public PassWordForget(UtilisateurRepository utilisateurRepository,
-                         @Lazy PasswordEncoder passwordEncoder,
-                         MailSendServices mailSendServices) {
-        this.utilisateurRepository = utilisateurRepository;
-        this.passwordEncoder = passwordEncoder;
-        this.mailSendServices = mailSendServices;
-    }
 
     // Stock temporaire des codes avec date d’expiration
     private final Map<String, CodeInfo> codes = new HashMap<>();
