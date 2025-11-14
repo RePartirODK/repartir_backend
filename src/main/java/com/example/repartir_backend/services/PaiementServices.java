@@ -2,6 +2,7 @@ package com.example.repartir_backend.services;
 
 import com.example.repartir_backend.dto.RequestPaiement;
 import com.example.repartir_backend.dto.ResponsePaiement;
+import com.example.repartir_backend.dto.ResponsePaiementAdmin;
 import com.example.repartir_backend.entities.InscriptionFormation;
 import com.example.repartir_backend.entities.Jeune;
 import com.example.repartir_backend.entities.Paiement;
@@ -61,24 +62,59 @@ public class PaiementServices {
 
         paiement.setStatus(StatutPaiement.VALIDE);
         paiementRepository.save(paiement);
+        
+        System.out.println("✅ Paiement #" + idPaiement + " validé et sauvegardé");
 
         InscriptionFormation inscription = paiement.getInscriptionFormation();
+        
+        // Préparer les données pour l'email de confirmation de paiement
+        String nomComplet = paiement.getJeune().getPrenom() + " " 
+                + paiement.getJeune().getUtilisateur().getNom();
+        String formation = inscription.getFormation().getTitre();
+        String montant = String.format("%.0f", paiement.getMontant());
+        String emailDestinataire = paiement.getJeune().getUtilisateur().getEmail();
+        
+        System.out.println("📧 Préparation email de confirmation pour : " + emailDestinataire);
+        
+        // Envoyer un email de confirmation de paiement validé
+        try {
+            String pathPaiement = "src/main/resources/templates/inscriptionreussi.html";
+            mailSendServices.acceptionInscription(
+                    emailDestinataire,
+                    "Paiement validé - " + formation,
+                    nomComplet,
+                    formation,
+                    pathPaiement
+            );
+            System.out.println("✅ Email de confirmation de paiement envoyé avec succès à " + emailDestinataire);
+        } catch (Exception e) {
+            System.err.println("❌ ERREUR ENVOI EMAIL CONFIRMATION PAIEMENT : " + e.getMessage());
+            e.printStackTrace();
+            // Ne pas faire échouer la validation si l'email échoue
+        }
 
-        double totalValide = paiementRepository.findByInscriptionFormationAndStatus(inscription, Etat.VALIDE)
+        double totalValide = paiementRepository.findByInscriptionFormationAndStatus(inscription, StatutPaiement.VALIDE)
                 .stream().mapToDouble(Paiement::getMontant).sum();
 
         if (totalValide >= inscription.getFormation().getCout()) {
             inscription.setStatus(Etat.VALIDE);
-
-            // Mail de confirmation
-            String path = "src/main/resources/templates/inscriptionreussi.html";
-            mailSendServices.acceptionInscription(
-                    inscription.getJeune().getUtilisateur().getEmail(),
-                    "Inscription acceptée",
-                    inscription.getJeune().getUtilisateur().getNom(),
-                    inscription.getFormation().getTitre(),
-                    path
-            );
+            System.out.println("✅ Inscription validée (montant suffisant : " + totalValide + "/" + inscription.getFormation().getCout() + ")");
+            
+            // Mail de confirmation d'inscription complète
+            String pathInscription = "src/main/resources/templates/inscriptionreussi.html";
+            try {
+                mailSendServices.acceptionInscription(
+                        inscription.getJeune().getUtilisateur().getEmail(),
+                        "Inscription acceptée",
+                        inscription.getJeune().getUtilisateur().getNom(),
+                        inscription.getFormation().getTitre(),
+                        pathInscription
+                );
+                System.out.println("✅ Email d'inscription acceptée envoyé");
+            } catch (Exception e) {
+                System.err.println("❌ ERREUR ENVOI EMAIL INSCRIPTION : " + e.getMessage());
+                e.printStackTrace();
+            }
 
             inscriptionFormationRepository.save(inscription);
         }
@@ -93,19 +129,31 @@ public class PaiementServices {
 
         paiement.setStatus(StatutPaiement.REFUSE);
         paiementRepository.save(paiement);
+        
+        System.out.println("❌ Paiement #" + idPaiement + " refusé et sauvegardé");
 
         InscriptionFormation inscription = paiement.getInscriptionFormation();
         inscription.setStatus(Etat.REFUSE);
         inscriptionFormationRepository.save(inscription);
+        
+        String emailDestinataire = inscription.getJeune().getUtilisateur().getEmail();
+        System.out.println("📧 Préparation email de refus pour : " + emailDestinataire);
 
         String path = "src/main/resources/templates/refusreussi.html";
-        mailSendServices.acceptionInscription(
-                inscription.getJeune().getUtilisateur().getEmail(),
-                "Inscription refusée",
-                inscription.getJeune().getUtilisateur().getNom(),
-                inscription.getFormation().getTitre(),
-                path
-        );
+        try {
+            mailSendServices.acceptionInscription(
+                    emailDestinataire,
+                    "Inscription refusée",
+                    inscription.getJeune().getUtilisateur().getNom(),
+                    inscription.getFormation().getTitre(),
+                    path
+            );
+            System.out.println("✅ Email de refus envoyé avec succès à " + emailDestinataire);
+        } catch (Exception e) {
+            System.err.println("❌ ERREUR ENVOI EMAIL REFUS : " + e.getMessage());
+            e.printStackTrace();
+            // Ne pas faire échouer le refus si l'email échoue
+        }
 
         return "Paiement refusé.";
     }
@@ -118,6 +166,15 @@ public class PaiementServices {
     public List<ResponsePaiement> getPaiementByJeune(int idJeune) {
         return paiementRepository.findByJeuneId(idJeune).stream()
                 .map(Paiement::toResponse).toList();
+    }
+
+    /**
+     * Récupère tous les paiements avec détails complets (pour l'admin)
+     */
+    public List<ResponsePaiementAdmin> getAllPaiements() {
+        return paiementRepository.findAll().stream()
+                .map(Paiement::toAdminResponse)
+                .toList();
     }
 
     public void marquerPaiementsARembourserParFormation(int idFormation) {

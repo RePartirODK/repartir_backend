@@ -6,21 +6,28 @@ import com.example.repartir_backend.enumerations.Etat;
 import com.example.repartir_backend.enumerations.Role;
 import com.example.repartir_backend.repositories.AdminRepository;
 import com.example.repartir_backend.repositories.UtilisateurRepository;
-import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.CommandLineRunner;
+import org.springframework.context.annotation.Lazy;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Component;
 
 import java.util.List;
 
 @Component
-@RequiredArgsConstructor
 public class AdminInitializer implements CommandLineRunner {
 
     private final UtilisateurRepository utilisateurRepository;
     private final AdminRepository adminRepository;
     private final PasswordEncoder passwordEncoder;
+
+    public AdminInitializer(UtilisateurRepository utilisateurRepository,
+                           AdminRepository adminRepository,
+                           PasswordEncoder passwordEncoder) {
+        this.utilisateurRepository = utilisateurRepository;
+        this.adminRepository = adminRepository;
+        this.passwordEncoder = passwordEncoder;
+    }
 
     @Value("${default.admin.email}")
     private String email;

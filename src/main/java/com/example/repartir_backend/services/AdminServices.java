@@ -11,9 +11,9 @@ import com.example.repartir_backend.enumerations.Role;
 import com.example.repartir_backend.repositories.AdminRepository;
 import com.example.repartir_backend.repositories.UtilisateurRepository;
 import jakarta.mail.MessagingException;
-import lombok.RequiredArgsConstructor;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.context.annotation.Lazy;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -26,7 +26,6 @@ import java.util.Optional;
  * Service pour gérer la logique métier des administrateurs.
  */
 @Service
-@RequiredArgsConstructor
 public class AdminServices {
     private static final Logger logger = LoggerFactory.getLogger(AdminServices.class);
     
@@ -35,6 +34,18 @@ public class AdminServices {
     private final UtilisateurRepository utilisateurRepository;
     private final MailSendServices mailSendServices;
     private final UtilisateurServices utilisateurServices;
+
+    public AdminServices(AdminRepository adminRepository,
+                        @Lazy PasswordEncoder passwordEncoder,
+                        UtilisateurRepository utilisateurRepository,
+                        MailSendServices mailSendServices,
+                        UtilisateurServices utilisateurServices) {
+        this.adminRepository = adminRepository;
+        this.passwordEncoder = passwordEncoder;
+        this.utilisateurRepository = utilisateurRepository;
+        this.mailSendServices = mailSendServices;
+        this.utilisateurServices = utilisateurServices;
+    }
 
 
     /**
