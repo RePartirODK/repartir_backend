@@ -6,17 +6,24 @@ import com.example.repartir_backend.entities.Utilisateur;
 import com.example.repartir_backend.repositories.AdminRepository;
 import com.example.repartir_backend.repositories.UtilisateurRepository;
 import jakarta.persistence.EntityNotFoundException;
-import lombok.RequiredArgsConstructor;
+import org.springframework.context.annotation.Lazy;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 @Service
-@RequiredArgsConstructor
 public class UpdatePassWordService {
     private final UtilisateurRepository utilisateurRepository;
     private final AdminRepository adminRepository;
     private final PasswordEncoder passwordEncoder;
+
+    public UpdatePassWordService(UtilisateurRepository utilisateurRepository,
+                                AdminRepository adminRepository,
+                                @Lazy PasswordEncoder passwordEncoder) {
+        this.utilisateurRepository = utilisateurRepository;
+        this.adminRepository = adminRepository;
+        this.passwordEncoder = passwordEncoder;
+    }
     @Transactional
     public void updateMotDePasse(int id, UpdatePasswordRequest request) {
         // Vérifier si c'est un utilisateur
