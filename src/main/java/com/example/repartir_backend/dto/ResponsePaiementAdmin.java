@@ -38,6 +38,8 @@ public class ResponsePaiementAdmin {
     
     // Informations du parrainage (nullable)
     private Integer idParrainage;
+    private Integer idParrain;  // ID du parrain qui a fait le paiement (récupéré depuis paiement.id_parrain ou parrainage.id_parrain)
 }
+
 
 
