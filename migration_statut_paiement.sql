@@ -54,3 +54,4 @@ GROUP BY status;
 --        lors du prochain redémarrage grâce à @Enumerated(EnumType.STRING)
 -- ============================================================================
 
+

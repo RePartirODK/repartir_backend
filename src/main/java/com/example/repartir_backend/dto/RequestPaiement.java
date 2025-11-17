@@ -12,4 +12,5 @@ public class RequestPaiement {
     private int idInscription;
     private Double montant;
     private Integer idParrainage;
+    private Integer idParrain;  // Optionnel : ID du parrain qui fait le paiement (si connu côté client)
 }
