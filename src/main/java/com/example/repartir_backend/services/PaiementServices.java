@@ -3,6 +3,7 @@ package com.example.repartir_backend.services;
 import com.example.repartir_backend.dto.RequestPaiement;
 import com.example.repartir_backend.dto.ResponsePaiement;
 import com.example.repartir_backend.dto.ResponsePaiementAdmin;
+import com.example.repartir_backend.entities.Formation;
 import com.example.repartir_backend.entities.InscriptionFormation;
 import com.example.repartir_backend.entities.Jeune;
 import com.example.repartir_backend.entities.Paiement;
@@ -11,6 +12,7 @@ import com.example.repartir_backend.enumerations.Etat;
 import com.example.repartir_backend.enumerations.StatutPaiement;
 import com.example.repartir_backend.entities.Parrain;
 import com.example.repartir_backend.entities.Utilisateur;
+import com.example.repartir_backend.repositories.FormationRepository;
 import com.example.repartir_backend.repositories.InscriptionFormationRepository;
 import com.example.repartir_backend.repositories.JeuneRepository;
 import com.example.repartir_backend.repositories.PaiementRepository;
@@ -36,6 +38,7 @@ public class PaiementServices {
     private final ParrainRepository parrainRepository;
     private final UtilisateurRepository utilisateurRepository;
     private final MailSendServices mailSendServices;
+    private final FormationRepository formationRepository;
 
     @Transactional
     public ResponsePaiement creerPaiement(RequestPaiement paiementRequest) {
@@ -123,7 +126,7 @@ public class PaiementServices {
         // Préparer les données pour l'email de confirmation de paiement
         String nomComplet = paiement.getJeune().getPrenom() + " " 
                 + paiement.getJeune().getUtilisateur().getNom();
-        String formation = inscription.getFormation().getTitre();
+        String formationNom = inscription.getFormation().getTitre();
         String montant = String.format("%.0f", paiement.getMontant());
         String emailDestinataire = paiement.getJeune().getUtilisateur().getEmail();
         
@@ -134,9 +137,9 @@ public class PaiementServices {
             String pathPaiement = "src/main/resources/templates/inscriptionreussi.html";
             mailSendServices.acceptionInscription(
                     emailDestinataire,
-                    "Paiement validé - " + formation,
+                    "Paiement validé - " + formationNom,
                     nomComplet,
-                    formation,
+                    formationNom,
                     pathPaiement
             );
             System.out.println("✅ Email de confirmation de paiement envoyé avec succès à " + emailDestinataire);
@@ -151,6 +154,7 @@ public class PaiementServices {
 
         if (totalValide >= inscription.getFormation().getCout()) {
             inscription.setStatus(Etat.VALIDE);
+            boolean wasAlreadyValide = inscription.getStatus() == Etat.VALIDE;
             System.out.println("✅ Inscription validée (montant suffisant : " + totalValide + "/" + inscription.getFormation().getCout() + ")");
             
             // Mail de confirmation d'inscription complète
@@ -167,6 +171,19 @@ public class PaiementServices {
             } catch (Exception e) {
                 System.err.println("❌ ERREUR ENVOI EMAIL INSCRIPTION : " + e.getMessage());
                 e.printStackTrace();
+            }
+
+            // Décrémenter les places disponibles si ce n'était pas déjà validé
+            if (wasAlreadyValide) {
+                var formation = inscription.getFormation();
+                Integer places = formation.getNbre_place();
+                if (places != null && places > 0) {
+                    formation.setNbre_place(places - 1);
+                    formationRepository.save(formation);
+                    System.out.println("Place décrementé de 1");
+                } else {
+                    System.out.println("⚠️ Aucune place disponible à décrémenter (nbre_place=" + places + ")");
+                }
             }
 
             inscriptionFormationRepository.save(inscription);

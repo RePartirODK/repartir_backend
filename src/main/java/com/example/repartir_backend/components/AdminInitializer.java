@@ -1,14 +1,11 @@
 package com.example.repartir_backend.components;
 
 import com.example.repartir_backend.entities.Admin;
-import com.example.repartir_backend.entities.Utilisateur;
-import com.example.repartir_backend.enumerations.Etat;
 import com.example.repartir_backend.enumerations.Role;
 import com.example.repartir_backend.repositories.AdminRepository;
 import com.example.repartir_backend.repositories.UtilisateurRepository;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.CommandLineRunner;
-import org.springframework.context.annotation.Lazy;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Component;
 
