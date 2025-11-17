@@ -17,6 +17,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.nio.file.AccessDeniedException;
+import java.time.LocalDateTime;
 import java.util.Date;
 import java.util.List;
 import java.util.stream.Collectors;
@@ -118,5 +119,30 @@ public class InscriptionFormationServices {
                 .stream()
                 .map(InscriptionResponseDto::fromEntity)
                 .toList();
+    }
+
+    // Certifier une inscription (centre)
+    @Transactional
+    public InscriptionResponseDto certifierInscription(int inscriptionId) {
+        InscriptionFormation inscription = inscriptionFormationRepository.findById(inscriptionId)
+                .orElseThrow(() -> new EntityNotFoundException("Inscription non trouvée."));
+
+        // La formation doit être terminée
+        LocalDateTime now = LocalDateTime.now();
+        LocalDateTime fin = inscription.getFormation().getDate_fin();
+        if (fin == null || fin.isAfter(now)) {
+            throw new IllegalStateException("La formation n'est pas terminée.");
+        }
+
+        // L'inscription doit être validée (paiement suffisant)
+        if (inscription.getStatus() != Etat.VALIDE) {
+            throw new IllegalStateException("L'inscription doit être validée avant certification.");
+        }
+
+        // Appliquer la certification
+        inscription.setCertifie(true);
+        inscriptionFormationRepository.save(inscription);
+
+        return InscriptionResponseDto.fromEntity(inscription);
     }
 }
