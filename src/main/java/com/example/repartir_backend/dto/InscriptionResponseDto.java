@@ -14,7 +14,7 @@ public class InscriptionResponseDto {
     private String titreFormation;
     private Date dateInscription;
     private boolean demandeParrainage;
-
+    private boolean certifie;
     public static InscriptionResponseDto fromEntity(InscriptionFormation inscription) {
         return InscriptionResponseDto.builder()
                 .id(inscription.getId())
@@ -22,6 +22,7 @@ public class InscriptionResponseDto {
                 .titreFormation(inscription.getFormation().getTitre())
                 .dateInscription(inscription.getDateInscription())
                 .demandeParrainage(inscription.isDemandeParrainage())
+                .certifie(inscription.isCertifie())
                 .build();
     }
 }

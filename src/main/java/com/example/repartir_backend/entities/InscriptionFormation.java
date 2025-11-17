@@ -34,6 +34,6 @@ public class InscriptionFormation {
     @Enumerated(EnumType.STRING)
     private Etat status;
     private Date dateInscription;
-
+    private boolean certifie = false; // Nouveau: certification par le centre
     private boolean demandeParrainage = false; // Par défaut, pas de demande
 }

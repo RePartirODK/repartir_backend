@@ -83,4 +83,14 @@ public class InscriptionFormationControllers {
     public ResponseEntity<List<InscriptionResponseDto>> listerInscriptionsParCentre(@PathVariable int centreId) {
         return ResponseEntity.ok(inscriptionFormationServices.listerParCentre(centreId));
     }
+    // Certifier une inscription (réservé au centre)
+    @PatchMapping("/{inscriptionId}/certifier")
+    @PreAuthorize("hasRole('CENTRE')")
+    @Operation(
+            summary = "Certifier une inscription",
+            description = "Certifie un jeune pour une formation terminée, si l'inscription est validée."
+    )
+    public ResponseEntity<InscriptionResponseDto> certifierInscription(@PathVariable int inscriptionId) {
+        return ResponseEntity.ok(inscriptionFormationServices.certifierInscription(inscriptionId));
+    }
 }
