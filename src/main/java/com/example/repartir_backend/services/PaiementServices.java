@@ -269,4 +269,14 @@ public class PaiementServices {
         return total;
     }
 
+    /**
+     *
+     *Lister les paiements par formation (via inscription -> formation)
+     */
+                public List<ResponsePaiement> getPaiementsParFormation(int idFormation) {
+                return paiementRepository.findByInscriptionFormation_Formation_Id(idFormation)
+                                .stream()
+                                .map(Paiement::toResponse)
+                                .toList();
+            }
 }

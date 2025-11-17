@@ -70,7 +70,11 @@ public class Paiement {
         dto.setIdParrainage(this.parrainage != null ? this.parrainage.getId() : null);
         // Récupérer idParrain via parrainage.id_parrain (via jointure)
         dto.setIdParrain(this.getIdParrain());
-        dto.setIdFormation(this.inscriptionFormation != null ? this.inscriptionFormation.getId() : null);
+        dto.setIdFormation(
+                          (this.inscriptionFormation != null && this.inscriptionFormation.getFormation() != null)
+                                        ? this.inscriptionFormation.getFormation().getId()
+                                        : null
+                               );
         return dto;
     }
 

@@ -197,4 +197,19 @@ public class PaiementControllers {
         }
     }
 
+    @GetMapping("/formation/{idFormation}")
+    @Operation(summary = "Lister les paiements d’une formation", description = "Récupère tous les paiements liés à une formation donnée (via inscriptions).")
+    @ApiResponses({
+                        @ApiResponse(responseCode = "200", description = "Liste des paiements récupérée avec succès"),
+                        @ApiResponse(responseCode = "500", description = "Erreur lors de la récupération", content = @Content)
+                })
+    public ResponseEntity<?> getPaiementsParFormation(@PathVariable int idFormation) {
+                try {
+                        return ResponseEntity.ok(paiementServices.getPaiementsParFormation(idFormation));
+                    } catch (RuntimeException e) {
+                        return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
+                                        .body("Une erreur est survenue lors de la récupération : " + e.getMessage());
+                    }
+            }
+
 }
