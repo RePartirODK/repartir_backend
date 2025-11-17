@@ -98,15 +98,8 @@ public class FormationControllers {
     })
     @DeleteMapping("/{id}")
     public ResponseEntity<?> deleteFormation(@PathVariable int id) {
-        try {
-            formationServices.deleteFormation(id);
-            return ResponseEntity.ok("Formation supprimée et paiements marqués pour remboursement.");
-        } catch (EntityNotFoundException e) {
-            return ResponseEntity.status(HttpStatus.NOT_FOUND).body(e.getMessage());
-        } catch (Exception e) {
-            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
-                    .body("Erreur lors de la suppression : " + e.getMessage());
-        }
+        return ResponseEntity.status(HttpStatus.BAD_REQUEST)
+                .body("Motif d'annulation requis. Utilisez /api/formations/{id}/annuler?motif=... ou supprimez si aucune inscription.");
     }
 
 
@@ -146,5 +139,42 @@ public class FormationControllers {
     public ResponseEntity<ResponseFormation> getFormationById(@PathVariable int id) {
         ResponseFormation formation = formationServices.getFormationById(id);
         return ResponseEntity.ok(formation);
+    }
+
+
+     /**
++     * Annuler ou supprimer selon présence d’inscriptions.
++     * - Avec inscriptions: statut = ANNULER + motif + paiements à rembourser
++     * - Sans inscriptions: suppression physique
++     */
+    @DeleteMapping("/{id}/annuler")
+    public ResponseEntity<?> annulerOuSupprimerFormation(
+            @PathVariable int id,
+            @RequestParam String motif
+    ) {
+        if (motif == null || motif.trim().isEmpty()) {
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body("Motif d'annulation requis.");
+        }
+        try {
+            formationServices.deleteOrCancelFormation(id, motif.trim());
+            return ResponseEntity.ok("Action effectuée: annulée (si inscriptions) ou supprimée (sinon).");
+        } catch (EntityNotFoundException e) {
+            return ResponseEntity.status(HttpStatus.NOT_FOUND).body(e.getMessage());
+        } catch (RuntimeException e) {
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
+                    .body("Erreur lors de l'annulation/suppression : " + e.getMessage());
+        }
+    }
+    /**
++     * Lister les formations annulées (administration)
++     */
+    @GetMapping("/annulees")
+    @Tag(name = "Formations Annulées")
+    @Operation(summary = "Lister les formations annulées (ADMIN)")
+    public ResponseEntity<List<ResponseFormation>> listerFormationsAnnulees() {
+        List<ResponseFormation> out = formationServices.getAllFormations().stream()
+                .filter(f -> f.getStatut() == Etat.ANNULER)
+                .toList();
+        return ResponseEntity.ok(out);
     }
 }

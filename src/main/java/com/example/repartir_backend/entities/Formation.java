@@ -45,7 +45,8 @@ public class Formation {
     private String duree;
     private String urlFormation;
     private String urlCertificat;
-
+    // Raison d’annulation, fournie par le centre
+    private String motifAnnulation;
     @OneToMany(mappedBy = "formation", fetch = FetchType.LAZY)
     @JsonIgnore
     private List<InscriptionFormation> inscriptions = new ArrayList<>();
@@ -70,7 +71,9 @@ public class Formation {
         this.duree,
         this.urlFormation,
         this.urlCertificat,
-        this.centreFormation.getId()
+        this.centreFormation.getId(),
+    this.motifAnnulation,
+                this.statut
         );
     }
 
