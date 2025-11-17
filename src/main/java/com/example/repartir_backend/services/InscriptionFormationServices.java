@@ -10,7 +10,6 @@ import com.example.repartir_backend.repositories.FormationRepository;
 import com.example.repartir_backend.repositories.InscriptionFormationRepository;
 import com.example.repartir_backend.repositories.JeuneRepository;
 import com.example.repartir_backend.repositories.UtilisateurRepository;
-import com.example.repartir_backend.services.PaiementServices;
 import jakarta.persistence.EntityNotFoundException;
 import lombok.RequiredArgsConstructor;
 import org.springframework.security.core.context.SecurityContextHolder;
@@ -42,7 +41,10 @@ public class InscriptionFormationServices {
         if (inscriptionFormationRepository.existsByJeuneAndFormation(jeune, formation)) {
             throw new IllegalStateException("Vous êtes déjà inscrit à cette formation.");
         }
-
+        //verifier qu'il reste des places
+        if(formation.getNbre_place() <= 0 
+        && formation.getNbre_place()!=null)
+            throw new IllegalStateException("Il n'y a plus de places disponibles pour cette formation.");
         InscriptionFormation inscription = new InscriptionFormation();
         inscription.setJeune(jeune);
         inscription.setStatus(Etat.EN_ATTENTE);
