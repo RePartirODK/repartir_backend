@@ -19,5 +19,6 @@ public class ResponsePaiement {
     private StatutPaiement status;
     private int idJeune;
     private Integer idParrainage;
+    private Integer idParrain;  // ID du parrain qui a fait le paiement (récupéré depuis paiement.id_parrain ou parrainage.id_parrain)
     private int idFormation;
 }
