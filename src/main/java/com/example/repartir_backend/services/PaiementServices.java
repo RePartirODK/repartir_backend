@@ -3,7 +3,6 @@ package com.example.repartir_backend.services;
 import com.example.repartir_backend.dto.RequestPaiement;
 import com.example.repartir_backend.dto.ResponsePaiement;
 import com.example.repartir_backend.dto.ResponsePaiementAdmin;
-import com.example.repartir_backend.entities.Formation;
 import com.example.repartir_backend.entities.InscriptionFormation;
 import com.example.repartir_backend.entities.Jeune;
 import com.example.repartir_backend.entities.Paiement;
