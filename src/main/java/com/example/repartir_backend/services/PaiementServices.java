@@ -121,12 +121,15 @@ public class PaiementServices {
             }
 
             // Décrémenter les places disponibles si ce n'était pas déjà validé
-            if (!wasAlreadyValide) {
-                Formation formation = inscription.getFormation();
+            if (wasAlreadyValide) {
+                var formation = inscription.getFormation();
                 Integer places = formation.getNbre_place();
                 if (places != null && places > 0) {
                     formation.setNbre_place(places - 1);
                     formationRepository.save(formation);
+                    System.out.println("Place décrementé de 1");
+                } else {
+                    System.out.println("⚠️ Aucune place disponible à décrémenter (nbre_place=" + places + ")");
                 }
             }
 
