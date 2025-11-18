@@ -227,10 +227,11 @@ public class PaiementServices {
         return "Paiement refusé.";
     }
 
+    @Transactional
     public List<ResponsePaiement> getPaiementsParInscription(int idInscription) {
-        return paiementRepository.findByInscriptionFormationId(idInscription).stream()
-                .map(Paiement::toResponse).toList();
-    }
+        return paiementRepository.findByInscriptionIdWithParrainage(idInscription).stream()
+                                .map(Paiement::toResponse)
+                                .toList();}
 
     public List<ResponsePaiement> getPaiementByJeune(int idJeune) {
         return paiementRepository.findByJeuneId(idJeune).stream()

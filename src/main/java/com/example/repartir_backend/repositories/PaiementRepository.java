@@ -6,6 +6,7 @@ import com.example.repartir_backend.entities.Paiement;
 import com.example.repartir_backend.enumerations.StatutPaiement;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
+import org.springframework.data.repository.query.Param;
 
 import java.util.List;
 
@@ -27,4 +28,15 @@ public interface PaiementRepository extends JpaRepository<Paiement,Integer> {
            "LEFT JOIN FETCH parr.parrain " +
            "ORDER BY p.date DESC")
     List<Paiement> findAllWithParrainage();
+
+    // Add: retrieve payments for a specific jeune and formation
+    List<Paiement> findByInscriptionFormation_Jeune_IdAndInscriptionFormation_Formation_Id(int jeuneId, int formationId);
+
+    // Add: payments of one inscription with parrainage/parrain eagerly loaded
+    @Query("SELECT p FROM Paiement p " +
+                       "LEFT JOIN FETCH p.parrainage parr " +
+                       "LEFT JOIN FETCH parr.parrain " +
+                       "WHERE p.inscriptionFormation.id = :idInscription " +
+                       "ORDER BY p.date DESC")
+    List<Paiement> findByInscriptionIdWithParrainage(@Param("idInscription") int idInscription);
 }

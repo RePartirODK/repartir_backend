@@ -150,8 +150,24 @@ public class ParrainageServices {
     }
 
     public List<ResponseParrainage> listerDemandes() {
-        return parrainageRepository.findByParrainIsNull().stream()
-                .map(Parrainage::toResponse)
+        return parrainageRepository.findAll().stream()
+                                // Exclude canceled formations
+                                .filter(p -> p.getFormation() != null && p.getFormation().getStatut() != com.example.repartir_backend.enumerations.Etat.ANNULER)
+                                // Keep only those not fully funded yet for this jeune+formation
+                                .filter(p -> {
+                                var payments = paiementRepository
+                                                .findByInscriptionFormation_Jeune_IdAndInscriptionFormation_Formation_Id(
+                                                        p.getJeune().getId(), p.getFormation().getId()
+                                                        );
+                                double totalValide = payments.stream()
+                                                .filter(pa -> pa.getStatus() == com.example.repartir_backend.enumerations.StatutPaiement.VALIDE)
+                                                .mapToDouble(pa -> pa.getMontant() != null ? pa.getMontant() : 0.0)
+                                                .sum();
+                                Double cout = p.getFormation().getCout();
+                                double target = cout != null ? cout : Double.MAX_VALUE;
+                                return totalValide < target;
+                            })
+                                .map(Parrainage::toResponse)
                 .collect(Collectors.toList());
     }
 
