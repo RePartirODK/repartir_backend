@@ -198,7 +198,7 @@ public class PaiementControllers {
     }
 
     @GetMapping("/formation/{idFormation}")
-    @Operation(summary = "Lister les paiements d’une formation", description = "Récupère tous les paiements liés à une formation donnée (via inscriptions).")
+    @Operation(summary = "Lister les paiements d'une formation", description = "Récupère tous les paiements liés à une formation donnée (via inscriptions).")
     @ApiResponses({
                         @ApiResponse(responseCode = "200", description = "Liste des paiements récupérée avec succès"),
                         @ApiResponse(responseCode = "500", description = "Erreur lors de la récupération", content = @Content)
@@ -211,5 +211,43 @@ public class PaiementControllers {
                                         .body("Une erreur est survenue lors de la récupération : " + e.getMessage());
                     }
             }
+
+    @PutMapping("/rembourser/{idPaiement}")
+    @PreAuthorize("hasRole('ADMIN')")
+    @Operation(
+        summary = "Rembourser un paiement",
+        description = "Permet à un administrateur de marquer un paiement comme remboursé. " +
+                      "Envoie un email au jeune si c'est lui qui a payé, ou au parrain si c'est le parrain qui a payé."
+    )
+    @ApiResponses({
+        @ApiResponse(responseCode = "200", description = "Paiement remboursé avec succès"),
+        @ApiResponse(responseCode = "404", description = "Paiement non trouvé", content = @Content),
+        @ApiResponse(responseCode = "403", description = "Accès refusé - rôle ADMIN requis", content = @Content),
+        @ApiResponse(responseCode = "500", description = "Erreur lors du remboursement", content = @Content)
+    })
+    public ResponseEntity<?> rembourserPaiement(@PathVariable int idPaiement) {
+        try {
+            String result = paiementServices.rembourserPaiement(idPaiement);
+            
+            Map<String, Object> response = new HashMap<>();
+            response.put("message", "Paiement remboursé avec succès");
+            response.put("success", true);
+            response.put("details", result);
+            
+            return ResponseEntity.ok(response);
+        } catch (EntityNotFoundException e) {
+            Map<String, Object> error = new HashMap<>();
+            error.put("message", "Paiement non trouvé");
+            error.put("success", false);
+            error.put("error", e.getMessage());
+            return ResponseEntity.status(HttpStatus.NOT_FOUND).body(error);
+        } catch (Exception e) {
+            Map<String, Object> error = new HashMap<>();
+            error.put("message", "Erreur lors du remboursement du paiement");
+            error.put("success", false);
+            error.put("error", e.getMessage());
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(error);
+        }
+    }
 
 }

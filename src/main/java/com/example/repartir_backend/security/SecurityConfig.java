@@ -104,6 +104,7 @@ public class SecurityConfig {
                                 .requestMatchers("/api/offres/lister").hasAnyRole("JEUNE", "ADMIN")
                                 .requestMatchers("/api/offres/**").hasAnyRole("ENTREPRISE","JEUNE",
                                         "ADMIN")
+                                .requestMatchers("/api/paiements/rembourser/**").hasRole("ADMIN")
                                 .requestMatchers("/api/paiements/**").hasAnyRole("ENTREPRISE",
                                         "PARRAIN", "JEUNE", "ADMIN")
                                 .requestMatchers("/api/parrainage/**")

@@ -2,8 +2,10 @@ package com.example.repartir_backend.services;
 
 import com.example.repartir_backend.dto.RequestFormation;
 import com.example.repartir_backend.dto.ResponseFormation;
+import com.example.repartir_backend.entities.Admin;
 import com.example.repartir_backend.entities.CentreFormation;
 import com.example.repartir_backend.entities.Formation;
+import com.example.repartir_backend.entities.Notification;
 import com.example.repartir_backend.entities.Paiement;
 import com.example.repartir_backend.enumerations.Etat;
 import com.example.repartir_backend.enumerations.StatutPaiement;
@@ -30,6 +32,8 @@ public class FormationServices {
     private final PaiementRepository paiementRepository;
     private final MailSendServices mailSendServices;
     private final InscriptionFormationRepository inscriptionFormationRepository;
+    private final AdminRepository adminRepository;
+    private final NotificationRepository notificationRepository;
 
     //creation d'une formation
     public Formation createFormation(RequestFormation requestFormation, int centreId) {
@@ -95,63 +99,99 @@ public class FormationServices {
         Formation formation = formationRepository.findById(idFormation)
                 .orElseThrow(() -> new EntityNotFoundException("Formation non trouvée"));
 
-        // Vérifier s’il existe des inscriptions
+        // Vérifier s'il existe des inscriptions
         boolean hasInscriptions = !inscriptionFormationRepository.findAllByFormation_Id(idFormation).isEmpty();
         if (!hasInscriptions) {
             // Aucune inscription: suppression physique
-                                formationRepository.delete(formation);
-                        return;
-                    }
+            formationRepository.delete(formation);
+            return;
+        }
 
-                        // Sinon: annuler la formation, stocker le motif, et marquer les paiements à rembourser
-                                formation.setStatut(Etat.ANNULER);
-                formation.setMotifAnnulation(motifAnnulation);
-                formationRepository.save(formation);
+        // Sinon: annuler la formation, stocker le motif, et marquer les paiements à rembourser
+        formation.setStatut(Etat.ANNULER);
+        formation.setMotifAnnulation(motifAnnulation);
+        formationRepository.save(formation);
+
+        // ✅ NOUVEAU: Notifier tous les admins avec le motif d'annulation
+        try {
+            List<Admin> admins = adminRepository.findAll();
+            String nomCentre = (formation.getCentreFormation() != null 
+                && formation.getCentreFormation().getUtilisateur() != null)
+                ? formation.getCentreFormation().getUtilisateur().getNom()
+                : "Centre inconnu";
+            
+            // Message de notification incluant le motif d'annulation
+            String messageNotification = String.format(
+                "Le centre '%s' a annulé la formation '%s'. Motif d'annulation: %s",
+                nomCentre,
+                formation.getTitre(),
+                motifAnnulation
+            );
+
+            for (Admin admin : admins) {
+                Notification notification = new Notification();
+                notification.setDestinataireAdmin(admin);
+                notification.setMessage(messageNotification);
+                notification.setLue(false);
+                notification.setDateCreation(LocalDateTime.now());
+                notificationRepository.save(notification);
+            }
+            
+            System.out.println("✅ Notifications envoyées aux admins pour l'annulation de la formation #" + idFormation);
+        } catch (Exception e) {
+            System.err.println("❌ ERREUR CRÉATION NOTIFICATION ADMIN : " + e.getMessage());
+            e.printStackTrace();
+            // Ne pas faire échouer l'annulation si la notification échoue
+        }
+
+        // Marquer les paiements à rembourser
         List<Paiement> paiements = paiementRepository.findByInscriptionFormation_Formation_Id(idFormation);
-                for (Paiement paiement : paiements) {
-                        paiement.setStatus(StatutPaiement.A_REMBOURSE);
-                        paiementRepository.save(paiement);
-                        try {
-                                String path = "templates/remboursement.html";
-                            // Envoyer email au parrain uniquement si parrain != null
-                            if (paiement.getParrainage() != null && paiement.getParrainage().getParrain() != null) {
-                                String emailParrain = (paiement.getParrainage().getParrain().getUtilisateur() != null)
-                                        ? paiement.getParrainage().getParrain().getUtilisateur().getEmail()
-                                        : null;
-                                String prenomParrain = paiement.getParrainage().getParrain().getPrenom();
-                                if (emailParrain != null && !emailParrain.isBlank()) {
-                                    mailSendServices.envoiMimeMessage(
-                                            emailParrain,
-                                            "Remboursement suite à annulation de formation",
-                                            "<p>Bonjour " + prenomParrain + ",</p>"
-                                                    + "<p>La formation <strong>" + formation.getTitre() + "</strong> a été annulée.</p>"
-                                                    + "<p>Vous serez remboursé sous peu.</p>"
-                                    );
-                                }
-                            }
-
-                            // Envoyer email au jeune uniquement si jeune != null
-                            if (paiement.getJeune() != null) {
-                                String emailJeune = (paiement.getJeune().getUtilisateur() != null)
-                                        ? paiement.getJeune().getUtilisateur().getEmail()
-                                        : null;
-                                String nomJeune = (paiement.getJeune().getUtilisateur() != null)
-                                        ? paiement.getJeune().getUtilisateur().getNom()
-                                        : "";
-                                if (emailJeune != null && !emailJeune.isBlank()) {
-                                    mailSendServices.envoiMimeMessage(
-                                            emailJeune,
-                                            "Formation annulée",
-                                            "<p>Bonjour " + nomJeune + ",</p>"
-                                                    + "<p>La formation <strong>" + formation.getTitre() + "</strong> a été annulée.</p>"
-                                                    + "<p>Le remboursement est en cours.</p>"
-                                    );
-                                }
-                            }
-                            } catch (MessagingException e) {
-                                throw new RuntimeException("Erreur lors de l'envoi du mail : " + e.getMessage());
-                            }
+        for (Paiement paiement : paiements) {
+            paiement.setStatus(StatutPaiement.A_REMBOURSE);
+            paiementRepository.save(paiement);
+            try {
+                String path = "templates/remboursement.html";
+                // Envoyer email au parrain uniquement si parrain != null
+                if (paiement.getParrainage() != null && paiement.getParrainage().getParrain() != null) {
+                    String emailParrain = (paiement.getParrainage().getParrain().getUtilisateur() != null)
+                            ? paiement.getParrainage().getParrain().getUtilisateur().getEmail()
+                            : null;
+                    String prenomParrain = paiement.getParrainage().getParrain().getPrenom();
+                    if (emailParrain != null && !emailParrain.isBlank()) {
+                        mailSendServices.envoiMimeMessage(
+                                emailParrain,
+                                "Remboursement suite à annulation de formation",
+                                "<p>Bonjour " + prenomParrain + ",</p>"
+                                        + "<p>La formation <strong>" + formation.getTitre() + "</strong> a été annulée.</p>"
+                                        + "<p>Vous serez remboursé sous peu.</p>"
+                        );
                     }
+                }
+
+                // Envoyer email au jeune uniquement si jeune != null
+                if (paiement.getJeune() != null) {
+                    String emailJeune = (paiement.getJeune().getUtilisateur() != null)
+                            ? paiement.getJeune().getUtilisateur().getEmail()
+                            : null;
+                    String nomJeune = (paiement.getJeune().getUtilisateur() != null)
+                            ? paiement.getJeune().getUtilisateur().getNom()
+                            : "";
+                    if (emailJeune != null && !emailJeune.isBlank()) {
+                        mailSendServices.envoiMimeMessage(
+                                emailJeune,
+                                "Formation annulée",
+                                "<p>Bonjour " + nomJeune + ",</p>"
+                                        + "<p>La formation <strong>" + formation.getTitre() + "</strong> a été annulée.</p>"
+                                        + "<p>Le remboursement est en cours.</p>"
+                        );
+                    }
+                }
+            } catch (MessagingException e) {
+                System.err.println("❌ ERREUR ENVOI EMAIL ANNULATION : " + e.getMessage());
+                e.printStackTrace();
+                // Ne pas faire échouer l'annulation si l'email échoue
+            }
+        }
     }
 
 

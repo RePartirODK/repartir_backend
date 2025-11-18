@@ -3,6 +3,7 @@ package com.example.repartir_backend.services;
 import com.example.repartir_backend.dto.RequestPaiement;
 import com.example.repartir_backend.dto.ResponsePaiement;
 import com.example.repartir_backend.dto.ResponsePaiementAdmin;
+import com.example.repartir_backend.entities.Formation;
 import com.example.repartir_backend.entities.InscriptionFormation;
 import com.example.repartir_backend.entities.Jeune;
 import com.example.repartir_backend.entities.Paiement;
@@ -11,6 +12,7 @@ import com.example.repartir_backend.enumerations.Etat;
 import com.example.repartir_backend.enumerations.StatutPaiement;
 import com.example.repartir_backend.entities.Parrain;
 import com.example.repartir_backend.entities.Utilisateur;
+import jakarta.mail.MessagingException;
 import com.example.repartir_backend.repositories.FormationRepository;
 import com.example.repartir_backend.repositories.InscriptionFormationRepository;
 import com.example.repartir_backend.repositories.JeuneRepository;
@@ -279,4 +281,110 @@ public class PaiementServices {
                                 .map(Paiement::toResponse)
                                 .toList();
             }
+
+    @Transactional
+    public String rembourserPaiement(int idPaiement) throws Exception {
+        Paiement paiement = paiementRepository.findById(idPaiement)
+                .orElseThrow(() -> new EntityNotFoundException("Paiement introuvable"));
+
+        // Vérifier que le paiement est bien à l'état A_REMBOURSE
+        if (paiement.getStatus() != StatutPaiement.A_REMBOURSE) {
+            throw new IllegalStateException(
+                "Le paiement doit être à l'état A_REMBOURSE pour être remboursé. " +
+                "Statut actuel: " + paiement.getStatus()
+            );
+        }
+
+        // Changer le statut à REMBOURSE
+        paiement.setStatus(StatutPaiement.REMBOURSE);
+        paiementRepository.save(paiement);
+
+        System.out.println("✅ Paiement #" + idPaiement + " remboursé et sauvegardé");
+
+        // Récupérer les informations de la formation
+        Formation formation = paiement.getInscriptionFormation().getFormation();
+        String titreFormation = formation.getTitre();
+        String montantRembourse = String.format("%.0f", paiement.getMontant());
+
+        // DÉTERMINER QUI A PAYÉ : Jeune ou Parrain ?
+        boolean estPaiementParParrain = (paiement.getParrainage() != null 
+            && paiement.getParrainage().getParrain() != null);
+
+        if (estPaiementParParrain) {
+            // ✅ CAS 1: C'est un PARRAIN qui a payé → Notifier le PARRAIN
+            try {
+                Parrain parrain = paiement.getParrainage().getParrain();
+                String emailParrain = (parrain.getUtilisateur() != null) 
+                    ? parrain.getUtilisateur().getEmail() 
+                    : null;
+                String prenomParrain = parrain.getPrenom();
+
+                if (emailParrain != null && !emailParrain.isBlank()) {
+                    // Récupérer les informations du jeune
+                    Jeune jeune = paiement.getJeune();
+                    String nomJeune = (jeune.getUtilisateur() != null) 
+                        ? jeune.getUtilisateur().getNom() 
+                        : jeune.getPrenom();
+                    String prenomJeune = jeune.getPrenom();
+
+                    // Construire le message d'email pour le parrain
+                    String message = "<p>Bonjour " + prenomParrain + ",</p>"
+                        + "<p>Nous vous informons que votre paiement pour le parrainage du jeune <strong>" 
+                        + prenomJeune + " " + nomJeune + "</strong> a été remboursé.</p>"
+                        + "<p><strong>Formation:</strong> " + titreFormation + "</p>"
+                        + "<p><strong>Montant remboursé:</strong> " + montantRembourse + " FCFA</p>"
+                        + "<p>Le remboursement a été effectué suite à l'annulation de la formation.</p>"
+                        + "<p>Cordialement,<br>L'équipe RePartir</p>";
+
+                    mailSendServices.envoiMimeMessage(
+                        emailParrain,
+                        "Remboursement effectué - Parrainage de " + prenomJeune + " " + nomJeune,
+                        message
+                    );
+
+                    System.out.println("✅ Email de remboursement envoyé au parrain: " + emailParrain);
+                }
+            } catch (MessagingException e) {
+                System.err.println("❌ ERREUR ENVOI EMAIL REMBOURSEMENT PARRAIN : " + e.getMessage());
+                e.printStackTrace();
+                // Ne pas faire échouer le remboursement si l'email échoue
+            }
+        } else {
+            // ✅ CAS 2: C'est le JEUNE lui-même qui a payé → Notifier le JEUNE
+            try {
+                Jeune jeune = paiement.getJeune();
+                String emailJeune = (jeune.getUtilisateur() != null) 
+                    ? jeune.getUtilisateur().getEmail() 
+                    : null;
+                String nomJeune = (jeune.getUtilisateur() != null) 
+                    ? jeune.getUtilisateur().getNom() 
+                    : jeune.getPrenom();
+                String prenomJeune = jeune.getPrenom();
+
+                if (emailJeune != null && !emailJeune.isBlank()) {
+                    // Construire le message d'email pour le jeune
+                    String message = "<p>Bonjour " + prenomJeune + " " + nomJeune + ",</p>"
+                        + "<p>Nous vous informons que votre paiement a été remboursé.</p>"
+                        + "<p><strong>Formation:</strong> " + titreFormation + "</p>"
+                        + "<p><strong>Montant remboursé:</strong> " + montantRembourse + " FCFA</p>"
+                        + "<p>Le remboursement a été effectué suite à l'annulation de la formation.</p>"
+                        + "<p>Cordialement,<br>L'équipe RePartir</p>";
+
+                    mailSendServices.envoiMimeMessage(
+                        emailJeune,
+                        "Remboursement effectué - " + titreFormation,
+                        message
+                    );
+
+                    System.out.println("✅ Email de remboursement envoyé au jeune: " + emailJeune);
+                }
+            } catch (MessagingException e) {
+                System.err.println("❌ ERREUR ENVOI EMAIL REMBOURSEMENT JEUNE : " + e.getMessage());
+                e.printStackTrace();
+                // Ne pas faire échouer le remboursement si l'email échoue
+            }
+        }
+
+        return "Paiement remboursé avec succès. Montant: " + paiement.getMontant() + " FCFA";
+    }
 }
