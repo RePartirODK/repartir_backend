@@ -72,14 +72,13 @@ public class Formation {
         this.urlFormation,
         this.urlCertificat,
         this.centreFormation.getId(),
-    this.motifAnnulation,
-                this.statut
+    this.motifAnnulation
+
         );
     }
 
     public Formation toFormation(RequestFormation requestFormation) {
         Formation formation = new Formation();
-
         formation.setTitre(requestFormation.getTitre());
         formation.setDescription(requestFormation.getDescription());
         formation.setDate_debut(requestFormation.getDate_debut());
@@ -95,8 +94,13 @@ public class Formation {
 
         return formation;
     }
+
     public Etat getStatutActuel() {
         LocalDateTime now = LocalDateTime.now();
+
+        if (this.statut == Etat.ANNULER) {
+            return Etat.ANNULER;
+        }
 
         if (now.isBefore(this.date_debut)) {
             return Etat.EN_ATTENTE;
@@ -106,4 +110,5 @@ public class Formation {
             return Etat.EN_COURS;
         }
     }
+
 }
