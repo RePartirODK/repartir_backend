@@ -10,5 +10,5 @@ public enum Etat {
     SUPPRIME,//le compte est supprimer par l'utilisateur
     EN_COURS,
     TERMINE,
-
+    ANNULER,
 }

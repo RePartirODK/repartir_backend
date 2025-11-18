@@ -1,6 +1,7 @@
 package com.example.repartir_backend.repositories;
 
 import com.example.repartir_backend.entities.Formation;
+import com.example.repartir_backend.enumerations.Etat;
 import org.springframework.data.jpa.repository.JpaRepository;
 
 import java.util.Arrays;
@@ -12,5 +13,6 @@ public interface FormationRepository extends JpaRepository<Formation, Integer> {
     List<Formation> findByCentreFormationId(int centreId);
 
     List<Formation> findByCentreFormation_Utilisateur_Email(String email);
+    List<Formation> findByStatut(Etat statut);
 
 }

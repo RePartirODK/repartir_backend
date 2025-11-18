@@ -26,4 +26,6 @@ public class ResponseFormation {
     private String urlFormation;
     private String urlCertificat;
     private int idCentre;
+    private String motifAnnulation;
+    private Etat status;
 }
