@@ -1,5 +1,6 @@
 package com.example.repartir_backend.services;
 
+import com.example.repartir_backend.dto.RefreshTokenDto;
 import com.example.repartir_backend.entities.RefreshToken;
 import com.example.repartir_backend.repositories.AdminRepository;
 import com.example.repartir_backend.repositories.RefreshTokenRepository;
@@ -23,12 +24,12 @@ public class RefreshTokenService {
     private final UtilisateurRepository utilisateurRepository;
     private final AdminRepository adminRepository;
     private final BCryptPasswordEncoder encoder;
-
+    public record RefreshTokenResponse(String token, Instant expiration) {}
 
 
 
     @Transactional
-    public RefreshToken createRefreshToken(String email) {
+    public RefreshTokenResponse createRefreshToken(String email) {
         RefreshToken refreshToken;
 
         // Génération du token brut (non haché)
@@ -47,7 +48,7 @@ public class RefreshTokenService {
             System.out.println("ici");
             refreshTokenRepository.deleteByUtilisateur_Id(user.getId());
             refreshTokenRepository.flush();
-            System.out.println("La valeur deu refresh token est "+hashedToken);
+            System.out.println("La valeur du refresh token est "+hashedToken);
             refreshToken = RefreshToken.builder()
                     .utilisateur(user)
                     .token(hashedToken) //on stocke uniquement la version hachée
@@ -70,8 +71,10 @@ public class RefreshTokenService {
 
             refreshTokenRepository.save(refreshToken);
         }
-        refreshToken.setToken(rawToken); //retourner le token en clair
-        return refreshToken;
+        return new RefreshTokenDto(
+                rawToken,
+                refreshToken.getDateExpiration()
+        );
     }
 
     public Optional<RefreshToken> findByToken(String token)  {
