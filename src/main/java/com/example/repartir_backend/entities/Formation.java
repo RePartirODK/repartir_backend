@@ -45,8 +45,10 @@ public class Formation {
     private String duree;
     private String urlFormation;
     private String urlCertificat;
-    // Raison d’annulation, fournie par le centre
+    // Raison d'annulation, fournie par le centre
     private String motifAnnulation;
+    @Column(nullable = false)
+    private Boolean gratuit = false; // Par défaut, la formation est payante
     @OneToMany(mappedBy = "formation", fetch = FetchType.LAZY)
     @JsonIgnore
     private List<InscriptionFormation> inscriptions = new ArrayList<>();
@@ -72,8 +74,8 @@ public class Formation {
         this.urlFormation,
         this.urlCertificat,
         this.centreFormation.getId(),
-    this.motifAnnulation
-
+    this.motifAnnulation,
+        this.gratuit
         );
     }
 
@@ -91,6 +93,7 @@ public class Formation {
         formation.setUrlFormation(requestFormation.getUrlFormation()!=null?
                 requestFormation.getUrlFormation():null);
         formation.setUrlCertificat(requestFormation.getUrlCertificat());
+        formation.setGratuit(requestFormation.getGratuit() != null ? requestFormation.getGratuit() : false);
 
         return formation;
     }

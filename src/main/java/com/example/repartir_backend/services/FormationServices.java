@@ -42,6 +42,21 @@ public class FormationServices {
         Formation formation = new Formation().toFormation(requestFormation);
         formation.setCentreFormation(centre);
         formation.setStatut(Etat.EN_ATTENTE); // par défaut
+        
+        // ✅ NOUVEAU: Gérer le champ gratuit avec validation
+        if (requestFormation.getGratuit() != null && requestFormation.getGratuit()) {
+            if (requestFormation.getCout() != null && requestFormation.getCout() > 0) {
+                throw new IllegalArgumentException("Une formation gratuite ne peut pas avoir un coût supérieur à 0.");
+            }
+            formation.setGratuit(true);
+            formation.setCout(0.0); // S'assurer que le coût est à 0 pour les formations gratuites
+        } else {
+            if (requestFormation.getCout() == null || requestFormation.getCout() <= 0) {
+                throw new IllegalArgumentException("Une formation payante doit avoir un coût supérieur à 0.");
+            }
+            formation.setGratuit(false);
+        }
+        
         return formationRepository.save(formation);
     }
     //mettre à jour une formation
@@ -82,6 +97,22 @@ public class FormationServices {
 
         if (requestFormation.getStatut() != null)
             formation.setStatut(requestFormation.getStatut());
+
+        // ✅ NOUVEAU: Mettre à jour le champ gratuit
+        if (requestFormation.getGratuit() != null) {
+            if (requestFormation.getGratuit()) {
+                if (requestFormation.getCout() != null && requestFormation.getCout() > 0) {
+                    throw new IllegalArgumentException("Une formation gratuite ne peut pas avoir un coût supérieur à 0.");
+                }
+                formation.setGratuit(true);
+                formation.setCout(0.0); // Forcer le coût à 0 si gratuit
+            } else {
+                if (requestFormation.getCout() == null || requestFormation.getCout() <= 0) {
+                    throw new IllegalArgumentException("Une formation payante doit avoir un coût supérieur à 0.");
+                }
+                formation.setGratuit(false);
+            }
+        }
 
         Formation updatedFormation = formationRepository.save(formation);
         return updatedFormation.toResponse();
