@@ -47,6 +47,7 @@ public class RefreshTokenService {
             System.out.println("ici");
             refreshTokenRepository.deleteByUtilisateur_Id(user.getId());
             refreshTokenRepository.flush();
+            System.out.println("La valeur deu refresh token est "+hashedToken);
             refreshToken = RefreshToken.builder()
                     .utilisateur(user)
                     .token(hashedToken) //on stocke uniquement la version hachée
@@ -69,7 +70,7 @@ public class RefreshTokenService {
 
             refreshTokenRepository.save(refreshToken);
         }
-        refreshToken.setToken(rawToken);
+        refreshToken.setToken(rawToken); //retourner le token en clair
         return refreshToken;
     }
 

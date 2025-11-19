@@ -12,6 +12,7 @@ import java.util.stream.Collectors;
 public class MentorResponseDto {
     private int id;
     private String nomComplet;
+    private String prenom;
     private String email;
     private int annee_experience;
     private String a_propos;
@@ -48,6 +49,7 @@ public class MentorResponseDto {
 
         return MentorResponseDto.builder()
                 .id(mentor.getId())
+                .prenom(mentor.getPrenom())
                 .nomComplet(mentor.getPrenom() + " " + mentor.getUtilisateur().getNom())
                 .email(mentor.getUtilisateur().getEmail())
                 .annee_experience(mentor.getAnnee_experience())
