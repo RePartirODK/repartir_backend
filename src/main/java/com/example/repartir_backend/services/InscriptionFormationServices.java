@@ -6,6 +6,7 @@ import com.example.repartir_backend.entities.InscriptionFormation;
 import com.example.repartir_backend.entities.Jeune;
 import com.example.repartir_backend.entities.Utilisateur;
 import com.example.repartir_backend.enumerations.Etat;
+import com.example.repartir_backend.services.MailSendServices;
 import com.example.repartir_backend.repositories.FormationRepository;
 import com.example.repartir_backend.repositories.InscriptionFormationRepository;
 import com.example.repartir_backend.repositories.JeuneRepository;
@@ -32,6 +33,7 @@ public class InscriptionFormationServices {
     private final JeuneRepository jeuneRepository;
     private final FormationRepository formationRepository;
     private final PaiementServices paiementServices;
+    private final MailSendServices mailSendServices;
 
     @Transactional
     public InscriptionResponseDto sInscrire(int formationId, boolean payerDirectement) {
@@ -42,26 +44,76 @@ public class InscriptionFormationServices {
         if (inscriptionFormationRepository.existsByJeuneAndFormation(jeune, formation)) {
             throw new IllegalStateException("Vous êtes déjà inscrit à cette formation.");
         }
-        //verifier qu'il reste des places
-        if(formation.getNbre_place() <= 0 
-        && formation.getNbre_place()!=null)
+
+        // Vérifier qu'il reste des places
+        if(formation.getNbre_place() <= 0 && formation.getNbre_place() != null)
             throw new IllegalStateException("Il n'y a plus de places disponibles pour cette formation.");
+
         InscriptionFormation inscription = new InscriptionFormation();
         inscription.setJeune(jeune);
-        inscription.setStatus(Etat.EN_ATTENTE);
         inscription.setFormation(formation);
         inscription.setDateInscription(new Date());
-        inscription.setDemandeParrainage(false); // Inscription simple, sans demande de parrainage
-        InscriptionFormation savedInscription = inscriptionFormationRepository.save(inscription);
-        //si le jeune veut payer directement
-        if (payerDirectement) {
-            RequestPaiement requestPaiement = new RequestPaiement();
-            requestPaiement.setIdJeune(jeune.getId());
-            requestPaiement.setIdInscription(savedInscription.getId());
-            requestPaiement.setMontant(formation.getCout());
-            requestPaiement.setIdParrainage(null); // pas de parrainage
-            paiementServices.creerPaiement(requestPaiement);
+        inscription.setDemandeParrainage(false);
+
+        // ✅ NOUVEAU: Logique pour les formations gratuites
+        boolean isGratuit = formation.getGratuit() != null && formation.getGratuit();
+        
+        if (isGratuit) {
+            // Formation gratuite: inscription automatiquement validée
+            inscription.setStatus(Etat.VALIDE);
+            System.out.println("✅ Formation gratuite - Inscription validée automatiquement");
+            
+            // Décrémenter les places disponibles
+            Integer places = formation.getNbre_place();
+            if (places != null && places > 0) {
+                formation.setNbre_place(places - 1);
+                formationRepository.save(formation);
+                System.out.println("✅ Place décrementée pour formation gratuite");
+            }
+        } else {
+            // Formation payante: comportement actuel
+            inscription.setStatus(Etat.EN_ATTENTE);
+            
+            // Si le jeune veut payer directement
+            if (payerDirectement) {
+                InscriptionFormation savedInscription = inscriptionFormationRepository.save(inscription);
+                RequestPaiement requestPaiement = new RequestPaiement();
+                requestPaiement.setIdJeune(jeune.getId());
+                requestPaiement.setIdInscription(savedInscription.getId());
+                requestPaiement.setMontant(formation.getCout());
+                requestPaiement.setIdParrainage(null); // pas de parrainage
+                paiementServices.creerPaiement(requestPaiement);
+                return InscriptionResponseDto.fromEntity(savedInscription);
+            }
         }
+
+        InscriptionFormation savedInscription = inscriptionFormationRepository.save(inscription);
+        
+        // ✅ NOUVEAU: Envoyer un email de confirmation pour les formations gratuites
+        if (isGratuit) {
+            try {
+                String emailDestinataire = jeune.getUtilisateur().getEmail();
+                String nomJeune = jeune.getUtilisateur().getNom();
+                String prenomJeune = jeune.getPrenom();
+                String formationNom = formation.getTitre();
+                
+                // Utiliser le service d'email existant
+                String pathInscription = "src/main/resources/templates/inscriptionreussi.html";
+                mailSendServices.acceptionInscription(
+                    emailDestinataire,
+                    "Inscription confirmée - " + formationNom,
+                    prenomJeune + " " + nomJeune,
+                    formationNom,
+                    pathInscription
+                );
+                System.out.println("✅ Email de confirmation envoyé pour formation gratuite");
+            } catch (Exception e) {
+                System.err.println("❌ ERREUR ENVOI EMAIL FORMATION GRATUITE : " + e.getMessage());
+                e.printStackTrace();
+                // Ne pas faire échouer l'inscription si l'email échoue
+            }
+        }
+
         return InscriptionResponseDto.fromEntity(savedInscription);
     }
 

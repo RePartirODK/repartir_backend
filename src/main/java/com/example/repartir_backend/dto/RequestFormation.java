@@ -23,4 +23,5 @@ public class RequestFormation {
     private String duree;
     private String urlFormation;
     private String urlCertificat;
+    private Boolean gratuit; // null ou false = payant, true = gratuit
 }
