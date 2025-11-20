@@ -1,6 +1,6 @@
 package com.example.repartir_backend.services;
 
-import com.example.repartir_backend.dto.RefreshTokenDto;
+import com.example.repartir_backend.dto.RefreshTokenResponse;
 import com.example.repartir_backend.entities.RefreshToken;
 import com.example.repartir_backend.repositories.AdminRepository;
 import com.example.repartir_backend.repositories.RefreshTokenRepository;
@@ -8,7 +8,6 @@ import com.example.repartir_backend.repositories.UtilisateurRepository;
 import jakarta.persistence.EntityNotFoundException;
 import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
-import org.springframework.security.crypto.bcrypt.BCrypt;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.stereotype.Service;
 
@@ -24,7 +23,6 @@ public class RefreshTokenService {
     private final UtilisateurRepository utilisateurRepository;
     private final AdminRepository adminRepository;
     private final BCryptPasswordEncoder encoder;
-    public record RefreshTokenResponse(String token, Instant expiration) {}
 
 
 
@@ -71,7 +69,7 @@ public class RefreshTokenService {
 
             refreshTokenRepository.save(refreshToken);
         }
-        return new RefreshTokenDto(
+        return new RefreshTokenResponse(
                 rawToken,
                 refreshToken.getDateExpiration()
         );

@@ -9,7 +9,7 @@ import java.time.Instant;
 @Data
 @AllArgsConstructor
 @NoArgsConstructor
-public class RefreshTokenDto {
+public class RefreshTokenResponse {
     private String rawToken;
     private Instant dateExpiration;
 }
