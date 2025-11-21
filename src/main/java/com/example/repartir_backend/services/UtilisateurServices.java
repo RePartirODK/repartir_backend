@@ -11,7 +11,6 @@ import jakarta.persistence.EntityExistsException;
 import jakarta.persistence.EntityNotFoundException;
 import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
-import org.springframework.context.annotation.Lazy;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
@@ -34,6 +33,7 @@ public class UtilisateurServices {
     private final MailSendServices mailSendServices;
     private final UploadService uploadService;
     private final NotificationService notificationService;
+
     @Transactional
     public Utilisateur register(RegisterUtilisateur utilisateur) throws MessagingException, IOException {
         //verifier si un utilisateur avec l'email existe déjà
