@@ -1,5 +1,6 @@
 package com.example.repartir_backend.services;
 
+import com.example.repartir_backend.dto.RefreshTokenResponse;
 import com.example.repartir_backend.entities.RefreshToken;
 import com.example.repartir_backend.repositories.AdminRepository;
 import com.example.repartir_backend.repositories.RefreshTokenRepository;
@@ -7,7 +8,6 @@ import com.example.repartir_backend.repositories.UtilisateurRepository;
 import jakarta.persistence.EntityNotFoundException;
 import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
-import org.springframework.security.crypto.bcrypt.BCrypt;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.stereotype.Service;
 
@@ -26,9 +26,8 @@ public class RefreshTokenService {
 
 
 
-
     @Transactional
-    public RefreshToken createRefreshToken(String email) {
+    public RefreshTokenResponse createRefreshToken(String email) {
         RefreshToken refreshToken;
 
         // Génération du token brut (non haché)
@@ -47,6 +46,7 @@ public class RefreshTokenService {
             System.out.println("ici");
             refreshTokenRepository.deleteByUtilisateur_Id(user.getId());
             refreshTokenRepository.flush();
+            System.out.println("La valeur du refresh token est "+hashedToken);
             refreshToken = RefreshToken.builder()
                     .utilisateur(user)
                     .token(hashedToken) //on stocke uniquement la version hachée
@@ -69,8 +69,10 @@ public class RefreshTokenService {
 
             refreshTokenRepository.save(refreshToken);
         }
-        refreshToken.setToken(rawToken);
-        return refreshToken;
+        return new RefreshTokenResponse(
+                rawToken,
+                refreshToken.getDateExpiration()
+        );
     }
 
     public Optional<RefreshToken> findByToken(String token)  {

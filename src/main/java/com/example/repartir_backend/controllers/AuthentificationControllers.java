@@ -52,10 +52,16 @@ public class AuthentificationControllers {
                     credentials.getMotDePasse()
             );
             return ResponseEntity.ok(tokens);
-        } catch(BadCredentialsException e)
-    {
-        return ResponseEntity.status(HttpStatus.FORBIDDEN).body(e.getMessage());
-    }}
+        } catch (BadCredentialsException e) {
+            return ResponseEntity.status(HttpStatus.UNAUTHORIZED)
+                    .body(Map.of(
+                            "status", 401,
+                            "error", "Unauthorized",
+                            "message", "Email ou mot de passe incorrect",
+                            "path", "/api/auth/login"
+                    ));
+        }
+    }
 
     /**
      * Rafraîchir le token d’accès (access_token)

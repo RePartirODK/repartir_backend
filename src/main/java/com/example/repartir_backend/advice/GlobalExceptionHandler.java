@@ -57,6 +57,15 @@ public class GlobalExceptionHandler {
     @ExceptionHandler(RuntimeException.class)
     public ResponseEntity<ErrorResponse> handleRuntimeException(RuntimeException ex, HttpServletRequest request) {
         logger.error(">>> Exception d'exécution non gérée sur le chemin {}: {}", request.getRequestURI(), ex.getMessage(), ex);
+        
+        // Si c'est une erreur de refresh token, renvoyer 403 au lieu de 400
+        if (ex.getMessage() != null && 
+            (ex.getMessage().contains("Refresh token invalide") || 
+             ex.getMessage().contains("Refresh token expiré"))) {
+            ErrorResponse errorResponse = createErrorResponse(HttpStatus.FORBIDDEN, ex.getMessage(), request.getRequestURI());
+            return new ResponseEntity<>(errorResponse, HttpStatus.FORBIDDEN);
+        }
+        
         ErrorResponse errorResponse = createErrorResponse(HttpStatus.BAD_REQUEST, ex.getMessage(), request.getRequestURI());
         return new ResponseEntity<>(errorResponse, HttpStatus.BAD_REQUEST);
     }

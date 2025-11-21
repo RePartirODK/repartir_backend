@@ -1,5 +1,6 @@
 package com.example.repartir_backend.services;
 
+import com.example.repartir_backend.dto.RefreshTokenResponse;
 import com.example.repartir_backend.entities.RefreshToken;
 import com.example.repartir_backend.repositories.AdminRepository;
 import com.example.repartir_backend.repositories.RefreshTokenRepository;
@@ -52,7 +53,7 @@ public class AuthService {
             String accessToken = jwtService.genererToken(userDetails);
 
             // Crée un refresh token (gestion interne des doublons dans le service)
-            RefreshToken refreshToken = refreshTokenService.createRefreshToken(email);
+            RefreshTokenResponse refreshToken = refreshTokenService.createRefreshToken(email);
 
             // Récupérer l'ID utilisateur depuis la base de données
             int userId;
@@ -72,7 +73,7 @@ public class AuthService {
             // Réponse JSON propre
             Map<String, Object> response = new HashMap<>();
             response.put("access_token", accessToken);
-            response.put("refresh_token", refreshToken.getToken());
+            response.put("refresh_token", refreshToken.getRawToken());
             response.put("email", userDetails.getUsername());
             response.put("role", userDetails.getAuthorities());
             response.put("id", userId); // ← AJOUT de l'ID utilisateur
