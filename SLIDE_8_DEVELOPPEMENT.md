@@ -242,3 +242,4 @@ com.example.repartir_backend/
 
 **Méthodologie** : Architecture en couches, RESTful, développement itératif
 
+

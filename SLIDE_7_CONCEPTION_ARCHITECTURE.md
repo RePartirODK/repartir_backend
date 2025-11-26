@@ -685,3 +685,4 @@ L'architecture RePartir Backend est conçue selon les meilleures pratiques Java/
 
 Le système est prêt pour un déploiement en production avec quelques ajustements de configuration selon l'environnement cible.
 
+
