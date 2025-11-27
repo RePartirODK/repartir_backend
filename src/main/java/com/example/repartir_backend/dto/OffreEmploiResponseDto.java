@@ -21,12 +21,23 @@ public class OffreEmploiResponseDto {
     private Date dateDebut;
     private Date dateFin;
     private String nomEntreprise;
+    private String urlPhotoEntreprise;
+    private Integer idEntreprise;
     private String adresseEntreprise;
 
     public static OffreEmploiResponseDto fromEntity(OffreEmploi offreEmploi) {
         String nomEntreprise = (offreEmploi.getEntreprise() != null && offreEmploi.getEntreprise().getUtilisateur() != null)
                 ? offreEmploi.getEntreprise().getUtilisateur().getNom()
                 : "Non spécifié";
+        
+        String urlPhotoEntreprise = (offreEmploi.getEntreprise() != null)
+                ? offreEmploi.getEntreprise().getUrlPhotoEntreprise()
+                : null;
+        
+        Integer idEntreprise = (offreEmploi.getEntreprise() != null)
+                ? offreEmploi.getEntreprise().getId()
+                : null;
+        
         String adresseEntreprise = (offreEmploi.getEntreprise() != null)
                 ? offreEmploi.getEntreprise().getAdresse()
                 : null;
@@ -41,6 +52,8 @@ public class OffreEmploiResponseDto {
                 .dateDebut(offreEmploi.getDateDebut())
                 .dateFin(offreEmploi.getDateFin())
                 .nomEntreprise(nomEntreprise)
+                .urlPhotoEntreprise(urlPhotoEntreprise)
+                .idEntreprise(idEntreprise)
                 .adresseEntreprise(adresseEntreprise)
                 .build();
     }

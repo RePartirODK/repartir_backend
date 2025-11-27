@@ -104,13 +104,13 @@ public class OffreEmploiService {
 
     @Transactional(readOnly = true)
     public List<OffreEmploiResponseDto> listerToutesLesOffres() {
-        List<OffreEmploi> offres = offreEmploiRepository.findAll();
+        List<OffreEmploi> offres = offreEmploiRepository.findAllWithEntreprise();
         return OffreEmploiResponseDto.fromEntities(offres);
     }
 
     @Transactional(readOnly = true)
     public OffreEmploiResponseDto getOffreById(int id) {
-        OffreEmploi offre = offreEmploiRepository.findById(id)
+        OffreEmploi offre = offreEmploiRepository.findByIdWithEntreprise(id)
                 .orElseThrow(() -> new EntityNotFoundException("Offre non trouvée"));
         return OffreEmploiResponseDto.fromEntity(offre);
     }
