@@ -20,7 +20,8 @@ public class InscriptionDetailDto {
     private Etat statut;
     private Date dateInscription;
     private boolean demandeParrainage;
-
+    //ajout de champs certification
+    private boolean certifie;
     @Data
     @Builder
     @NoArgsConstructor
@@ -64,6 +65,7 @@ public class InscriptionDetailDto {
                 .statut(inscription.getStatus())
                 .dateInscription(inscription.getDateInscription())
                 .demandeParrainage(inscription.isDemandeParrainage())
+                .certifie(inscription.isCertifie())
                 .build();
     }
 }
