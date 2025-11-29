@@ -149,6 +149,10 @@ public class ParrainageServices {
         return paiementRepository.findAllByParrainage_Id(parrainage.getId());
     }
 
+    public InscriptionFormation getInscriptionByJeuneAndFormation(int idJeune, int idFormation) {
+        return inscriptionFormationRepository.findByJeune_IdAndFormation_Id(idJeune, idFormation);
+    }
+
     public List<ResponseParrainage> listerDemandes() {
         return parrainageRepository.findAll().stream()
                                 // Exclude canceled formations

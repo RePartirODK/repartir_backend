@@ -93,10 +93,20 @@ public class ParrainageControllers {
         var parrain = parrainServices.getParrainByEmail(email);
         var parrainages = parrainageServices.getParrainagesEntitiesByParrain(parrain.getId());
 
-        var result = parrainages.stream().map(p -> Map.of(
+        var result = parrainages.stream().map(p -> {
+            // Récupérer l'inscription pour obtenir le statut de certification
+            var inscription = parrainageServices.getInscriptionByJeuneAndFormation(
+                p.getJeune().getId(), 
+                p.getFormation().getId()
+            );
+            
+            return Map.of(
                 "jeune", com.example.repartir_backend.dto.JeuneResponseDto.fromEntity(p.getJeune()),
-                "idFormation", p.getFormation().getId()
-        )).toList();
+                "idFormation", p.getFormation().getId(),
+                "certifie", inscription != null ? inscription.isCertifie() : false,
+                "status", inscription != null ? inscription.getStatus() : null
+            );
+        }).toList();
 
         return ResponseEntity.ok(result);
     }
