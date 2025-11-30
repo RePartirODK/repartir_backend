@@ -90,7 +90,7 @@ public class MentoringServices {
     public Mentoring accepterMentoring(int idMentoring) throws MessagingException, IOException {
         Mentoring mentoring = updateStatutMentoring(idMentoring, Etat.VALIDE);
         //envoyé un message d'acceptation de mentoring aux deux concernés
-        String path = "src/main/resources/templates/creationmentoring.html";
+        String path = "templates/creationmentoring.html";
         mailSendServices.envoyerEmailBienvenu(
                 mentoring.getJeune().getUtilisateur().getEmail(),
                 "Mentoring",
@@ -112,7 +112,7 @@ public class MentoringServices {
         //envoyé un message de refus de mentoring
         Mentoring mentoring = updateStatutMentoring(idMentoring, Etat.REFUSE);
         //envoyé un message d'acceptation de mentoring aux deux concernés
-        String path = "src/main/resources/templates/refusmentoring.html";
+        String path = "templates/refusmentoring.html";
         mailSendServices.envoyerEmailBienvenu(
                 mentoring.getJeune().getUtilisateur().getEmail(),
                 "Mentoring",

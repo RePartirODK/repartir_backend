@@ -59,7 +59,7 @@ public class PassWordForget {
         codes.put(email, new CodeInfo(code, expiration));
 
         // Envoyer l’email HTML avec le code
-        String path = "src/main/resources/templates/codereinitialisation.html";
+        String path = "templates/codereinitialisation.html";
         mailSendServices.envoyerCode(
                 utilisateur.getEmail(),
                 "Réinitialisation du mot de passe",

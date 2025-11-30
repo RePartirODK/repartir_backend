@@ -55,7 +55,7 @@ public class AdminServices {
      */
     @Transactional
     public AdminResponseDto creerAdmin(AdminDto adminDto) throws MessagingException, IOException {
-        String path = "src/main/resources/templates/creationcompteadmin.html";
+        String path = "templates/creationcompteadmin.html";
         // Vérifier si un admin avec cet email existe déjà
         Optional<Admin> existingAdmin = adminRepository.findByEmail(adminDto.email());
         if (existingAdmin.isPresent()) {
@@ -145,7 +145,7 @@ public class AdminServices {
      */
     @Transactional
     public UtilisateurResponseDto rejeterCompte(Integer userId) throws MessagingException, IOException {
-        String path = "src/main/resources/templates/refusecompte.html";
+        String path = "templates/refusecompte.html";
         Utilisateur utilisateur = utilisateurRepository.findById(userId)
                 .orElseThrow(() -> new RuntimeException("Utilisateur non trouvé"));
         utilisateur.setEtat(Etat.REFUSE);
