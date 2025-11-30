@@ -63,6 +63,7 @@ public class SecurityConfig {
                                 // Endpoints publics d'authentification et documentation
                                 .requestMatchers(
                                         "/uploads/**",
+                                        "/api/mails/test",
                                 "/api/auth/login",
                                         "/api/utilisateurs/register",
                                         "/api/auth/refresh",
@@ -206,7 +207,9 @@ public class SecurityConfig {
         corsConfiguration.setAllowedMethods(List.of("POST", "GET", "PUT", "DELETE", "PATCH"));
         corsConfiguration.addAllowedHeader("*");
         corsConfiguration.setAllowedOriginPatterns(List.of("http://localhost:*", "http://127.0.0.1:*",
-                "http://10.0.2.2:*","http://192.168.*:*"));
+                "http://10.0.2.2:*","http://192.168.*:*",
+        "https://*.onrender.com",
+                "https://repartir-backend.onrender.com"));
         corsConfiguration.setAllowCredentials(true);
         UrlBasedCorsConfigurationSource source = new UrlBasedCorsConfigurationSource();
         source.registerCorsConfiguration("/**", corsConfiguration);

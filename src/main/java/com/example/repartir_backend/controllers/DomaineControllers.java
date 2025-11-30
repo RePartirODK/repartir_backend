@@ -58,8 +58,11 @@ public class DomaineControllers {
     public ResponseEntity<?> listerDomaines() {
         try {
             List<DomaineResponseDto> domaines = domaineServices.listerDomaines();
+            System.out.println("Liste des domaines récupérée: " + domaines.size() + " domaines");
             return ResponseEntity.ok(domaines);
         } catch (Exception e) {
+            System.err.println("Erreur lors de la récupération des domaines:");
+            e.printStackTrace();
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
                     .body("Une erreur est survenue lors de la récupération des domaines.");
         }

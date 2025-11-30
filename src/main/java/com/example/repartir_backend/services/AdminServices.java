@@ -55,7 +55,7 @@ public class AdminServices {
      */
     @Transactional
     public AdminResponseDto creerAdmin(AdminDto adminDto) throws MessagingException, IOException {
-        String path = "src/main/resources/templates/creationcompteadmin.html";
+        String path = "templates/creationcompteadmin.html";
         // Vérifier si un admin avec cet email existe déjà
         Optional<Admin> existingAdmin = adminRepository.findByEmail(adminDto.email());
         if (existingAdmin.isPresent()) {
@@ -102,7 +102,7 @@ public class AdminServices {
     @Transactional
     public UtilisateurResponseDto approuverCompte(Integer userId) throws MessagingException, IOException {
         logger.info(">>> Approuver compte - ID utilisateur: {}", userId);
-        String path = "src/main/resources/templates/comptevalider.html";
+        String path = "templates/comptevalider.html";
         
         Utilisateur utilisateur = utilisateurRepository.findById(userId)
                 .orElseThrow(() -> new RuntimeException("Utilisateur non trouvé avec l'ID: " + userId));
@@ -145,7 +145,7 @@ public class AdminServices {
      */
     @Transactional
     public UtilisateurResponseDto rejeterCompte(Integer userId) throws MessagingException, IOException {
-        String path = "src/main/resources/templates/refusecompte.html";
+        String path = "templates/refusecompte.html";
         Utilisateur utilisateur = utilisateurRepository.findById(userId)
                 .orElseThrow(() -> new RuntimeException("Utilisateur non trouvé"));
         utilisateur.setEtat(Etat.REFUSE);
@@ -213,7 +213,7 @@ public class AdminServices {
     @Transactional
     public UtilisateurResponseDto refuserCompte(Integer userId) throws MessagingException, IOException {
         logger.info(">>> Refuser compte - ID utilisateur: {}", userId);
-        String path = "src/main/resources/templates/refusecompte.html";
+        String path = "templates/refusecompte.html";
         
         Utilisateur utilisateur = utilisateurRepository.findById(userId)
                 .orElseThrow(() -> new RuntimeException("Utilisateur non trouvé avec l'ID: " + userId));

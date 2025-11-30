@@ -9,6 +9,8 @@ import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
+import java.util.List; // Ajout de l'import
+
 @Data
 @AllArgsConstructor
 @NoArgsConstructor
@@ -46,5 +48,7 @@ public class RegisterUtilisateur {
     //champs entreprise
     //private String adresse;
     //private String agrement;
-
+    
+    // Ajout du champ domaineIds
+    private List<Integer> domaineIds; // Liste des IDs de domaines
 }
