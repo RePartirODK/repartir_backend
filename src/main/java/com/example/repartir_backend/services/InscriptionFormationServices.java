@@ -98,7 +98,7 @@ public class InscriptionFormationServices {
                 String formationNom = formation.getTitre();
                 
                 // Utiliser le service d'email existant
-                String pathInscription = "src/main/resources/templates/inscriptionreussi.html";
+                String pathInscription = "templates/inscriptionreussi.html";
                 mailSendServices.acceptionInscription(
                     emailDestinataire,
                     "Inscription confirmée - " + formationNom,

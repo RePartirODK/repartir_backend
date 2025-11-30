@@ -3,6 +3,8 @@ package com.example.repartir_backend.services;
 import jakarta.mail.MessagingException;
 import jakarta.mail.internet.MimeMessage;
 import lombok.RequiredArgsConstructor;
+import org.springframework.core.io.ClassPathResource;
+import org.springframework.core.io.Resource;
 import org.springframework.mail.MailMessage;
 import org.springframework.mail.SimpleMailMessage;
 import org.springframework.mail.javamail.JavaMailSender;
@@ -39,7 +41,8 @@ public class MailSendServices {
     }
 
     public void envoyerEmailBienvenu(String to,String sujet, String nom, String path) throws IOException, MessagingException {
-        String template = Files.readString(Paths.get(path));
+        Resource resource = new ClassPathResource(path);
+        String template = Files.readString(resource.getFile().toPath());
         template = template.replace("{{nom}}", nom);
         envoiMimeMessage(to,sujet, template);
     }
@@ -49,7 +52,8 @@ public class MailSendServices {
                             String nom,
                             String path,
                             String code) throws IOException, MessagingException {
-        String template = Files.readString(Paths.get(path));
+        Resource resource = new ClassPathResource(path);
+        String template = Files.readString(resource.getFile().toPath());
         template = template.replace("{{nom}}", nom);
         template = template.replace("{{code}}", code);
 
@@ -59,7 +63,8 @@ public class MailSendServices {
     public void acceptionInscription(String to,String sujet
             ,String nom, String formation
             , String path) throws IOException, MessagingException {
-        String template = Files.readString(Paths.get(path));
+        Resource resource = new ClassPathResource(path);
+        String template = Files.readString(resource.getFile().toPath());
         template = template.replace("{{nom}}", nom)
                 .replace("{{formation}}", formation);
         envoiMimeMessage(to,sujet, template);
@@ -67,7 +72,8 @@ public class MailSendServices {
     public void inscriptionAdmin(String to,String sujet
             ,String email
             , String path) throws IOException, MessagingException {
-        String template = Files.readString(Paths.get(path));
+        Resource resource = new ClassPathResource(path);
+        String template = Files.readString(resource.getFile().toPath());
         template = template.replace("{{email}}", email);
         envoiMimeMessage(to,sujet, template);
     }

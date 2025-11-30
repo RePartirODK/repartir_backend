@@ -135,7 +135,7 @@ public class PaiementServices {
         
         // Envoyer un email de confirmation de paiement validé
         try {
-            String pathPaiement = "src/main/resources/templates/inscriptionreussi.html";
+            String pathPaiement = "templates/inscriptionreussi.html";
             mailSendServices.acceptionInscription(
                     emailDestinataire,
                     "Paiement validé - " + formationNom,
@@ -159,7 +159,7 @@ public class PaiementServices {
             System.out.println("✅ Inscription validée (montant suffisant : " + totalValide + "/" + inscription.getFormation().getCout() + ")");
             
             // Mail de confirmation d'inscription complète
-            String pathInscription = "src/main/resources/templates/inscriptionreussi.html";
+            String pathInscription = "templates/inscriptionreussi.html";
             try {
                 mailSendServices.acceptionInscription(
                         inscription.getJeune().getUtilisateur().getEmail(),
@@ -210,7 +210,7 @@ public class PaiementServices {
         String emailDestinataire = inscription.getJeune().getUtilisateur().getEmail();
         System.out.println("📧 Préparation email de refus pour : " + emailDestinataire);
 
-        String path = "src/main/resources/templates/refusreussi.html";
+        String path = "templates/refusreussi.html";
         try {
             mailSendServices.acceptionInscription(
                     emailDestinataire,

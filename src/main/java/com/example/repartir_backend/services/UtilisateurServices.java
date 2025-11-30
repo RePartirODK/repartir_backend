@@ -153,8 +153,8 @@ public class UtilisateurServices {
 
             //envoie d'un mail après la création des comptes utilisateurs
             String path = (newUtilisateur.getEtat() == Etat.VALIDE)
-                    ? "src/main/resources/templates/comptevalider.html"
-                    : "src/main/resources/templates/encoursdevalidation.html";
+                    ? "templates/comptevalider.html"
+                    : "templates/encoursdevalidation.html";
 
             System.out.println("Envoi de l'email de bienvenue à: " + utilisateur.getEmail());
             mailSendServices.envoyerEmailBienvenu(
