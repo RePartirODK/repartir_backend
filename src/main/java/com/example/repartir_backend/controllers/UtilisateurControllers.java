@@ -70,7 +70,7 @@ public class UtilisateurControllers {
             System.err.println("Erreur IOException | MessagingException:");
             e.printStackTrace();
             return new ResponseEntity<>(
-                    "Une erreur interne s'est produite, veillez reéssayer",
+                    "Une erreur interne s'est produite messagerie, veillez reéssayer",
                     HttpStatus.INTERNAL_SERVER_ERROR
             );
         } catch (Exception e) {
