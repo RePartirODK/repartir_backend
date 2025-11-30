@@ -33,7 +33,7 @@ public class UtilisateurServices {
     private final MailSendServices mailSendServices;
     private final UploadService uploadService;
     private final NotificationService notificationService;
-    private final UserDomaineServices userDomaineServices; // Ajout de cette dépendance
+    private final UserDomaineServices userDomaineServices;
 
     @Transactional
     public Utilisateur register(RegisterUtilisateur utilisateur) throws MessagingException, IOException {
@@ -61,7 +61,7 @@ public class UtilisateurServices {
         );
         newUtilisateur.setUrlPhoto(utilisateur.getUrlPhoto());
         newUtilisateur.setDateCreation(LocalDateTime.now());
-        utilisateurRepository.save(newUtilisateur);
+        Utilisateur newUtilisateur1 = utilisateurRepository.save(newUtilisateur); // Sauvegarder et récupérer l'entité avec ID
 
 
         switch(utilisateur.getRole())
@@ -119,14 +119,21 @@ public class UtilisateurServices {
         }
         
         // Association des domaines si domaineIds est fourni
+        // Cette partie est maintenant placée après toutes les sauvegardes d'entités
         if (utilisateur.getDomaineIds() != null && !utilisateur.getDomaineIds().isEmpty()) {
             try {
+                System.out.println("Association des domaines pour l'utilisateur ID: " + newUtilisateur.getId());
+                System.out.println("Domaines à associer: " + utilisateur.getDomaineIds());
+                
                 for (Integer domaineId : utilisateur.getDomaineIds()) {
-                    userDomaineServices.addUserToDomaine(newUtilisateur.getId(), domaineId);
+                    System.out.println("Association de l'utilisateur " + newUtilisateur1.getId() + " avec le domaine " + domaineId);
+                    userDomaineServices.addUserToDomaine(newUtilisateur1.getId(), domaineId);
                 }
+                System.out.println("Associations terminées avec succès");
             } catch (Exception e) {
                 // Log l'erreur mais ne bloque pas l'inscription
                 System.err.println("Erreur lors de l'association des domaines: " + e.getMessage());
+                e.printStackTrace(); // Ajout du stack trace pour plus de détails
             }
         }
 
