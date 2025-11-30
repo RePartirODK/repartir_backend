@@ -44,32 +44,43 @@ public class UtilisateurControllers {
     @PostMapping("/register")
     public ResponseEntity<?> creationCompte(@RequestBody RegisterUtilisateur registerUtilisateur)
     {
+        System.out.println("Requête d'inscription reçue: " + registerUtilisateur);
         try {
             Utilisateur utilisateursaved = utilisateurServices.register(registerUtilisateur);
+            System.out.println("Inscription réussie pour: " + utilisateursaved.getEmail());
             return new ResponseEntity<>(
                     utilisateursaved,
                     HttpStatus.CREATED
             );
         }catch (EntityExistsException e)
         {
+            System.out.println("Email déjà existant: " + e.getMessage());
             return new ResponseEntity<>(
                     "Email existe déjà" + e.getMessage(),
                     HttpStatus.FOUND
 
             );
         } catch (RuntimeException e) {
-            // 👇 affichage clair pour déboguer
+            System.err.println("Erreur RuntimeException:");
+            e.printStackTrace();
             return ResponseEntity.status(HttpStatus.BAD_REQUEST)
                     .body("Erreur inattendue : " + e.getClass().getSimpleName() + " - " + e.getMessage());
         }catch (IOException | MessagingException e)
         {
+            System.err.println("Erreur IOException | MessagingException:");
+            e.printStackTrace();
+            return new ResponseEntity<>(
+                    "Une erreur interne s'est produite, veillez reéssayer",
+                    HttpStatus.INTERNAL_SERVER_ERROR
+            );
+        } catch (Exception e) {
+            System.err.println("Erreur générale:");
+            e.printStackTrace();
             return new ResponseEntity<>(
                     "Une erreur interne s'est produite, veillez reéssayer",
                     HttpStatus.INTERNAL_SERVER_ERROR
             );
         }
-
-
     }
 
 

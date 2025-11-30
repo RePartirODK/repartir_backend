@@ -37,119 +37,140 @@ public class UtilisateurServices {
 
     @Transactional
     public Utilisateur register(RegisterUtilisateur utilisateur) throws MessagingException, IOException {
-        //verifier si un utilisateur avec l'email existe déjà
-        Utilisateur utilisateur1 = utilisateurRepository.findByEmail(utilisateur.getEmail()).orElse(null);
-        if (utilisateur1 != null) {
-            throw new EntityExistsException("Un utilisateur avec cet email existe déjà.");
-        }
-
-        Utilisateur newUtilisateur= new Utilisateur();
-        newUtilisateur.setNom(utilisateur.getNom());
-        newUtilisateur.setRole(utilisateur.getRole());
-        newUtilisateur.setTelephone(utilisateur.getTelephone());
-        newUtilisateur.setEmail(utilisateur.getEmail());
-        if (utilisateur.getRole() == Role.JEUNE || utilisateur.getRole() == Role.MENTOR || utilisateur.getRole() == Role.PARRAIN) {
-            newUtilisateur.setEtat(Etat.VALIDE);
-        } else {
-            newUtilisateur.setEtat(Etat.EN_ATTENTE);
-        }
-        newUtilisateur.setMotDePasse(passwordEncoder.encode(utilisateur.getMotDePasse()));
-        newUtilisateur.setEstActive(
-                utilisateur.getRole() == Role.JEUNE ||
-                        utilisateur.getRole() == Role.MENTOR ||
-                        utilisateur.getRole() == Role.PARRAIN
-        );
-        newUtilisateur.setUrlPhoto(utilisateur.getUrlPhoto());
-        newUtilisateur.setDateCreation(LocalDateTime.now());
-        Utilisateur newUtilisateur1 = utilisateurRepository.save(newUtilisateur); // Sauvegarder et récupérer l'entité avec ID
-
-
-        switch(utilisateur.getRole())
-        {
-            case JEUNE -> {
-                Jeune jeune = new Jeune();
-                //newUtilisateur.setEstActive(true);
-                jeune.setUtilisateur(newUtilisateur);
-                jeune.setGenre(utilisateur.getGenre());
-                jeune.setAge(utilisateur.getAge());
-                jeune.setA_propos(utilisateur.getA_propos());
-                jeune.setNiveau(utilisateur.getNiveau());
-                jeune.setUrlDiplome(utilisateur.getUrlDiplome());
-                jeune.setPrenom(utilisateur.getPrenom());
-                jeuneRepository.save(jeune);
-            }
-            case MENTOR -> {
-                Mentor mentor = new Mentor();
-                //newUtilisateur.setEstActive(true);
-                mentor.setUtilisateur(newUtilisateur);
-                mentor.setPrenom(utilisateur.getPrenom());
-                mentor.setProfession(utilisateur.getProfession());
-                mentor.setA_propos(utilisateur.getA_propos());
-                mentor.setAnnee_experience(utilisateur.getAnnee_experience());
-                mentorRepository.save(mentor);
-            }
-            case CENTRE -> {
-                CentreFormation centre = new CentreFormation();
-                newUtilisateur.setEstActive(false);
-                centre.setUtilisateur(newUtilisateur);
-                centre.setAdresse(utilisateur.getAdresse());
-                centre.setAgrement(utilisateur.getAgrement());
-                centreFormationRepository.save(centre);
-                // Notifier l'administrateur qu'un nouveau centre est en attente de validation.
-                notificationService.notifierAdmin("Un nouveau centre de formation '" + newUtilisateur.getNom() + "' s'est inscrit et est en attente de validation.");
-            }
-            case ENTREPRISE -> {
-                Entreprise entreprise = new Entreprise();
-                newUtilisateur.setEstActive(false);
-                entreprise.setUtilisateur(newUtilisateur);
-                entreprise.setAdresse(utilisateur.getAdresse());
-                entreprise.setAgrement(utilisateur.getAgrement());
-                entrepriseRepository.save(entreprise);
-                // Notifier l'administrateur qu'une nouvelle entreprise est en attente de validation.
-                notificationService.notifierAdmin("Une nouvelle entreprise '" + newUtilisateur.getNom() + "' s'est inscrite et est en attente de validation.");
-            }
-            case PARRAIN -> {
-                Parrain parrain = new Parrain();
-                parrain.setUtilisateur(newUtilisateur);
-                //newUtilisateur.setEstActive(true);
-                parrain.setProfession(utilisateur.getProfession());
-                parrain.setPrenom(utilisateur.getPrenom());
-                parrainRepository.save(parrain);
-            }
-        }
+        System.out.println("Début de l'inscription utilisateur: " + utilisateur.getEmail());
+        System.out.println("Données reçues: " + utilisateur);
         
-        // Association des domaines si domaineIds est fourni
-        // Cette partie est maintenant placée après toutes les sauvegardes d'entités
-        if (utilisateur.getDomaineIds() != null && !utilisateur.getDomaineIds().isEmpty()) {
-            try {
-                System.out.println("Association des domaines pour l'utilisateur ID: " + newUtilisateur.getId());
-                System.out.println("Domaines à associer: " + utilisateur.getDomaineIds());
-                
-                for (Integer domaineId : utilisateur.getDomaineIds()) {
-                    System.out.println("Association de l'utilisateur " + newUtilisateur1.getId() + " avec le domaine " + domaineId);
-                    userDomaineServices.addUserToDomaine(newUtilisateur1.getId(), domaineId);
-                }
-                System.out.println("Associations terminées avec succès");
-            } catch (Exception e) {
-                // Log l'erreur mais ne bloque pas l'inscription
-                System.err.println("Erreur lors de l'association des domaines: " + e.getMessage());
-                e.printStackTrace(); // Ajout du stack trace pour plus de détails
+        try {
+            //verifier si un utilisateur avec l'email existe déjà
+            Utilisateur utilisateur1 = utilisateurRepository.findByEmail(utilisateur.getEmail()).orElse(null);
+            if (utilisateur1 != null) {
+                System.out.println("Utilisateur déjà existant avec cet email: " + utilisateur.getEmail());
+                throw new EntityExistsException("Un utilisateur avec cet email existe déjà.");
             }
+
+            Utilisateur newUtilisateur= new Utilisateur();
+            newUtilisateur.setNom(utilisateur.getNom());
+            newUtilisateur.setRole(utilisateur.getRole());
+            newUtilisateur.setTelephone(utilisateur.getTelephone());
+            newUtilisateur.setEmail(utilisateur.getEmail());
+            if (utilisateur.getRole() == Role.JEUNE || utilisateur.getRole() == Role.MENTOR || utilisateur.getRole() == Role.PARRAIN) {
+                newUtilisateur.setEtat(Etat.VALIDE);
+            } else {
+                newUtilisateur.setEtat(Etat.EN_ATTENTE);
+            }
+            newUtilisateur.setMotDePasse(passwordEncoder.encode(utilisateur.getMotDePasse()));
+            newUtilisateur.setEstActive(
+                    utilisateur.getRole() == Role.JEUNE ||
+                            utilisateur.getRole() == Role.MENTOR ||
+                            utilisateur.getRole() == Role.PARRAIN
+            );
+            newUtilisateur.setUrlPhoto(utilisateur.getUrlPhoto());
+            newUtilisateur.setDateCreation(LocalDateTime.now());
+            newUtilisateur = utilisateurRepository.save(newUtilisateur); // Sauvegarder et récupérer l'entité avec ID
+            System.out.println("Utilisateur sauvegardé avec ID: " + newUtilisateur.getId());
+
+            switch(utilisateur.getRole())
+            {
+                case JEUNE -> {
+                    System.out.println("Création d'un jeune");
+                    Jeune jeune = new Jeune();
+                    jeune.setUtilisateur(newUtilisateur);
+                    jeune.setGenre(utilisateur.getGenre());
+                    jeune.setAge(utilisateur.getAge());
+                    jeune.setA_propos(utilisateur.getA_propos());
+                    jeune.setNiveau(utilisateur.getNiveau());
+                    jeune.setUrlDiplome(utilisateur.getUrlDiplome());
+                    jeune.setPrenom(utilisateur.getPrenom());
+                    jeuneRepository.save(jeune);
+                    System.out.println("Jeune créé avec succès");
+                }
+                case MENTOR -> {
+                    System.out.println("Création d'un mentor");
+                    Mentor mentor = new Mentor();
+                    mentor.setUtilisateur(newUtilisateur);
+                    mentor.setPrenom(utilisateur.getPrenom());
+                    mentor.setProfession(utilisateur.getProfession());
+                    mentor.setA_propos(utilisateur.getA_propos());
+                    mentor.setAnnee_experience(utilisateur.getAnnee_experience());
+                    mentorRepository.save(mentor);
+                    System.out.println("Mentor créé avec succès");
+                }
+                case CENTRE -> {
+                    System.out.println("Création d'un centre");
+                    CentreFormation centre = new CentreFormation();
+                    newUtilisateur.setEstActive(false);
+                    centre.setUtilisateur(newUtilisateur);
+                    centre.setAdresse(utilisateur.getAdresse());
+                    centre.setAgrement(utilisateur.getAgrement());
+                    centreFormationRepository.save(centre);
+                    System.out.println("Centre créé avec succès");
+                    // Notifier l'administrateur qu'un nouveau centre est en attente de validation.
+                    notificationService.notifierAdmin("Un nouveau centre de formation '" + newUtilisateur.getNom() + "' s'est inscrit et est en attente de validation.");
+                }
+                case ENTREPRISE -> {
+                    System.out.println("Création d'une entreprise");
+                    Entreprise entreprise = new Entreprise();
+                    newUtilisateur.setEstActive(false);
+                    entreprise.setUtilisateur(newUtilisateur);
+                    entreprise.setAdresse(utilisateur.getAdresse());
+                    entreprise.setAgrement(utilisateur.getAgrement());
+                    entrepriseRepository.save(entreprise);
+                    System.out.println("Entreprise créée avec succès");
+                    // Notifier l'administrateur qu'une nouvelle entreprise est en attente de validation.
+                    notificationService.notifierAdmin("Une nouvelle entreprise '" + newUtilisateur.getNom() + "' s'est inscrite et est en attente de validation.");
+                }
+                case PARRAIN -> {
+                    System.out.println("Création d'un parrain");
+                    Parrain parrain = new Parrain();
+                    parrain.setUtilisateur(newUtilisateur);
+                    parrain.setProfession(utilisateur.getProfession());
+                    parrain.setPrenom(utilisateur.getPrenom());
+                    parrainRepository.save(parrain);
+                    System.out.println("Parrain créé avec succès");
+                }
+            }
+            
+            // Association des domaines si domaineIds est fourni
+            if (utilisateur.getDomaineIds() != null && !utilisateur.getDomaineIds().isEmpty()) {
+                try {
+                    System.out.println("Association des domaines pour l'utilisateur ID: " + newUtilisateur.getId());
+                    System.out.println("Domaines à associer: " + utilisateur.getDomaineIds());
+                    
+                    for (Integer domaineId : utilisateur.getDomaineIds()) {
+                        System.out.println("Tentative d'association de l'utilisateur " + newUtilisateur.getId() + " avec le domaine " + domaineId);
+                        userDomaineServices.addUserToDomaine(newUtilisateur.getId(), domaineId);
+                        System.out.println("Association réussie pour le domaine " + domaineId);
+                    }
+                    System.out.println("Toutes les associations de domaines ont été effectuées avec succès");
+                } catch (Exception e) {
+                    System.err.println("Erreur lors de l'association des domaines:");
+                    e.printStackTrace();
+                    // Ne pas bloquer l'inscription si l'association des domaines échoue
+                }
+            } else {
+                System.out.println("Aucun domaine à associer");
+            }
+
+            //envoie d'un mail après la création des comptes utilisateurs
+            String path = (newUtilisateur.getEtat() == Etat.VALIDE)
+                    ? "src/main/resources/templates/comptevalider.html"
+                    : "src/main/resources/templates/encoursdevalidation.html";
+
+            System.out.println("Envoi de l'email de bienvenue à: " + utilisateur.getEmail());
+            mailSendServices.envoyerEmailBienvenu(
+                    utilisateur.getEmail(),
+                    newUtilisateur.getEtat() == Etat.VALIDE ? "Création de compte" : "Compte en attente",
+                    utilisateur.getNom(),
+                    path
+            );
+            
+            System.out.println("Inscription terminée avec succès pour: " + utilisateur.getEmail());
+            return newUtilisateur;
+        } catch (Exception e) {
+            System.err.println("Erreur fatale lors de l'inscription:");
+            e.printStackTrace();
+            throw e;
         }
-
-        //envoie d'un mail après la création des comptes utilisateurs
-        // Envoi de mail
-        String path = (newUtilisateur.getEtat() == Etat.VALIDE)
-                ? "src/main/resources/templates/comptevalider.html"
-                : "src/main/resources/templates/encoursdevalidation.html";
-
-        mailSendServices.envoyerEmailBienvenu(
-                utilisateur.getEmail(),
-                newUtilisateur.getEtat() == Etat.VALIDE ? "Création de compte" : "Compte en attente",
-                utilisateur.getNom(),
-                path
-        );
-        return newUtilisateur;
     }
 
     public void deleteUtilisateur(int id) {
