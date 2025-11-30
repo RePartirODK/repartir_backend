@@ -63,7 +63,7 @@ public class SecurityConfig {
                                 // Endpoints publics d'authentification et documentation
                                 .requestMatchers(
                                         "/uploads/**",
-                                        "/api/mails/test"
+                                        "/api/mails/test",
                                 "/api/auth/login",
                                         "/api/utilisateurs/register",
                                         "/api/auth/refresh",
