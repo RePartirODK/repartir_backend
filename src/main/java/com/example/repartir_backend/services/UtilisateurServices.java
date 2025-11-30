@@ -33,6 +33,7 @@ public class UtilisateurServices {
     private final MailSendServices mailSendServices;
     private final UploadService uploadService;
     private final NotificationService notificationService;
+    private final UserDomaineServices userDomaineServices; // Ajout de cette dépendance
 
     @Transactional
     public Utilisateur register(RegisterUtilisateur utilisateur) throws MessagingException, IOException {
@@ -114,6 +115,18 @@ public class UtilisateurServices {
                 parrain.setProfession(utilisateur.getProfession());
                 parrain.setPrenom(utilisateur.getPrenom());
                 parrainRepository.save(parrain);
+            }
+        }
+        
+        // Association des domaines si domaineIds est fourni
+        if (utilisateur.getDomaineIds() != null && !utilisateur.getDomaineIds().isEmpty()) {
+            try {
+                for (Integer domaineId : utilisateur.getDomaineIds()) {
+                    userDomaineServices.addUserToDomaine(newUtilisateur.getId(), domaineId);
+                }
+            } catch (Exception e) {
+                // Log l'erreur mais ne bloque pas l'inscription
+                System.err.println("Erreur lors de l'association des domaines: " + e.getMessage());
             }
         }
 
