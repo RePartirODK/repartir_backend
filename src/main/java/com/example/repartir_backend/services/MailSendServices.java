@@ -30,27 +30,50 @@ public class MailSendServices {
     }
 
     public void envoieSimpleMail(String to, String sujet, String contenu){
-        SimpleMailMessage message = new SimpleMailMessage();
-        message.setTo(to);
-        message.setSubject(sujet);
-        message.setSentDate(new Date());
-        message.setText(contenu);
-        javaMailSender.send(message);
+        try {
+            System.out.println("📧 Tentative d'envoi d'email simple à: " + to);
+            SimpleMailMessage message = new SimpleMailMessage();
+            message.setTo(to);
+            message.setSubject(sujet);
+            message.setSentDate(new Date());
+            message.setText(contenu);
+            javaMailSender.send(message);
+            System.out.println("✅ Email simple envoyé avec succès à: " + to);
+        } catch (Exception e) {
+            System.err.println("❌ Erreur lors de l'envoi de l'email simple à " + to + ": " + e.getMessage());
+            e.printStackTrace();
+        }
     }
 
     public void envoiMimeMessage(String to, String sujet, String htmlContent) throws MessagingException {
-        MimeMessage mimeMailMessage = javaMailSender.createMimeMessage();
-        MimeMessageHelper helper = new MimeMessageHelper(mimeMailMessage, true, "UTF-8");
-        helper.setTo(to);
-        helper.setSubject(sujet);
-        helper.setText(htmlContent, true);// true est pour activer le code html
-        javaMailSender.send(mimeMailMessage);
+        try {
+            System.out.println("📧 Tentative d'envoi d'email MIME à: " + to);
+            MimeMessage mimeMailMessage = javaMailSender.createMimeMessage();
+            MimeMessageHelper helper = new MimeMessageHelper(mimeMailMessage, true, "UTF-8");
+            helper.setTo(to);
+            helper.setSubject(sujet);
+            helper.setText(htmlContent, true);// true est pour activer le code html
+            javaMailSender.send(mimeMailMessage);
+            System.out.println("✅ Email MIME envoyé avec succès à: " + to);
+        } catch (Exception e) {
+            System.err.println("❌ Erreur lors de l'envoi de l'email MIME à " + to + ": " + e.getMessage());
+            e.printStackTrace();
+            throw e;
+        }
     }
 
     public void envoyerEmailBienvenu(String to,String sujet, String nom, String path) throws IOException, MessagingException {
-        String template = loadTemplateFromClasspath(path);
-        template = template.replace("{{nom}}", nom);
-        envoiMimeMessage(to,sujet, template);
+        try {
+            System.out.println("📧 Tentative d'envoi d'email de bienvenue à: " + to + " avec template: " + path);
+            String template = loadTemplateFromClasspath(path);
+            template = template.replace("{{nom}}", nom);
+            envoiMimeMessage(to,sujet, template);
+            System.out.println("✅ Email de bienvenue envoyé avec succès à: " + to);
+        } catch (Exception e) {
+            System.err.println("❌ Erreur lors de l'envoi de l'email de bienvenue à " + to + ": " + e.getMessage());
+            e.printStackTrace();
+            throw e;
+        }
     }
 
     public void envoyerCode(String email, String sujet, String nom, String path, String code) throws IOException, MessagingException {
